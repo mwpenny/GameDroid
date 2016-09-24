@@ -1,0 +1,7 @@
+1 hour		Functional requirements
+30 mins		Mockups
+30 mins		Formatting/merging proposal document sections
+15 mins		Setting up project skeleton with Android Studio
+
+---
+2hrs, 15 mins	Total
