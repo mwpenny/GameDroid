@@ -18,7 +18,7 @@ public class Cartridge {
     private ColorMode colorMode;
     private String licensee;
     private boolean supportsSGB;    // SGB = Super GameBoy
-    private byte mbcType;           // Memory bank controller present
+    private byte cartType;          // i.e., Which memory bank controller is present (if any)
     private byte[] rom;             // Size depends on ROM header
     private int romBank1Start;      // Where in the rom array does $4000 point?
     private byte[] extRam;          // Not always allocated (depends on ROM header)
@@ -31,8 +31,8 @@ public class Cartridge {
     public String getManufacturer() { return manufacturer; }
     public ColorMode getColorMode() { return colorMode; }
     public String getLicensee() { return licensee; }
-    public boolean isSupportsSGB() { return supportsSGB; }
-    public byte getCartType() { return mbcType; }
+    public boolean supportsSGB() { return supportsSGB; }
+    public byte getCartType() { return cartType; }
     public GameLocale getLocale() { return locale; }
     public byte getGameVersion() { return gameVersion; }
 
@@ -53,12 +53,17 @@ public class Cartridge {
         }
     }
 
-    public void write(short address, byte value) {
+    public void write(int address, byte value) {
         // TODO: MBC logic (where value "written" actually signifies which bank to switch to)
-        // TODO: cartridge RAM
+
+        // Write to cartridge RAM if present
+        // TODO: also write this information to disk if cartridge contains battery (check cartType)
+        if (extRam.length > 0 && address > 0x9FFF && address < 0xC000)
+            extRam[extRamStart + (address - 0xA000)] = value;
     }
 
     public Cartridge(String path) {
         // TODO: parse header fields and store in Cartridge instance
+        // TODO: maybe use another function for parsing, which returns success/failure
     }
 }
