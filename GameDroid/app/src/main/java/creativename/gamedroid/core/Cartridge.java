@@ -9,19 +9,19 @@ import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-enum ColorMode {
-    MONOCHROME,
-    COLOR_SUPPORTED,
-    COLOR_REQUIRED
-}
-
-enum GameLocale {
-    JAPAN,
-    WORLD
-}
-
-/* Stores game data from loaded ROMs */
+/* Loads, stores, and provides access to data from ROM files */
 public class Cartridge {
+    public enum ColorMode {
+        MONOCHROME,
+        COLOR_SUPPORTED,
+        COLOR_REQUIRED
+    }
+
+    public enum GameLocale {
+        JAPAN,
+        WORLD
+    }
+
     // Nintendo logo bitmap (verified by boot procedure)
     // (and why doesn't Java have unsigned types!?!)
     private static final byte[] LOGO_BITMAP = {
@@ -245,7 +245,7 @@ public class Cartridge {
             return extRam[address - 0xA000 + extRamStart];
 
         else
-            throw new IllegalArgumentException("Invalid ROM address");
+            throw new IllegalArgumentException(String.format("Invalid ROM read address ($%04X)", address));
     }
 
     public void write(int address, byte value) {
@@ -256,6 +256,6 @@ public class Cartridge {
         if (extRam.length > 0 && address > 0x9FFF && address < 0xC000)
             extRam[address - 0xA000 + extRamStart] = value;
         else if (address > 0x7FFF)
-            throw new IllegalArgumentException("Invalid ROM address");
+            throw new IllegalArgumentException(String.format("Invalid ROM write address ($%04X)", address));
     }
 }
