@@ -10,7 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /* Loads, stores, and provides access to data from ROM files */
-public class Cartridge {
+public class Cartridge implements MemoryMappable {
     public enum ColorMode {
         MONOCHROME,
         COLOR_SUPPORTED,

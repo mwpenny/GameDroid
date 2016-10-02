@@ -1,7 +1,7 @@
 package creativename.gamedroid.core;
 
 /* Gamepad interface */
-public class Controller {
+public class Controller implements MemoryMappable {
     public enum Button {
         BUTTON_RIGHT(1),
         BUTTON_LEFT(2),
