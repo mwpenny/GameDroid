@@ -197,22 +197,22 @@ public class Cartridge implements MemoryMappable {
         // Assume cartType 0 (ROM ONLY) for now (TODO: detect proper ram bank offset depending on MBC being used)
         extRamStart = 0;
 
-        locale = (bank0[0x14A] == 1) ? GameLocale.WORLD: GameLocale.JAPAN;
+        locale = (bank0[0x14A] == 1) ? GameLocale.WORLD : GameLocale.JAPAN;
         gameVersion = bank0[0x14C];
     }
 
     public Cartridge(String path) throws IOException {
         byte[] buf = new byte[0x4000];
-
-        // Some preliminary sanity checks
         File f = new File(path);
         InputStream in = new FileInputStream(f);
-        if (f.length() > Integer.MAX_VALUE)
-            throw new IOException("Input file too large");
-        else if (f.length() < 0x8000)
-            throw new IOException("Input file too small");
 
         try {
+            // Some preliminary sanity checks
+            if (f.length() > Integer.MAX_VALUE)
+                throw new IOException("Input file too large");
+            else if (f.length() < 0x8000)
+                throw new IOException("Input file too small");
+
             // Read first ROM bank and parse header
             if (in.read(buf, 0, 0x4000) != 0x4000)
                 throw new IOException("Error reading ROM bank 0");
