@@ -53,7 +53,7 @@ public class Controller implements MemoryMappable {
          */
     }
 
-    public byte read(int address) {
+    public byte read(char address) {
         /* $FF00: xxxxBBBB
                       ||||
                       |||+----- Down/Start
@@ -65,10 +65,10 @@ public class Controller implements MemoryMappable {
             bits 4 and 5 are unset. We will assume it's the d-pad */
         if (address == 0xFF00)
             return (byte)(readingDpad ? (state & 0xF) : (state >>> 4));
-        throw new IllegalArgumentException(String.format("Invalid controller I/O read address ($%04X)", address));
+        throw new IllegalArgumentException(String.format("Invalid controller I/O read address ($%04X)", (int)address));
     }
 
-    public void write(int address, byte value) {
+    public void write(char address, byte value) {
         /* $FF00: xxDBxxxx
                     ||
                     |+----- Select d-pad (0 = select)
@@ -76,6 +76,6 @@ public class Controller implements MemoryMappable {
         if (address == 0xFF00)
             readingDpad = ((value & 0x10) == 0);
         else if (address > 0x7FFF)
-            throw new IllegalArgumentException(String.format("Invalid controller I/O write address ($%04X)", address));
+            throw new IllegalArgumentException(String.format("Invalid controller I/O write address ($%04X)", (int)address));
     }
 }

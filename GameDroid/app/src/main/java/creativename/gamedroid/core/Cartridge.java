@@ -210,7 +210,7 @@ public class Cartridge implements MemoryMappable {
             // Some preliminary sanity checks
             if (f.length() > Integer.MAX_VALUE)
                 throw new IOException("Input file too large");
-            else if (f.length() < 0x8000)
+            if (f.length() < 0x8000)
                 throw new IOException("Input file too small");
 
             // Read first ROM bank and parse header
@@ -233,7 +233,7 @@ public class Cartridge implements MemoryMappable {
         }
     }
 
-    public byte read(int address) {
+    public byte read(char address) {
         // ROM bank 0 is fixed, 1 is switchable
         if (address < 0x4000)
             return rom[address];
@@ -245,10 +245,10 @@ public class Cartridge implements MemoryMappable {
             return extRam[address - 0xA000 + extRamStart];
 
         else
-            throw new IllegalArgumentException(String.format("Invalid ROM read address ($%04X)", address));
+            throw new IllegalArgumentException(String.format("Invalid ROM read address ($%04X)", (int)address));
     }
 
-    public void write(int address, byte value) {
+    public void write(char address, byte value) {
         // TODO: MBC logic (where value "written" actually signifies which bank to switch to)
 
         // Write to cartridge RAM if present
@@ -256,6 +256,6 @@ public class Cartridge implements MemoryMappable {
         if (extRam.length > 0 && address > 0x9FFF && address < 0xC000)
             extRam[address - 0xA000 + extRamStart] = value;
         else if (address > 0x7FFF)
-            throw new IllegalArgumentException(String.format("Invalid ROM write address ($%04X)", address));
+            throw new IllegalArgumentException(String.format("Invalid ROM write address ($%04X)", (int)address));
     }
 }

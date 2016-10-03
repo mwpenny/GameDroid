@@ -1,6 +1,6 @@
 package creativename.gamedroid.core;
 
 public interface MemoryMappable {
-    byte read(int address);
-    void write(int address, byte value);
+    byte read(char address);
+    void write(char address, byte value);
 }
