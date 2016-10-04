@@ -1,15 +1,7 @@
 package creativename.gamedroid.core;
 
-/**
- * Created by alan on 10/2/16.
- */
-
 public class Register16 {
-    protected char value;
-
-//    public Register16(char value) {
-//        this.value = value;
-//    }
+    protected char value;  // char used as 16 bit unsigned integer
 
     public char read() {
         return value;
@@ -20,10 +12,10 @@ public class Register16 {
     }
 
     public void increment() {
-        value++;
+        ++value;
     }
 
     public void decrement() {
-        value--;
+        --value;
     }
 }

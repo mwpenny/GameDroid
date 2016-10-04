@@ -3,14 +3,14 @@ package creativename.gamedroid.core;
 /* Gamepad interface */
 public class Controller implements MemoryMappable {
     public enum Button {
-        BUTTON_RIGHT(1),
-        BUTTON_LEFT(2),
-        BUTTON_UP(4),
-        BUTTON_DOWN(8),
-        BUTTON_A(16),
-        BUTTON_B(32),
-        BUTTON_SELECT(64),
-        BUTTON_START(128);
+        RIGHT(1),
+        LEFT(2),
+        UP(4),
+        DOWN(8),
+        A(16),
+        B(32),
+        SELECT(64),
+        START(128);
 
         private final byte buttonCode;
         Button(int code) {

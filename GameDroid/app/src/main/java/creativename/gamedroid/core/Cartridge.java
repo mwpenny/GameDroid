@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.File;
-import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -204,7 +203,7 @@ public class Cartridge implements MemoryMappable {
     public Cartridge(String path) throws IOException {
         byte[] buf = new byte[0x4000];
         File f = new File(path);
-        InputStream in = new FileInputStream(f);
+        FileInputStream in = new FileInputStream(f);
 
         try {
             // Some preliminary sanity checks

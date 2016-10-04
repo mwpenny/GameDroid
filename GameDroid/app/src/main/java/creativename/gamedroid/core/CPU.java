@@ -4,9 +4,25 @@ import java.util.HashMap;
 
 public class CPU {
     public Register8 a, b, c, d, e, f, h, l;
-    public Register16 sp, pc;  // char used as 16 bit unsigned integer
+    public Register16 sp, pc;
     public ConcatRegister af, bc, de, hl;
     public MMU mmu;
+
+    private enum Flag {
+        CARRY(0x10),
+        HALF_CARRY(0x20),
+        SUBTRACTION(0x40),
+        ZERO(0x80);
+
+        private final byte bitmask;
+        Flag(int mask) {
+            bitmask = (byte)mask;
+        }
+
+        public byte getBitmask() {
+            return bitmask;
+        }
+    }
 
     // These are not actual cursors to read or write from, but special singleton values used as
     // signals for interpreting instruction operands.
@@ -39,6 +55,7 @@ public class CPU {
 
 
         InstructionRoot ld = new LD();
+
         // build the instruction lookup table
         oneByteInstructions = new HashMap<>();
         oneByteInstructions.put((char) 0x06, new InstructionForm(ld, new Cursor[] {b, immediate8}));
@@ -87,7 +104,18 @@ public class CPU {
         ins.execute(this);
     }
 
-    public static class LD implements InstructionRoot {
+    private void updateFlag(Flag flag, boolean set) {
+        // Sets/unsets a CPU flag
+        char val = this.f.read();
+        if (set)
+            val |= flag.getBitmask();
+        else
+            val &= ~flag.getBitmask();
+        this.f.write(val);
+    }
+
+    /* Instructions */
+    private static class LD implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             operands[0].write(operands[1].read());

@@ -20,10 +20,7 @@ public class ConcatRegister {
     }
 
     public char read() {
-        char ret = 0;
-        ret |= high.read() << 8;
-        ret |= low.read();
-        return ret;
+        return (char)((high.read() << 8) | low.read());
     }
 }
 
