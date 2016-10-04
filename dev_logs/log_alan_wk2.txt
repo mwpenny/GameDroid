@@ -1,0 +1,6 @@
+3.5hr general research about the working of the CPU and MMU
+3hr CPU class implementation
+
+---
+5 hours total
+

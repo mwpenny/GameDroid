@@ -1,4 +1,4 @@
-1 hour non-functional requirement
+1 hour non-functional requirements slide for presentation
 
 --
 1 hour total
