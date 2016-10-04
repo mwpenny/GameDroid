@@ -8,7 +8,7 @@ public class CPU {
     public ConcatRegister af, bc, de, hl;
     public MMU mmu;
 
-    // These are not actual cursors to read or right from, but special singleton values used as
+    // These are not actual cursors to read or write from, but special singleton values used as
     // signals for interpreting instruction operands.
     public static ConstantCursor8 immediate8 = new ConstantCursor8((char) 0);
     public static ConstantCursor16 immediate16 = new ConstantCursor16((char) 0);
@@ -38,37 +38,37 @@ public class CPU {
         reset();
 
 
-        InstructionRoot ld8 = new LD8();
+        InstructionRoot ld = new LD();
         // build the instruction lookup table
         oneByteInstructions = new HashMap<>();
-        oneByteInstructions.put((char) 0x06, new InstructionForm(ld8, new Cursor[] {b, immediate8}));
-        oneByteInstructions.put((char) 0x16, new InstructionForm(ld8, new Cursor[] {d, immediate8}));
-        oneByteInstructions.put((char) 0x26, new InstructionForm(ld8, new Cursor[] {h, immediate8}));
-        oneByteInstructions.put((char) 0x0E, new InstructionForm(ld8, new Cursor[] {c, immediate8}));
-        oneByteInstructions.put((char) 0x1E, new InstructionForm(ld8, new Cursor[] {e, immediate8}));
-        oneByteInstructions.put((char) 0x2E, new InstructionForm(ld8, new Cursor[] {l, immediate8}));
-        oneByteInstructions.put((char) 0x3E, new InstructionForm(ld8, new Cursor[] {a, immediate8}));
+        oneByteInstructions.put((char) 0x06, new InstructionForm(ld, new Cursor[] {b, immediate8}));
+        oneByteInstructions.put((char) 0x16, new InstructionForm(ld, new Cursor[] {d, immediate8}));
+        oneByteInstructions.put((char) 0x26, new InstructionForm(ld, new Cursor[] {h, immediate8}));
+        oneByteInstructions.put((char) 0x0E, new InstructionForm(ld, new Cursor[] {c, immediate8}));
+        oneByteInstructions.put((char) 0x1E, new InstructionForm(ld, new Cursor[] {e, immediate8}));
+        oneByteInstructions.put((char) 0x2E, new InstructionForm(ld, new Cursor[] {l, immediate8}));
+        oneByteInstructions.put((char) 0x3E, new InstructionForm(ld, new Cursor[] {a, immediate8}));
 
-        oneByteInstructions.put((char) 0x40, new InstructionForm(ld8, new Cursor[] {b, b}));
-        oneByteInstructions.put((char) 0x41, new InstructionForm(ld8, new Cursor[] {b, c}));
-        oneByteInstructions.put((char) 0x42, new InstructionForm(ld8, new Cursor[] {b, d}));
-        oneByteInstructions.put((char) 0x43, new InstructionForm(ld8, new Cursor[] {b, e}));
-        oneByteInstructions.put((char) 0x44, new InstructionForm(ld8, new Cursor[] {b, h}));
-        oneByteInstructions.put((char) 0x45, new InstructionForm(ld8, new Cursor[] {b, l}));
+        oneByteInstructions.put((char) 0x40, new InstructionForm(ld, new Cursor[] {b, b}));
+        oneByteInstructions.put((char) 0x41, new InstructionForm(ld, new Cursor[] {b, c}));
+        oneByteInstructions.put((char) 0x42, new InstructionForm(ld, new Cursor[] {b, d}));
+        oneByteInstructions.put((char) 0x43, new InstructionForm(ld, new Cursor[] {b, e}));
+        oneByteInstructions.put((char) 0x44, new InstructionForm(ld, new Cursor[] {b, h}));
+        oneByteInstructions.put((char) 0x45, new InstructionForm(ld, new Cursor[] {b, l}));
 
-        oneByteInstructions.put((char) 0x50, new InstructionForm(ld8, new Cursor[] {d, b}));
-        oneByteInstructions.put((char) 0x51, new InstructionForm(ld8, new Cursor[] {d, c}));
-        oneByteInstructions.put((char) 0x52, new InstructionForm(ld8, new Cursor[] {d, d}));
-        oneByteInstructions.put((char) 0x53, new InstructionForm(ld8, new Cursor[] {d, e}));
-        oneByteInstructions.put((char) 0x54, new InstructionForm(ld8, new Cursor[] {d, h}));
-        oneByteInstructions.put((char) 0x55, new InstructionForm(ld8, new Cursor[] {d, l}));
+        oneByteInstructions.put((char) 0x50, new InstructionForm(ld, new Cursor[] {d, b}));
+        oneByteInstructions.put((char) 0x51, new InstructionForm(ld, new Cursor[] {d, c}));
+        oneByteInstructions.put((char) 0x52, new InstructionForm(ld, new Cursor[] {d, d}));
+        oneByteInstructions.put((char) 0x53, new InstructionForm(ld, new Cursor[] {d, e}));
+        oneByteInstructions.put((char) 0x54, new InstructionForm(ld, new Cursor[] {d, h}));
+        oneByteInstructions.put((char) 0x55, new InstructionForm(ld, new Cursor[] {d, l}));
 
-        oneByteInstructions.put((char) 0x60, new InstructionForm(ld8, new Cursor[] {h, b}));
-        oneByteInstructions.put((char) 0x61, new InstructionForm(ld8, new Cursor[] {h, c}));
-        oneByteInstructions.put((char) 0x62, new InstructionForm(ld8, new Cursor[] {h, d}));
-        oneByteInstructions.put((char) 0x63, new InstructionForm(ld8, new Cursor[] {h, e}));
-        oneByteInstructions.put((char) 0x64, new InstructionForm(ld8, new Cursor[] {h, h}));
-        oneByteInstructions.put((char) 0x65, new InstructionForm(ld8, new Cursor[] {h, l}));
+        oneByteInstructions.put((char) 0x60, new InstructionForm(ld, new Cursor[] {h, b}));
+        oneByteInstructions.put((char) 0x61, new InstructionForm(ld, new Cursor[] {h, c}));
+        oneByteInstructions.put((char) 0x62, new InstructionForm(ld, new Cursor[] {h, d}));
+        oneByteInstructions.put((char) 0x63, new InstructionForm(ld, new Cursor[] {h, e}));
+        oneByteInstructions.put((char) 0x64, new InstructionForm(ld, new Cursor[] {h, h}));
+        oneByteInstructions.put((char) 0x65, new InstructionForm(ld, new Cursor[] {h, l}));
     }
 
     // these are the effective output of the boot rom (an internal rom inside every Gameboy).
@@ -87,7 +87,7 @@ public class CPU {
         ins.execute(this);
     }
 
-    public static class LD8 implements InstructionRoot {
+    public static class LD implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             operands[0].write(operands[1].read());
