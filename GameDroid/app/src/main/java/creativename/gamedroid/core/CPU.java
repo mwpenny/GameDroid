@@ -53,13 +53,15 @@ public class CPU {
         pc = new Register16();
         reset();
 
-
-        InstructionRoot ld = new LD();
         InstructionRoot inc8 = new INC8();
         InstructionRoot inc16 = new INC16();
         InstructionRoot dec8 = new DEC8();
         InstructionRoot dec16 = new DEC16();
+        InstructionRoot and = new AND();
+        InstructionRoot xor = new XOR();
+        InstructionRoot or = new OR();;
         InstructionRoot cp = new CP();
+        InstructionRoot ld = new LD();
 
         // Build the instruction lookup table
         oneByteInstructions = new HashMap<>();
@@ -95,6 +97,36 @@ public class CPU {
         oneByteInstructions.put((char) 0x3B, new InstructionForm(dec16, new Cursor[] {sp}));
         oneByteInstructions.put((char) 0x3D, new InstructionForm(dec8, new Cursor[] {a}));
 
+        // AND
+        oneByteInstructions.put((char) 0xA0, new InstructionForm(and, new Cursor[] {b}));
+        oneByteInstructions.put((char) 0xA1, new InstructionForm(and, new Cursor[] {c}));
+        oneByteInstructions.put((char) 0xA2, new InstructionForm(and, new Cursor[] {d}));
+        oneByteInstructions.put((char) 0xA3, new InstructionForm(and, new Cursor[] {e}));
+        oneByteInstructions.put((char) 0xA4, new InstructionForm(and, new Cursor[] {h}));
+        oneByteInstructions.put((char) 0xA5, new InstructionForm(and, new Cursor[] {l}));
+        oneByteInstructions.put((char) 0xA7, new InstructionForm(and, new Cursor[] {a}));
+        oneByteInstructions.put((char) 0xE6, new InstructionForm(and, new Cursor[] {immediate8}));
+
+        // XOR
+        oneByteInstructions.put((char) 0xA8, new InstructionForm(xor, new Cursor[] {b}));
+        oneByteInstructions.put((char) 0xA9, new InstructionForm(xor, new Cursor[] {c}));
+        oneByteInstructions.put((char) 0xAA, new InstructionForm(xor, new Cursor[] {d}));
+        oneByteInstructions.put((char) 0xAB, new InstructionForm(xor, new Cursor[] {e}));
+        oneByteInstructions.put((char) 0xAC, new InstructionForm(xor, new Cursor[] {h}));
+        oneByteInstructions.put((char) 0xAD, new InstructionForm(xor, new Cursor[] {l}));
+        oneByteInstructions.put((char) 0xAF, new InstructionForm(xor, new Cursor[] {a}));
+        oneByteInstructions.put((char) 0xEE, new InstructionForm(xor, new Cursor[] {immediate8}));
+
+        // OR
+        oneByteInstructions.put((char) 0xB0, new InstructionForm(or, new Cursor[] {b}));
+        oneByteInstructions.put((char) 0xB1, new InstructionForm(or, new Cursor[] {c}));
+        oneByteInstructions.put((char) 0xB2, new InstructionForm(or, new Cursor[] {d}));
+        oneByteInstructions.put((char) 0xB3, new InstructionForm(or, new Cursor[] {e}));
+        oneByteInstructions.put((char) 0xB4, new InstructionForm(or, new Cursor[] {h}));
+        oneByteInstructions.put((char) 0xB5, new InstructionForm(or, new Cursor[] {l}));
+        oneByteInstructions.put((char) 0xB7, new InstructionForm(or, new Cursor[] {a}));
+        oneByteInstructions.put((char) 0xF6, new InstructionForm(or, new Cursor[] {immediate8}));
+
         // CP
         oneByteInstructions.put((char) 0xB8, new InstructionForm(cp, new Cursor[] {b}));
         oneByteInstructions.put((char) 0xB9, new InstructionForm(cp, new Cursor[] {c}));
@@ -106,12 +138,16 @@ public class CPU {
         oneByteInstructions.put((char) 0xFE, new InstructionForm(cp, new Cursor[] {immediate8}));
 
         // LD
+        oneByteInstructions.put((char) 0x01, new InstructionForm(ld, new Cursor[] {bc, immediate16}));
         oneByteInstructions.put((char) 0x06, new InstructionForm(ld, new Cursor[] {b, immediate8}));
+        oneByteInstructions.put((char) 0x11, new InstructionForm(ld, new Cursor[] {de, immediate16}));
         oneByteInstructions.put((char) 0x16, new InstructionForm(ld, new Cursor[] {d, immediate8}));
+        oneByteInstructions.put((char) 0x11, new InstructionForm(ld, new Cursor[] {hl, immediate16}));
         oneByteInstructions.put((char) 0x26, new InstructionForm(ld, new Cursor[] {h, immediate8}));
         oneByteInstructions.put((char) 0x0E, new InstructionForm(ld, new Cursor[] {c, immediate8}));
         oneByteInstructions.put((char) 0x1E, new InstructionForm(ld, new Cursor[] {e, immediate8}));
         oneByteInstructions.put((char) 0x2E, new InstructionForm(ld, new Cursor[] {l, immediate8}));
+        oneByteInstructions.put((char) 0x11, new InstructionForm(ld, new Cursor[] {sp, immediate16}));
         oneByteInstructions.put((char) 0x3E, new InstructionForm(ld, new Cursor[] {a, immediate8}));
 
         oneByteInstructions.put((char) 0x40, new InstructionForm(ld, new Cursor[] {b, b}));
@@ -280,6 +316,45 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             char x = operands[0].read();
             operands[0].write((char)(x - 1));
+        }
+    }
+
+    // AND - AND n with A
+    private static class AND implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char result = (char)(cpu.a.read() & operands[0].read());
+            cpu.a.write(result);
+            cpu.updateFlag(Flag.ZERO, result == 0);
+            cpu.updateFlag(Flag.SUBTRACTION, false);
+            cpu.updateFlag(Flag.HALF_CARRY, true);
+            cpu.updateFlag(Flag.CARRY, false);
+        }
+    }
+
+    // XOR - XOR n with A
+    private static class XOR implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char result = (char)(cpu.a.read() ^ operands[0].read());
+            cpu.a.write(result);
+            cpu.updateFlag(Flag.ZERO, result == 0);
+            cpu.updateFlag(Flag.SUBTRACTION, false);
+            cpu.updateFlag(Flag.HALF_CARRY, false);
+            cpu.updateFlag(Flag.CARRY, false);
+        }
+    }
+
+    // OR - OR n with A
+    private static class OR implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char result = (char)(cpu.a.read() | operands[0].read());
+            cpu.a.write(result);
+            cpu.updateFlag(Flag.ZERO, result == 0);
+            cpu.updateFlag(Flag.SUBTRACTION, false);
+            cpu.updateFlag(Flag.HALF_CARRY, false);
+            cpu.updateFlag(Flag.CARRY, false);
         }
     }
 }
