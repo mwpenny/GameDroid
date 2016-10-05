@@ -219,8 +219,14 @@ public class CPU {
 
     public void execInstruction() {
         char optByte = mmu.read8(pc.read());
-        InstructionForm ins = oneByteInstructions.get(optByte);
-        ins.execute(this);
+
+        // $CB prefix -> instruction is two bytes
+        if (optByte == 0xCB) {
+            pc.increment();
+            twoByteInstructions.get(mmu.read8(pc.read())).execute(this);
+        } else {
+            oneByteInstructions.get(optByte).execute(this);
+        }
     }
 
     public void updateFlag(Flag flag, boolean set) {
