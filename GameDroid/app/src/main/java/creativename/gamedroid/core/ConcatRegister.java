@@ -5,7 +5,7 @@ package creativename.gamedroid.core;
  * class.
  */
 
-public class ConcatRegister {
+public class ConcatRegister implements Cursor {
     Register8 high;
     Register8 low;
 

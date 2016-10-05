@@ -47,6 +47,103 @@ public class CPUTest {
         cpu.execInstruction();
         assertEquals(0x8F, cpu.b.read());
     }
+
+    @Test
+    public void flagOps() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x37,  // SCF
+                0x3F   // CCF
+        }));
+        cpu.execInstruction();
+        assertTrue(cpu.isFlagSet(CPU.Flag.CARRY));
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+    }
+
+    @Test
+    public void compare() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0x16,  // LD A,$16
+                0x06, 0x08,  // LD B,$08
+                0xBF,        // CP A
+                0xB8,        // CP B
+                0xFE, 0x26   // CP $26
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertTrue(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertTrue(cpu.isFlagSet(CPU.Flag.CARRY));
+    }
+
+    @Test
+    public void inc() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0xFF,  // LD A,$FF
+                0x06, 0x07,  // LD B,$07
+                0x0E, 0xFF,  // LD C,$FF
+                0x3C,        // INC A
+                0x04,        // INC B
+                0x03         // INC BC
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertTrue(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertEquals(cpu.b.read(), 8);
+        cpu.execInstruction();
+        assertEquals(cpu.bc.read(), 0x900);
+    }
+
+    @Test
+    public void dec() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0x00,  // LD A,$00
+                0x06, 0xFF,  // LD B,$FF
+                0x0E, 0x01,  // LD C,$01
+                0x3D,        // DEC A
+                0x05,        // DEC B
+                0x0D,        // DEC C
+                0x0B         // DEC BC
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertTrue(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertEquals(cpu.b.read(), 0xFE);
+        cpu.execInstruction();
+        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        cpu.execInstruction();
+        assertEquals(cpu.bc.read(), 0xFDFF);
+    }
 }
 
  class FixtureMMU extends MMU {

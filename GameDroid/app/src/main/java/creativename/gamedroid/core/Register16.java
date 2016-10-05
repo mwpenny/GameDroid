@@ -1,6 +1,6 @@
 package creativename.gamedroid.core;
 
-public class Register16 {
+public class Register16 implements Cursor {
     protected char value;  // char used as 16 bit unsigned integer
 
     public char read() {

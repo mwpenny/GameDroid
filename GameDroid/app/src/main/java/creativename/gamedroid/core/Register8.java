@@ -1,6 +1,6 @@
 package creativename.gamedroid.core;
 
-public class Register8 extends Register16 implements Cursor {
+public class Register8 extends Register16 {
     @Override
     public char read() {
         return (char)(value & 0xFF);
