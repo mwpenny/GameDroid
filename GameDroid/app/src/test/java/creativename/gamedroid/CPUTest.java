@@ -144,6 +144,68 @@ public class CPUTest {
         cpu.execInstruction();
         assertEquals(cpu.bc.read(), 0xFDFF);
     }
+
+    @Test
+    public void and() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0x12,  // LD A,$12
+                0x06, 0x03,  // LD B,$03
+                0xA0,        // AND B
+                0xE6, 0x01   // AND $01
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertTrue(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertEquals(cpu.a.read(), 2);
+        cpu.execInstruction();
+        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+    }
+
+    @Test
+    public void or() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0x12,  // LD A,$12
+                0x06, 0x03,  // LD B,$03
+                0xB0,        // OR B
+                0x3E, 0x00,  // LD A,$0
+                0xF6, 0x00   // OR $00
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertEquals(cpu.a.read(), 0x13);
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+    }
+
+    @Test
+    public void xor() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0x12,  // LD A,$12
+                0x06, 0x03,  // LD B,$03
+                0xA8,        // XOR B
+                0xEE, 0x11   // XOR $11
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
+        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertEquals(cpu.a.read(), 0x11);
+        cpu.execInstruction();
+        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+    }
 }
 
  class FixtureMMU extends MMU {
