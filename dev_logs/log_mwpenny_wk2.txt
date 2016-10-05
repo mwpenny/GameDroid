@@ -1,6 +1,7 @@
 45 mins		Create slides for D1 presentation
 1hr, 30 mins	Work on ROM parsing (Cartridge class)
 45mins		Work on controller interface (Controller class)
+20 mins		Looking for good hardware documentation for the project
 
 ---
-3hrs		Total
+3hrs, 20 mins	Total

@@ -1,0 +1,1329 @@
+<HTML>
+<HEAD>
+	<TITLE>
+		GameBoy CPU InstructionSet Sheet (GCISheet)
+	</TITLE>
+</HEAD>
+<BODY BACKGROUND="GBASM_BKG.gif">
+
+<TABLE CELLPADDING="0" CELLSPACING="0" WIDTH="" BORDER="1" BGCOLOR="lightgrey">
+	<TR>
+		<TD ALIGN="CENTER">
+			<A NAME="TOP"></A>
+			<FONT SIZE="5pt">GameBoy CPU InstructionSet Sheet (GCISheet)</FONT>
+		</TD>
+	</TR>
+	<TR HEIGHT="">
+		<TD ALIGN="CENTER" WIDTH="">
+			<TABLE CELLPADDING="0" CELLSPACING="0" WIDTH="" BORDER="1" BGCOLOR="lightgrey">
+				<TR>
+					<TD COLSPAN="9" ALIGN="CENTER">
+						<A NAME="QUICKJUMP"><FONT SIZE="3pt">QuickJump Navigator:</FONT></A>
+					</TD>
+				</TR>
+				<TR>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#ADC">ADC A,n</A><BR>
+						<A HREF="#ADD">ADD A,n</A><BR>
+						<A HREF="#ADD2">ADD HL,n</A><BR>
+						<A HREF="#ADD3">ADD SP,n</A><BR>
+						<A HREF="#AND">AND n</A><BR>
+						<A HREF="#BIT">BIT b,r</A><BR>
+						<A HREF="#CALL">CALL n</A><BR>
+						<A HREF="#CALL2">CALL cc,n</A>
+						</FONT>
+					</TD>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#CCF">CCF</A><BR>
+						<A HREF="#CP">CP n</A><BR>
+						<A HREF="#CPL">CPL</A><BR>
+						<A HREF="#DAA">DAA</A><BR>
+						<A HREF="#DEC">DEC n</A><BR>
+						<A HREF="#DEC2">DEC nn</A><BR>
+						<A HREF="#DI">DI</A><BR>
+						<A HREF="#EI">EI</A>
+						</FONT>
+					</TD>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#INC">INC n</A><BR>
+						<A HREF="#INC2">INC nn</A><BR>
+						<A HREF="#JP">JP n</A><BR>
+						<A HREF="#JP2">JP cc,n</A><BR>
+						<A HREF="#JP3">JP [HL]</A><BR>
+						<A HREF="#JR">JR n</A><BR>
+						<A HREF="#JR2">JR cc,n</A><BR>
+						<A HREF="#HALT">HALT</A>
+						</FONT>
+					</TD>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#LD">LD A,n</A><BR>
+						<A HREF="#LD2">LD n,A</A><BR>
+						<A HREF="#LD3">LD A,[C]</A><BR>
+						<A HREF="#LD4">LD A,[HL+]</A><BR>
+						<A HREF="#LD5">LD A,[HL-]</A><BR>
+						<A HREF="#LD6">LD A,[HLI]</A><BR>
+						<A HREF="#LD7">LD A,[HLD]</A><BR>
+						<A HREF="#LD8">LD [C],A</A>
+						</FONT>
+					</TD>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#LD9">LD [HL+],A</A><BR>
+						<A HREF="#LD10">LD [HL-],A</A><BR>
+						<A HREF="#LD11">LD [HLI],A</A><BR>
+						<A HREF="#LD12">LD [HLD],A</A><BR>
+						<A HREF="#LD13">LD r1,r2</A><BR>
+						<A HREF="#LD14">LD n,nn</A><BR>
+						<A HREF="#LD15">LD HL,[SP+n]</A><BR>
+						<A HREF="#LD16">LD SP,HL</A>
+						</FONT>
+					</TD>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#LD17">LD [n],SP</A><BR>
+						<A HREF="#LDD">LDD A,[HL]</A><BR>
+						<A HREF="#LDD2">LDD [HL],A</A><BR>
+						<A HREF="#LDH">LDH [n],A</A><BR>
+						<A HREF="#LDH2">LDH A,[n]</A><BR>
+						<A HREF="#LDHL">LDHL SP,n</A><BR>
+						<A HREF="#LDI">LDI A,[HL]</A><BR>
+						<A HREF="#LDI2">LDI [HL],A</A>
+						</FONT>
+					</TD>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#NOP">NOP</A><BR>
+						<A HREF="#OR">OR n</A><BR>
+						<A HREF="#POP">POP nn</A><BR>
+						<A HREF="#PUSH">PUSH nn</A><BR>
+						<A HREF="#RES">RES b,r</A><BR>
+						<A HREF="#RET">RET</A><BR>
+						<A HREF="#RET2">RET cc</A><BR>
+						<A HREF="#RETI">RETI</A>
+						</FONT>
+					</TD>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#RL">RL n</A><BR>
+						<A HREF="#RLC">RLC n</A><BR>
+						<A HREF="#RR">RR n</A><BR>
+						<A HREF="#RRC">RRC n</A><BR>
+						<A HREF="#RST">RST n</A><BR>
+						<A HREF="#SBC">SBC A,n</A><BR>
+						<A HREF="#SCF">SCF</A><BR>
+						<A HREF="#SET">SET b,r</A>
+						</FONT>
+					</TD>
+					<TD WIDTH="">
+						<FONT SIZE="1.5pt" COLOR="" FACE="Courier New">
+						<A HREF="#SLA">SLA n</A><BR>
+						<A HREF="#SRA">SRA n</A><BR>
+						<A HREF="#SRL">SRL n</A><BR>
+						<A HREF="#STOP">STOP</A><BR>
+						<A HREF="#SUB">SUB n</A><BR>
+						<A HREF="#SWAP">SWAP n</A><BR>
+						<A HREF="#XOR">XOR n</A>
+						</FONT>
+					</TD>
+				</TR>
+			</TABLE>
+		</TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="ADC"></A>
+			<PRE>
+<FONT COLOR="blue">ADC</FONT> <FONT COLOR="olive">A,n</FONT>       <FONT COLOR="green">- Add n + Carry flag to A.
+			
+	n = A,B,C,D,E,H,L,(HL),#
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Set if carry from bit 3.
+		C - Set if carry from bit 7.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="ADD"></A>
+			<PRE>
+<FONT COLOR="blue">ADD</FONT> <FONT COLOR="olive">A,n</FONT>       <FONT COLOR="green">- Add n to A.
+			
+	n = A,B,C,D,E,H,L,(HL),#
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Set if carry from bit 3.
+		C - Set if carry from bit 7.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="ADD2"></A>
+			<PRE>
+<FONT COLOR="blue">ADD</FONT> <FONT COLOR="olive">HL,n</FONT>      <FONT COLOR="green">- Add n to HL.
+			
+	n = BC,DE,HL
+			
+	Flags affected:
+		Z - Not affected
+		N - Reset.
+		H - Set if carry from bit 11.
+		C - Set if carry from bit 15.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="ADD3"></A>
+			<PRE>
+<FONT COLOR="blue">ADD</FONT> <FONT COLOR="olive">SP,n</FONT>      <FONT COLOR="green">- Add n to Stack Pointer (SP).
+			
+	n = one byte signed immediate value
+			
+	Flags affected:
+		Z - Reset.
+		N - Reset.
+		H - Set or reset according to operation.
+		C - Set or reset according to operation.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="AND"></A>
+			<PRE>
+<FONT COLOR="blue">AND</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Logically AND n with A, result in A.
+			
+	n = A,B,C,D,E,H,L,(HL),#
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Set.
+		C - Reset.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="BIT"></A>
+			<PRE>
+<FONT COLOR="blue">BIT</FONT> <FONT COLOR="olive">b,r</FONT>       <FONT COLOR="green">- Test bit b in register r.
+			
+	b = 0-7, r = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if bit b of register r is 0.
+		N - Reset.
+		H - Set.
+		C - Not affected.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="CALL"></A>
+			<PRE>
+<FONT COLOR="blue">CALL</FONT> <FONT COLOR="olive">n</FONT>        <FONT COLOR="green">- Push address of next instruction onto
+		stack and then jump to address n.
+				
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="CALL2"></A>
+			<PRE>
+<FONT COLOR="blue">CALL</FONT> <FONT COLOR="olive">cc,n</FONT>     <FONT COLOR="green">- Call address n if following condition
+		is true:
+			
+	cc = NZ, Call if Z flag is reset.
+	cc = Z,  Call if Z flag is set.
+	cc = NC, Call if C flag is reset.
+	cc = C,  Call if C flag is set.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="CCF"></A>
+			<PRE>
+<FONT COLOR="blue">CCF</FONT>           <FONT COLOR="green">- Complement carry flag.
+			
+	If C flag is set then reset it.
+	If C flag is reset then set it.
+			
+	Flags affected:
+		Z - Not affected.
+		N - Reset.
+		H - Reset.
+		C - Complemented.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="CP"></A>
+			<PRE>
+<FONT COLOR="blue">CP</FONT> <FONT COLOR="olive">n</FONT>          <FONT COLOR="green">- Compare A with n.
+			
+	This is basically an A - n subtraction
+	instruction but the results are thrown away.
+			
+	n = A,B,C,D,E,H,L,(HL),#
+			
+	Flags affected:
+		Z - Set if result is zero. (Set if A = n)
+		N - Set.
+		H - Set if no borrow from bit 4.
+		C - Set for no borrow. (Set if A < n.)</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="CPL"></A>
+			<PRE>
+<FONT COLOR="blue">CPL</FONT>           <FONT COLOR="green">- Complement A register. (Flip all bits.)
+			
+	Flags affected:
+		Z - Not affected.
+		N - Set.
+		H - Set.
+		C - Not affected.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="DAA"></A>
+			<PRE>
+<FONT COLOR="blue">DAA</FONT>           <FONT COLOR="green">- Decimal adjust register A.
+			
+	This instruction adjusts register A so that the
+	correct representation of Binary Coded Decimal
+	(BCD) is obtained.
+			
+	Flags affected:
+		Z - Set if register A is zero.
+		N - Not affected.
+		H - Reset.
+		C - Set of reset according to operation.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="DEC"></A>
+			<PRE>
+<FONT COLOR="blue">DEC</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Decrement register n.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Set.
+		H - Set if no borrow from bit 4.
+		C - Not affected.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="DEC2"></A>
+			<PRE>
+<FONT COLOR="blue">DEC</FONT> <FONT COLOR="olive">nn</FONT>        <FONT COLOR="green">- Decrement register nn.
+			
+	nn = BC,DE,HL,SP
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="DI"></A>
+			<PRE>
+<FONT COLOR="blue">DI</FONT>            <FONT COLOR="green">- Disable interrupts.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="EI"></A>
+			<PRE>
+<FONT COLOR="blue">EI</FONT>            <FONT COLOR="green">- Enable interrupts.
+			
+	This instruction enables the interrupts but not immediately.
+	Interrupts are enabled after the instruction after EI is
+	executed.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="INC"></A>
+			<PRE>
+<FONT COLOR="blue">INC</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Increment register n.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Set if carry from bit 3.
+		C - Not affected.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="INC2"></A>
+			<PRE>
+<FONT COLOR="blue">INC</FONT> <FONT COLOR="olive">nn</FONT>        <FONT COLOR="green">- Increment register nn.
+			
+	n = BC,DE,HL,SP
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="JP"></A>
+			<PRE>
+<FONT COLOR="blue">JP</FONT> <FONT COLOR="olive">n</FONT>          <FONT COLOR="green">- Jump to address n.
+			
+	n = two byte immediate value. (LSByte first)
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="JP2"></A>
+			<PRE>
+<FONT COLOR="blue">JP</FONT> <FONT COLOR="olive">cc,n</FONT>       <FONT COLOR="green">- Jump to address n if following condition
+		is true:
+			
+	n = two byte immediate value. (LSByte first.)
+			
+	cc = NZ, Jump if Z flag is reset.
+	cc = Z,  Jump if Z flag is set.
+	cc = NC, Jump if C flag is reset.
+	cc = C,  Jump if C flag is set.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="JP3"></A>
+			<PRE>
+<FONT COLOR="blue">JP</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL</FONT><FONT COLOR="darkblue">]</FONT>       <FONT COLOR="green">- Jump to address contained in HL.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="JR"></A>
+			<PRE>
+<FONT COLOR="blue">JR</FONT> <FONT COLOR="olive">n</FONT>          <FONT COLOR="green">- Add n to current address and jump to it.
+			
+	n = one byte signed immediate value.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="JR2"></A>
+			<PRE>
+<FONT COLOR="blue">JR</FONT> <FONT COLOR="olive">cc,n</FONT>       <FONT COLOR="green">- If following condition is true then
+		add n to current address and jump to it:
+			
+	n = one byte signed immediate value
+			
+	cc = NZ, Jump if Z flag is reset.
+	cc = Z,  Jump if Z flag is set.
+	cc = NC, Jump if C flag is reset.
+	cc = C,  Jump if C flag is set.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="HALT"></A>
+			<PRE>
+<FONT COLOR="blue">HALT</FONT>          <FONT COLOR="green">- Power down CPU until an interrupt occurs.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">A,n</FONT>        <FONT COLOR="green">- Put value n into A.
+			
+	n = A,B,C,D,E,H,L,(BC),(DE),(HL),(nnnn),#
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD2"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">n,A</FONT>        <FONT COLOR="green">- Put value A into n.
+			
+	n = A,B,C,D,E,H,L,(BC,(DE),(HL),(nnnn)
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD3"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">A,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">C</FONT><FONT COLOR="darkblue">]</FONT>      <FONT COLOR="green">- Put value at address $FF00 + register C into A.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD4"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">A,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL+</FONT><FONT COLOR="darkblue">]</FONT>    <FONT COLOR="green">- Same as LD A,[HLI].</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD5"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">A,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL-</FONT><FONT COLOR="darkblue">]</FONT>    <FONT COLOR="green">- Same as LD A,[HLD].</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD6"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">A,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HLI</FONT><FONT COLOR="darkblue">]</FONT>    <FONT COLOR="green">- Put value at address HL into A. Increment HL.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD7"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">A,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HLD</FONT><FONT COLOR="darkblue">]</FONT>    <FONT COLOR="green">- Put value at address HL into A. Decrement HL.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD8"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">C</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,A</FONT>      <FONT COLOR="green">- Put A into address $FF00 + register C.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD9"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL+</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,A</FONT>    <FONT COLOR="green">- Same as LD [HLI],A.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD10"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL-</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,A</FONT>    <FONT COLOR="green">- Same as LD [HLD],A.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD11"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HLI</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,A</FONT>    <FONT COLOR="green">- Put A into memory address HL. Increment HL.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD12"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HLD</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,A</FONT>    <FONT COLOR="green">- Put A into memory address HL. Decrement HL.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD13"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">r1,r2</FONT>      <FONT COLOR="green">- Put value r2 into r1.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD14"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">n,nn</FONT>       <FONT COLOR="green">- Put value nn into n.
+			
+	n = BC,DE,HL,SP
+	nn = 16 bit immediate value
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD15"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">HL,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">SP+n</FONT><FONT COLOR="darkblue">]</FONT>  <FONT COLOR="green">- Put SP + n into HL.
+			
+	n = one byte signed immediate value
+			
+	Flags affected:
+		Z - Reset.
+		N - Reset.
+		H - Set or reset according to operation.
+		C - Set or reset according to operation.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD16"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="olive">SP,HL</FONT>      <FONT COLOR="green">- Put HL into Stack Pointer (SP).
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LD17"></A>
+			<PRE>
+<FONT COLOR="blue">LD</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">n</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,SP</FONT>     <FONT COLOR="green">- Put Stack Pointer (SP) at address n.
+			
+	n = two byte immediate address
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LDD"></A>
+			<PRE>
+<FONT COLOR="blue">LDD</FONT> <FONT COLOR="olive">A,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL</FONT><FONT COLOR="darkblue">]</FONT>    <FONT COLOR="green">- Same as LD A,[HLD].</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LDD2"></A>
+			<PRE>
+<FONT COLOR="blue">LDD</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,A</FONT>    <FONT COLOR="green">- Same as LD [HLD],A.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LDH"></A>
+			<PRE>
+<FONT COLOR="blue">LDH</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">n</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,A</FONT>     <FONT COLOR="green">- Put A into memory address $FF00 + n.
+			
+	n = one byte immediate value
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LDH2"></A>
+			<PRE>
+<FONT COLOR="blue">LDH</FONT> <FONT COLOR="olive">A,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">n</FONT><FONT COLOR="darkblue">]</FONT>     <FONT COLOR="green">- Put memory address $FF00 + n into A.
+			
+	n = one byte immediate value
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LDHL"></A>
+			<PRE>
+<FONT COLOR="blue">LDHL</FONT> <FONT COLOR="olive">SP,n</FONT>     <FONT COLOR="green">- Same as LD HL,[SP+n]</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LDI"></A>
+			<PRE>
+<FONT COLOR="blue">LDI</FONT> <FONT COLOR="olive">A,</FONT><FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL</FONT><FONT COLOR="darkblue">]</FONT>    <FONT COLOR="green">- Same as LD A,[HLI].</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="LDI2"></A>
+			<PRE>
+<FONT COLOR="blue">LDI</FONT> <FONT COLOR="darkblue">[</FONT><FONT COLOR="olive">HL</FONT><FONT COLOR="darkblue">]</FONT><FONT COLOR="olive">,A</FONT>    <FONT COLOR="green">- Same as LD [HLI],A.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="NOP"></A>
+			<PRE>
+<FONT COLOR="blue">NOP</FONT>           <FONT COLOR="green">- No operation.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="OR"></A>
+			<PRE>
+<FONT COLOR="blue">OR</FONT> <FONT COLOR="olive">n</FONT>          <FONT COLOR="green">- Logical OR n with register A, result in A.
+			
+	n = A,B,C,D,E,H,L,(HL),#
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Reset.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="POP"></A>
+			<PRE>
+<FONT COLOR="blue">POP</FONT> <FONT COLOR="olive">nn</FONT>        <FONT COLOR="green">- Pop two bytes off stack into register pair nn.
+		Increment Stack Pointer (SP) twice.
+			
+	nn = AF,BC,DE,HL
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="PUSH"></A>
+			<PRE>
+<FONT COLOR="blue">PUSH</FONT> <FONT COLOR="olive">nn</FONT>       <FONT COLOR="green">- Push register pair nn onto stack.
+		Decrement Stack Pointer (SP) twice.
+			
+	nn = AF,BC,DE,HL
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RES"></A>
+			<PRE>
+<FONT COLOR="blue">RES</FONT> <FONT COLOR="olive">b,r</FONT>       <FONT COLOR="green">- Reset bit b in register r.
+			
+	b = 0-7, r = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RET"></A>
+			<PRE>
+<FONT COLOR="blue">RET</FONT>           <FONT COLOR="green">- Pop two bytes from stack & jump to that address.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RET2"></A>
+			<PRE>
+<FONT COLOR="blue">RET</FONT> <FONT COLOR="olive">cc</FONT>        <FONT COLOR="green">- Return if following condition is true:
+			
+	cc = NZ, Return if Z flag is reset.
+	cc = Z,  Return if Z flag is set.
+	cc = NC, Return if C flag is reset.
+	cc = C,  Return if C flag is set.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RETI"></A>
+			<PRE>
+<FONT COLOR="blue">RETI</FONT>          <FONT COLOR="green">- Pop two bytes from stack & jump to that address
+		then enable interrupts.
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RL"></A>
+			<PRE>
+<FONT COLOR="blue">RL</FONT> <FONT COLOR="olive">n</FONT>          <FONT COLOR="green">- Rotate n left through Carry flag.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Contains old bit 7 data.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RLC"></A>
+			<PRE>
+<FONT COLOR="blue">RLC</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Rotate n left. Old bit 7 to Carry flag.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Contains old bit 7 data.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RR"></A>
+			<PRE>
+<FONT COLOR="blue">RR</FONT> <FONT COLOR="olive">n</FONT>          <FONT COLOR="green">- Rotate n right through Carry flag.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Contains old bit 0 data.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RRC"></A>
+			<PRE>
+<FONT COLOR="blue">RRC</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Rotate n right. Old bit 0 to Carry flag.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Contains old bit 0 data.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="RST"></A>
+			<PRE>
+<FONT COLOR="blue">RST</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Push present address onto stack.
+		Jump to address $0000 + n.
+			
+	n = $00,$08,$10,$18,$20,$28,$30,$38
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="SBC"></A>
+			<PRE>
+<FONT COLOR="blue">SBC</FONT> <FONT COLOR="olive">A,n</FONT>       <FONT COLOR="green">- Subtract n + Carry flag from A.
+			
+	n = A,B,C,D,E,H,L,(HL),#
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Set.
+		H - Set if no borrow from bit 4.
+		C - Set if no borrow.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="SCF"></A>
+			<PRE>
+<FONT COLOR="blue">SCF</FONT>           <FONT COLOR="green">- Set Carry flag.
+			
+	Flags affected:
+		Z - Not affected.
+		N - Reset.
+		H - Reset.
+		C - Set.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="SET"></A>
+			<PRE>
+<FONT COLOR="blue">SET</FONT> <FONT COLOR="olive">b,r</FONT>       <FONT COLOR="green">- Set bit b in register r.
+			
+	b = 0-7, r = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		None</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="SLA"></A>
+			<PRE>
+<FONT COLOR="blue">SLA</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Shift n left into Carry. LSBit of n set to 0.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Contains old bit 7 data.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="SRA"></A>
+			<PRE>
+<FONT COLOR="blue">SRA</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Shift n right into Carry. MSBit doesn't change.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Contains old bit 0 data.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="SRL"></A>
+			<PRE>
+<FONT COLOR="blue">SRL</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Shift n right into Carry. MSBit of n set to 0.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Contains old bit 0 data.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="STOP"></A>
+			<PRE>
+<FONT COLOR="blue">STOP</FONT>          <FONT COLOR="green">- ???
+			
+	Flags affected:
+		?</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="SUB"></A>
+			<PRE>
+<FONT COLOR="blue">SUB</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Subtract n from A.
+			
+	n = A,B,C,D,E,H,L,(HL),#
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Set.
+		H - Set if no borrow from bit 4.
+		C - Set if no borrow.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="SWAP"></A>
+			<PRE>
+<FONT COLOR="blue">SWAP</FONT> <FONT COLOR="olive">n</FONT>        <FONT COLOR="green">- Swap upper & lower bits of n.
+			
+	n = A,B,C,D,E,H,L,(HL)
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Reset.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="LEFT">
+			<A NAME="XOR"></A>
+			<PRE>
+<FONT COLOR="blue">XOR</FONT> <FONT COLOR="olive">n</FONT>         <FONT COLOR="green">- Logical exclusive OR n with
+		register A, result in A.
+			
+	n = A,B,C,D,E,H,L,(HL),#
+			
+	Flags affected:
+		Z - Set if result is zero.
+		N - Reset.
+		H - Reset.
+		C - Reset.</FONT>
+			</PRE>
+		</TD>
+	</TR>
+	<TR>
+		<TD><A HREF="#TOP">Top</A></TD>
+	</TR>
+</TABLE>
+
+<p>
+		
+<font FACE="Courier New">
+	<table BORDER="1" CELLSPACING="0" CELLPADDING="2" WIDTH="">
+		<tr VALIGN="TOP">
+			<td COLSPAN="1" ALIGN="LEFT" WIDTH BGCOLOR="lightgrey">
+				<font SIZE="1pt">
+					All material on this page is Copyright (c) 1999 by 
+					<a HREF="mailto:scnelson@nullpointer.net" STYLE="color: blue; text-decoration: none;">col_deamon</a>.  
+					All rights reserved.
+				</font>
+			</td>
+		</tr>
+		<tr VALIGN="TOP">
+			<td COLSPAN="1" ALIGN="LEFT" WIDTH BGCOLOR="lightgrey">
+				<font SIZE="2pt">
+					<b>Last updated</b>: <i>11.25.99 09:46</i>
+				</font>
+			</td>
+		</tr>
+	</table>
+</font>
+
+</BODY>
+</HTML>
