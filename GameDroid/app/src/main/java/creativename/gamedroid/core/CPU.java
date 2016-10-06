@@ -4,10 +4,8 @@ import java.util.HashMap;
 
 /* Sharp LR35902 interpreter */
 public class CPU {
-    public Register a, b, c, d, e, h, l;
+    public Register a, b, c, d, e, h, l, af, bc, de, hl, sp, pc;
     public FlagRegister f;
-    public Register sp, pc;
-    public ConcatRegister af, bc, de, hl;
     public MMU mmu;
 
     /* These are not actual cursors to read or write from, but special singleton values used as
@@ -45,7 +43,7 @@ public class CPU {
         InstructionRoot dec16 = new DEC16();
         InstructionRoot and = new AND();
         InstructionRoot xor = new XOR();
-        InstructionRoot or = new OR();;
+        InstructionRoot or = new OR();
         InstructionRoot cp = new CP();
         InstructionRoot ld = new LD();
 
@@ -193,8 +191,8 @@ public class CPU {
         oneByteInstructions.put((char) 0x7F, new InstructionForm(ld, new Cursor[] {a, a}));
     }
 
-    // these are the effective output of the boot rom (an internal rom inside every Gameboy).
     public void reset() {
+        // These are the effective output of the boot rom (an internal rom inside every GameBoy)
         af.write((char) 0x0EB0);
         bc.write((char) 0x0013);
         de.write((char) 0x00D8);
@@ -290,12 +288,9 @@ public class CPU {
         }
     }
 
-    /**
-     * Used to represent the concatenation of two 8 bit registers. No additional data is stored in the
-     * class.
-     */
-
-    public static class ConcatRegister implements Register {
+    /* Used to represent the concatenation of two 8 bit registers.
+       No additional data is stored in the class */
+    private static class ConcatRegister implements Register {
         Register8 high;
         Register8 low;
 
@@ -327,7 +322,7 @@ public class CPU {
     /* Instructions */
 
     // LD - load data
-    public static class LD implements InstructionRoot {
+    private static class LD implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             operands[0].write(operands[1].read());
