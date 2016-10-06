@@ -55,9 +55,9 @@ public class CPUTest {
                 0x3F   // CCF
         }));
         cpu.execInstruction();
-        assertTrue(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
     }
 
     @Test
@@ -72,20 +72,20 @@ public class CPUTest {
         cpu.execInstruction();
         cpu.execInstruction();
         cpu.execInstruction();
-        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
-        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertTrue(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
-        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
-        assertTrue(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
     }
 
     @Test
@@ -102,13 +102,13 @@ public class CPUTest {
         cpu.execInstruction();
         cpu.execInstruction();
         cpu.execInstruction();
-        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertTrue(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         assertEquals(cpu.b.read(), 8);
         cpu.execInstruction();
         assertEquals(cpu.bc.read(), 0x900);
@@ -129,18 +129,18 @@ public class CPUTest {
         cpu.execInstruction();
         cpu.execInstruction();
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertTrue(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         assertEquals(cpu.b.read(), 0xFE);
         cpu.execInstruction();
-        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertTrue(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         cpu.execInstruction();
         assertEquals(cpu.bc.read(), 0xFDFF);
     }
@@ -156,13 +156,13 @@ public class CPUTest {
         cpu.execInstruction();
         cpu.execInstruction();
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertTrue(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
-        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
         assertEquals(cpu.a.read(), 2);
         cpu.execInstruction();
-        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
 
     @Test
@@ -177,14 +177,14 @@ public class CPUTest {
         cpu.execInstruction();
         cpu.execInstruction();
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
-        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
         assertEquals(cpu.a.read(), 0x13);
         cpu.execInstruction();
         cpu.execInstruction();
-        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
 
     @Test
@@ -198,13 +198,13 @@ public class CPUTest {
         cpu.execInstruction();
         cpu.execInstruction();
         cpu.execInstruction();
-        assertFalse(cpu.isFlagSet(CPU.Flag.ZERO));
-        assertFalse(cpu.isFlagSet(CPU.Flag.SUBTRACTION));
-        assertFalse(cpu.isFlagSet(CPU.Flag.HALF_CARRY));
-        assertFalse(cpu.isFlagSet(CPU.Flag.CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
         assertEquals(cpu.a.read(), 0x11);
         cpu.execInstruction();
-        assertTrue(cpu.isFlagSet(CPU.Flag.ZERO));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
 }
 

@@ -2,30 +2,16 @@ package creativename.gamedroid.core;
 
 import java.util.HashMap;
 
+/* Sharp LR35902 interpreter */
 public class CPU {
-    public Register a, b, c, d, e, f, h, l;
-    public Register sp, pc;  // char used as 16 bit unsigned integer
+    public Register a, b, c, d, e, h, l;
+    public FlagRegister f;
+    public Register sp, pc;
     public ConcatRegister af, bc, de, hl;
     public MMU mmu;
 
-    public enum Flag {
-        CARRY(0x10),
-        HALF_CARRY(0x20),
-        SUBTRACTION(0x40),
-        ZERO(0x80);
-
-        private final byte bitmask;
-        Flag(int mask) {
-            bitmask = (byte)mask;
-        }
-
-        public byte getBitmask() {
-            return bitmask;
-        }
-    }
-
-    // These are not actual cursors to read or write from, but special singleton values used as
-    // signals for interpreting instruction operands.
+    /* These are not actual cursors to read or write from, but special singleton values used as
+       signals for interpreting instruction operands. */
     public static ConstantCursor8 immediate8 = new ConstantCursor8((char) 0);
     public static ConstantCursor16 immediate16 = new ConstantCursor16((char) 0);
     public static ConstantCursor8 indirect8 = new ConstantCursor8((char) 0);
@@ -37,26 +23,18 @@ public class CPU {
     public CPU(MMU mmu) {
         this.mmu = mmu;
 
-        Register8 a = new Register8();
-        Register8 b = new Register8();
-        Register8 c = new Register8();
-        Register8 d = new Register8();
-        Register8 e = new Register8();
-        Register8 f = new Register8();
-        Register8 h = new Register8();
-        Register8 l = new Register8();
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
-        this.e = e;
-        this.f = f;
-        this.h = h;
-        this.l = l;
-        af = new ConcatRegister(a, f);
-        bc = new ConcatRegister(b, c);
-        de = new ConcatRegister(d, e);
-        hl = new ConcatRegister(h, l);
+        a = new Register8();
+        b = new Register8();
+        c = new Register8();
+        d = new Register8();
+        e = new Register8();
+        h = new Register8();
+        l = new Register8();
+        f = new FlagRegister();
+        af = new ConcatRegister((Register8)a, f);
+        bc = new ConcatRegister((Register8)b, (Register8)c);
+        de = new ConcatRegister((Register8)d, (Register8)e);
+        hl = new ConcatRegister((Register8)h, (Register8)l);
         sp = new Register16();
         pc = new Register16();
         reset();
@@ -71,7 +49,7 @@ public class CPU {
         InstructionRoot cp = new CP();
         InstructionRoot ld = new LD();
 
-        // Build the instruction lookup table
+        /* Build the one-byte instruction lookup table */
         oneByteInstructions = new HashMap<>();
 
         // Misc
@@ -237,20 +215,7 @@ public class CPU {
         }
     }
 
-    public void updateFlag(Flag flag, boolean set) {
-        // Sets/unsets a CPU flag
-        char val = this.f.read();
-        if (set)
-            val |= flag.getBitmask();
-        else
-            val &= ~flag.getBitmask();
-        this.f.write(val);
-    }
-
-    public boolean isFlagSet(Flag flag) {
-        return (f.read() & flag.getBitmask()) != 0;
-    }
-
+    /* 8-bit CPU register */
     private static class Register8 implements Register {
         protected char value;
 
@@ -265,21 +230,46 @@ public class CPU {
         }
 
         public void increment() {
-            value++;
-            if (value == 256) {
-                value = 0;
-            }
+            value = (char)((value + 1) & 0xFF);
         }
 
         @Override
         public void decrement() {
-            value--;
-            if (value == 65535) {
-                value = 255;
-            }
+            value = (char)((value - 1) & 0xFF);
         }
     }
 
+    /* Register for CPU flags */
+    public static class FlagRegister extends Register8 {
+        public enum Flag {
+            CARRY(0x10),
+            HALF_CARRY(0x20),
+            SUBTRACTION(0x40),
+            ZERO(0x80);
+
+            private final byte bitmask;
+            Flag(int mask) {
+                bitmask = (byte)mask;
+            }
+
+            public byte getBitmask() {
+                return bitmask;
+            }
+        }
+
+        public void updateFlag(Flag flag, boolean set) {
+            if (set)
+                value |= flag.getBitmask();
+            else
+                value &= ~flag.getBitmask();
+        }
+
+        public boolean isFlagSet(Flag flag) {
+            return (value & flag.getBitmask()) != 0;
+        }
+    }
+
+    /* 16-bit CPU register */
     private static class Register16 implements Register {
         private char value;
 
@@ -292,11 +282,11 @@ public class CPU {
         }
 
         public void increment() {
-            value++;
+            ++value;
         }
 
         public void decrement() {
-            value--;
+            --value;
         }
     }
 
@@ -305,7 +295,7 @@ public class CPU {
      * class.
      */
 
-    public class ConcatRegister implements Register {
+    public static class ConcatRegister implements Register {
         Register8 high;
         Register8 low;
 
@@ -315,32 +305,28 @@ public class CPU {
         }
 
         public void write(char value) {
-            high.write((char) (value >> 8));
+            high.write((char) (value >>> 8));
             low.write(value);
         }
 
         public char read() {
-            char ret = 0;
-            ret |= high.read() << 8;
-            ret |= low.read();
-            return ret;
+            return (char)((high.read() << 8) | low.read());
         }
 
         @Override
         public void increment() {
-            char val = read();
-            val++;
-            write(val);
+            write((char)(read()+1));
         }
 
         @Override
         public void decrement() {
-            char val = read();
-            val--;
-            write(val);
+            write((char)(read()-1));
         }
     }
 
+    /* Instructions */
+
+    // LD - load data
     public static class LD implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
@@ -359,7 +345,7 @@ public class CPU {
     private static class SCF implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
-            cpu.updateFlag(Flag.CARRY, true);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
         }
     }
 
@@ -367,7 +353,7 @@ public class CPU {
     private static class CCF implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
-            cpu.updateFlag(Flag.CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
         }
     }
 
@@ -376,10 +362,10 @@ public class CPU {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             char x = cpu.a.read(), y = operands[0].read();
-            cpu.updateFlag(Flag.ZERO, (x - y) == 0);
-            cpu.updateFlag(Flag.SUBTRACTION, true);
-            cpu.updateFlag(Flag.HALF_CARRY, (y & 0xF) > (x & 0xF));
-            cpu.updateFlag(Flag.CARRY, y > x);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, (x - y) == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (y & 0xF) > (x & 0xF));
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, y > x);
         }
     }
 
@@ -389,9 +375,9 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             char x = operands[0].read();
             operands[0].write((char)(x + 1));
-            cpu.updateFlag(Flag.ZERO, x == 0xFF);
-            cpu.updateFlag(Flag.SUBTRACTION, false);
-            cpu.updateFlag(Flag.HALF_CARRY, (x & 0xF) + 1 > 0xF);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, x == 0xFF);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) + 1 > 0xF);
         }
     }
     private static class INC16 implements InstructionRoot {
@@ -407,9 +393,9 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             char x = operands[0].read();
             operands[0].write((char)(x - 1));
-            cpu.updateFlag(Flag.ZERO, x == 1);
-            cpu.updateFlag(Flag.SUBTRACTION, true);
-            cpu.updateFlag(Flag.HALF_CARRY, (x & 0xF) - 1 < 0);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, x == 1);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) - 1 < 0);
         }
     }
     private static class DEC16 implements InstructionRoot {
@@ -426,10 +412,10 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             char result = (char)(cpu.a.read() & operands[0].read());
             cpu.a.write(result);
-            cpu.updateFlag(Flag.ZERO, result == 0);
-            cpu.updateFlag(Flag.SUBTRACTION, false);
-            cpu.updateFlag(Flag.HALF_CARRY, true);
-            cpu.updateFlag(Flag.CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, true);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
         }
     }
 
@@ -439,10 +425,10 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             char result = (char)(cpu.a.read() ^ operands[0].read());
             cpu.a.write(result);
-            cpu.updateFlag(Flag.ZERO, result == 0);
-            cpu.updateFlag(Flag.SUBTRACTION, false);
-            cpu.updateFlag(Flag.HALF_CARRY, false);
-            cpu.updateFlag(Flag.CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
         }
     }
 
@@ -452,10 +438,10 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             char result = (char)(cpu.a.read() | operands[0].read());
             cpu.a.write(result);
-            cpu.updateFlag(Flag.ZERO, result == 0);
-            cpu.updateFlag(Flag.SUBTRACTION, false);
-            cpu.updateFlag(Flag.HALF_CARRY, false);
-            cpu.updateFlag(Flag.CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
         }
     }
 }

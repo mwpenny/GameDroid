@@ -5,7 +5,6 @@ package creativename.gamedroid.core;
  * register.
  */
 
-
 public interface ReadCursor {
     char read();
 }
