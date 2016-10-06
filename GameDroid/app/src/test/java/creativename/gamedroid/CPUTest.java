@@ -206,6 +206,33 @@ public class CPUTest {
         cpu.execInstruction();
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
+
+    @Test
+    public void pushPop() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x01, 0x04, 0x30,  // LD BC,$3004
+                0xC5,              // PUSH BC
+                0xC5,              // PUSH BC
+                0xF1,              // POP AF
+                0xF5,              // PUSH AF
+                0xD1,              // POP DE
+                0xD5,              // PUSH DE
+                0xE1,              // POP HL
+                0xE5,              // PUSH HL
+                0xC1               // POP BC
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(cpu.bc.read(), 0x3004);
+    }
 }
 
  class FixtureMMU extends MMU {
@@ -228,11 +255,7 @@ public class CPUTest {
      protected char read16(char address) {
          int offset = address - 0x100;
          if (offset <= fixtureRom.length && offset >= 0) {
-             address++;
-             char ret = (char) fixtureRom[address];
-             address--;
-             ret &= fixtureRom[address] << 8;
-             return ret;
+             return (char)(fixtureRom[offset++] | fixtureRom[offset] << 8);
          }
          return super.read16(address);
      }

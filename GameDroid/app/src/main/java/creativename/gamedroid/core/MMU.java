@@ -6,9 +6,13 @@ package creativename.gamedroid.core;
 
 public class MMU {
     private byte workRam[];
+    private byte stack[];
+
+    // TODO: $D000-$DFFF does not mirror $C000-$CFFF
 
     public MMU() {
-        workRam = new byte[8196];
+        workRam = new byte[0x2000];
+        stack = new byte[0x7F];
         reset();
     }
 
@@ -19,7 +23,10 @@ public class MMU {
             case 0xE000:
                 return (char) workRam[addr & 0x1FFF];
         }
-        System.err.println("Warning: invalid memory read at " + (int) addr);
+        if (addr >= 0xFF80 && addr <= 0xFFFE)
+            return (char) stack[addr - 0xFF80];
+
+        System.err.println(String.format("Warning: invalid memory read at $%04X", (int)addr));
         return 0;
     }
 
@@ -29,22 +36,24 @@ public class MMU {
             case 0xD000:
             case 0xE000:
                 workRam[addr & 0x1FFF] = (byte) value;
+                return;
         }
-        System.err.println("Warning: invalid memory write at " + (int) addr);
+        if (addr >= 0xFF80 && addr <= 0xFFFE) {
+            stack[addr - 0xFF80] = (byte) value;
+            return;
+        }
+        System.err.println(String.format("Warning: invalid memory write at $%04X", (int)addr));
     }
 
     protected void write16(char addr, char value) {
-        write8(addr, (char)(value << 8));
-        addr++;
-        write8(addr, value);
+        // Write 2 bytes (little-endian)
+        write8(addr++, value);
+        write8(addr, (char)(value >>> 8));
     }
 
     protected char read16(char address) {
-        address++;
-        char ret = read8(address);
-        address--;
-        ret &= read8(address) << 8;
-        return ret;
+        // Read 2 bytes (little-endian)
+        return (char)(read8(address++) | (read8(address) << 8));
     }
 
     public MemoryCursor8 getCursor8(char address) {

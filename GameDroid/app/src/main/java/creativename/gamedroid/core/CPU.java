@@ -46,6 +46,8 @@ public class CPU {
         InstructionRoot or = new OR();
         InstructionRoot cp = new CP();
         InstructionRoot ld = new LD();
+        InstructionRoot push = new PUSH();
+        InstructionRoot pop = new POP();
 
         /* Build the one-byte instruction lookup table */
         oneByteInstructions = new HashMap<>();
@@ -189,6 +191,31 @@ public class CPU {
         oneByteInstructions.put((char) 0x7C, new InstructionForm(ld, new Cursor[] {a, h}));
         oneByteInstructions.put((char) 0x7D, new InstructionForm(ld, new Cursor[] {a, l}));
         oneByteInstructions.put((char) 0x7F, new InstructionForm(ld, new Cursor[] {a, a}));
+
+        // PUSH/POP
+        oneByteInstructions.put((char) 0xF1, new InstructionForm(pop, new Cursor[] {af}));
+        oneByteInstructions.put((char) 0xF5, new InstructionForm(push, new Cursor[] {af}));
+        oneByteInstructions.put((char) 0xC1, new InstructionForm(pop, new Cursor[] {bc}));
+        oneByteInstructions.put((char) 0xC5, new InstructionForm(push, new Cursor[] {bc}));
+        oneByteInstructions.put((char) 0xD1, new InstructionForm(pop, new Cursor[] {de}));
+        oneByteInstructions.put((char) 0xD5, new InstructionForm(push, new Cursor[] {de}));
+        oneByteInstructions.put((char) 0xE1, new InstructionForm(pop, new Cursor[] {hl}));
+        oneByteInstructions.put((char) 0xE5, new InstructionForm(push, new Cursor[] {hl}));
+    }
+
+    public void pushStack(char value) {
+        // SP points to the address where the next byte will be pushed
+        sp.decrement();
+        mmu.write16(sp.read(), value);
+        sp.decrement();
+    }
+
+    public char popStack() {
+        // SP points to the address where the next byte will be pushed
+        sp.increment();
+        char val = mmu.read16(sp.read());
+        sp.increment();
+        return val;
     }
 
     public void reset() {
@@ -437,6 +464,22 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
+        }
+    }
+
+    // PUSH - push register pair onto stack
+    private static class PUSH implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.pushStack(operands[0].read());
+        }
+    }
+
+    // POP - pop 2 bytes off stack into register pair
+    private static class POP implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            operands[0].write(cpu.popStack());
         }
     }
 }

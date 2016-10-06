@@ -24,10 +24,10 @@ Repository structure:
 |**x9**|SUB B     |SUB C    |SUB D     |SUB E    |SUB H      |SUB L    |SUB (HL)  |SUB A    |SBC A,B    |SBC A,C  |SBC A,D   |SBC A,E  |SBC A,H   |SBC A,L |SBC A,(HL)|SBC A,A|
 |**xA**|          |         |          |         |           |         |AND (HL)  |         |           |         |          |         |          |        |XOR (HL)  |       |
 |**xB**|          |         |          |         |           |         |OR (HL)   |         |           |         |          |         |          |        |CP (HL)   |       |
-|**xC**|RET NZ    |POP BC   |JP NZ,a16 |JP a16   |CALL NZ,a16|PUSH BC  |ADD A,d8  |RST 00H  |RET Z      |RET      |JP Z,a16  |         |CALL Z,a16|CALL a16|ADC A,d8  |RST 08H|
-|**xD**|RET NC    |POP DE   |JP NC,a16 |         |CALL NC,a16|PUSH DE  |SUB d8    |RST 10H  |RET C      |RETI     |JP C,a16  |         |CALL C,a16|        |SBC A,d8  |RST 18H|
-|**xE**|LDH (a8),A|POP HL   |LD (C),A  |         |           |PUSH HL  |AND d8    |RST 20H  |ADD SP,r8  |JP (HL)  |LD (a16),A|         |          |        |XOR d8    |RST 28H|
-|**xF**|LDH A,(a8)|POP AF   |LD A,(C)  |DI       |           |PUSH AF  |OR d8     |RST 30H  |LD HL,SP+r8|LD SP,HL |LD A,(a16)|EI       |          |        |          |RST 38H|
+|**xC**|RET NZ    |         |JP NZ,a16 |JP a16   |CALL NZ,a16|         |ADD A,d8  |RST 00H  |RET Z      |RET      |JP Z,a16  |         |CALL Z,a16|CALL a16|ADC A,d8  |RST 08H|
+|**xD**|RET NC    |         |JP NC,a16 |         |CALL NC,a16|         |SUB d8    |RST 10H  |RET C      |RETI     |JP C,a16  |         |CALL C,a16|        |SBC A,d8  |RST 18H|
+|**xE**|LDH (a8),A|         |LD (C),A  |         |           |         |AND d8    |RST 20H  |ADD SP,r8  |JP (HL)  |LD (a16),A|         |          |        |XOR d8    |RST 28H|
+|**xF**|LDH A,(a8)|         |LD A,(C)  |DI       |           |         |OR d8     |RST 30H  |LD HL,SP+r8|LD SP,HL |LD A,(a16)|EI       |          |        |          |RST 38H|
 
 * [Original opcode table](http://pastraiser.com/cpu/gameboy/gameboy_opcodes.html) with more info (such as flags modified and cycle count).
 * [Opcode summary](http://gameboy.mongenel.com/dmg/opcodes.html)
