@@ -1,1 +1,2 @@
 6.5hr implementation of CPU and MMU class + some variants of the LD instruction
+ .5hr refactor register classes

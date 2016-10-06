@@ -3,8 +3,8 @@ package creativename.gamedroid.core;
 import java.util.HashMap;
 
 public class CPU {
-    public Register8 a, b, c, d, e, f, h, l;
-    public Register16 sp, pc;
+    public Register a, b, c, d, e, f, h, l;
+    public Register sp, pc;  // char used as 16 bit unsigned integer
     public ConcatRegister af, bc, de, hl;
     public MMU mmu;
 
@@ -37,14 +37,22 @@ public class CPU {
     public CPU(MMU mmu) {
         this.mmu = mmu;
 
-        a = new Register8();
-        b = new Register8();
-        c = new Register8();
-        d = new Register8();
-        e = new Register8();
-        f = new Register8();
-        h = new Register8();
-        l = new Register8();
+        Register8 a = new Register8();
+        Register8 b = new Register8();
+        Register8 c = new Register8();
+        Register8 d = new Register8();
+        Register8 e = new Register8();
+        Register8 f = new Register8();
+        Register8 h = new Register8();
+        Register8 l = new Register8();
+        this.a = a;
+        this.b = b;
+        this.c = c;
+        this.d = d;
+        this.e = e;
+        this.f = f;
+        this.h = h;
+        this.l = l;
         af = new ConcatRegister(a, f);
         bc = new ConcatRegister(b, c);
         de = new ConcatRegister(d, e);
@@ -243,10 +251,97 @@ public class CPU {
         return (f.read() & flag.getBitmask()) != 0;
     }
 
-    /* Instructions */
+    private static class Register8 implements Register {
+        protected char value;
 
-    // LD - load data
-    private static class LD implements InstructionRoot {
+        @Override
+        public char read() {
+            return value;
+        }
+
+        @Override
+        public void write(char value) {
+            this.value = (char) (value & 255);
+        }
+
+        public void increment() {
+            value++;
+            if (value == 256) {
+                value = 0;
+            }
+        }
+
+        @Override
+        public void decrement() {
+            value--;
+            if (value == 65535) {
+                value = 255;
+            }
+        }
+    }
+
+    private static class Register16 implements Register {
+        private char value;
+
+        public char read() {
+            return value;
+        }
+
+        public void write(char value) {
+            this.value = value;
+        }
+
+        public void increment() {
+            value++;
+        }
+
+        public void decrement() {
+            value--;
+        }
+    }
+
+    /**
+     * Used to represent the concatenation of two 8 bit registers. No additional data is stored in the
+     * class.
+     */
+
+    public class ConcatRegister implements Register {
+        Register8 high;
+        Register8 low;
+
+        public ConcatRegister(Register8 high, Register8 low) {
+            this.high = high;
+            this.low = low;
+        }
+
+        public void write(char value) {
+            high.write((char) (value >> 8));
+            low.write(value);
+        }
+
+        public char read() {
+            char ret = 0;
+            ret |= high.read() << 8;
+            ret |= low.read();
+            return ret;
+        }
+
+        @Override
+        public void increment() {
+            char val = read();
+            val++;
+            write(val);
+        }
+
+        @Override
+        public void decrement() {
+            char val = read();
+            val--;
+            write(val);
+        }
+    }
+
+    public static class LD implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             operands[0].write(operands[1].read());
