@@ -9,6 +9,20 @@ import creativename.gamedroid.core.MMU;
 
 public class CPUTest {
     @Test
+    public void indirectReg() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+            0x21, 0x00, 0xC0, // LD HL,$C000
+            0x36, 0x01,       // LD (HL),$01
+            0x36, 0x02        // LD (HL),$02
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(1, cpu.mmu.read8((char)0xC000));
+        cpu.execInstruction();
+        assertEquals(2, cpu.mmu.read8((char)0xC000));
+    }
+
+    @Test
     public void immediate8bitLoads() throws Exception {
         CPU cpu = new CPU(new FixtureMMU(new int[]{
             0x06, 0x11,
@@ -46,6 +60,25 @@ public class CPUTest {
         cpu.execInstruction();
         cpu.execInstruction();
         assertEquals(0x8F, cpu.b.read());
+    }
+
+    @Test
+    public void indirectLoads() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x31, 0x04, 0x30, // LD SP,$3004
+                0x08, 0x00, 0xC0, // LD ($C000),SP
+                0x3E, 0x12,       // LD A,$12
+                0xEA, 0x00, 0xC0, // LD ($C000),A
+                0xFA, 0x01, 0xC0  // LD A,($C001)
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0x3004, cpu.mmu.read16((char)0xC000));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0x12, cpu.mmu.read8((char)0xC000));
+        cpu.execInstruction();
+        assertEquals(0x30, cpu.a.read());
     }
 
     @Test
@@ -109,9 +142,9 @@ public class CPUTest {
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
-        assertEquals(cpu.b.read(), 8);
+        assertEquals(8, cpu.b.read());
         cpu.execInstruction();
-        assertEquals(cpu.bc.read(), 0x900);
+        assertEquals(0x900, cpu.bc.read());
     }
 
     @Test
@@ -136,13 +169,13 @@ public class CPUTest {
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
-        assertEquals(cpu.b.read(), 0xFE);
+        assertEquals(0xFE, cpu.b.read());
         cpu.execInstruction();
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         cpu.execInstruction();
-        assertEquals(cpu.bc.read(), 0xFDFF);
+        assertEquals(0xFDFF, cpu.bc.read());
     }
 
     @Test
@@ -160,7 +193,7 @@ public class CPUTest {
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
-        assertEquals(cpu.a.read(), 2);
+        assertEquals(2, cpu.a.read());
         cpu.execInstruction();
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
@@ -181,7 +214,7 @@ public class CPUTest {
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
-        assertEquals(cpu.a.read(), 0x13);
+        assertEquals(0x13, cpu.a.read());
         cpu.execInstruction();
         cpu.execInstruction();
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
@@ -202,7 +235,7 @@ public class CPUTest {
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
-        assertEquals(cpu.a.read(), 0x11);
+        assertEquals(0x11, cpu.a.read());
         cpu.execInstruction();
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
@@ -231,12 +264,13 @@ public class CPUTest {
         cpu.execInstruction();
         cpu.execInstruction();
         cpu.execInstruction();
-        assertEquals(cpu.bc.read(), 0x3004);
+        assertEquals(0x3004, cpu.bc.read());
     }
 }
 
  class FixtureMMU extends MMU {
      int[] fixtureRom;
+
 
      public FixtureMMU(int[] machineCode) {
          this.fixtureRom = machineCode;
@@ -252,7 +286,7 @@ public class CPUTest {
      }
 
      @Override
-     protected char read16(char address) {
+     public char read16(char address) {
          int offset = address - 0x100;
          if (offset <= fixtureRom.length && offset >= 0) {
              return (char)(fixtureRom[offset++] | fixtureRom[offset] << 8);

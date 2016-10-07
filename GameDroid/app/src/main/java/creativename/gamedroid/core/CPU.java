@@ -12,8 +12,10 @@ public class CPU {
        signals for interpreting instruction operands. */
     public static ConstantCursor8 immediate8 = new ConstantCursor8((char) 0);
     public static ConstantCursor16 immediate16 = new ConstantCursor16((char) 0);
-    public static ConstantCursor8 indirect8 = new ConstantCursor8((char) 0);
+    public static ConstantCursor8 oneByteIndirect8 = new ConstantCursor8((char) 0);
+    public static ConstantCursor8 twoByteIndirect8 = new ConstantCursor8((char) 0);
     public static ConstantCursor16 indirect16 = new ConstantCursor16((char) 0);
+
 
     private HashMap<Character, InstructionForm> oneByteInstructions;
     private HashMap<Character, InstructionForm> twoByteInstructions;
@@ -37,6 +39,11 @@ public class CPU {
         pc = new Register16();
         reset();
 
+        IndirectRegister16Cursor ibc = new IndirectRegister16Cursor(bc);
+        IndirectRegister16Cursor ide = new IndirectRegister16Cursor(de);
+        IndirectRegister16Cursor ihl = new IndirectRegister16Cursor(hl);
+        IndirectRegister8Cursor ic = new IndirectRegister8Cursor(c);
+
         InstructionRoot inc8 = new INC8();
         InstructionRoot inc16 = new INC16();
         InstructionRoot dec8 = new DEC8();
@@ -46,6 +53,8 @@ public class CPU {
         InstructionRoot or = new OR();
         InstructionRoot cp = new CP();
         InstructionRoot ld = new LD();
+        InstructionRoot ldi = new LDI();
+        InstructionRoot ldd = new LDD();
         InstructionRoot push = new PUSH();
         InstructionRoot pop = new POP();
 
@@ -68,6 +77,7 @@ public class CPU {
         oneByteInstructions.put((char) 0x24, new InstructionForm(inc8, new Cursor[] {h}));
         oneByteInstructions.put((char) 0x2C, new InstructionForm(inc8, new Cursor[] {l}));
         oneByteInstructions.put((char) 0x33, new InstructionForm(inc16, new Cursor[] {sp}));
+        oneByteInstructions.put((char) 0x34, new InstructionForm(inc8, new Cursor[] {ihl}));
         oneByteInstructions.put((char) 0x3C, new InstructionForm(inc8, new Cursor[] {a}));
 
         // DEC
@@ -80,6 +90,7 @@ public class CPU {
         oneByteInstructions.put((char) 0x25, new InstructionForm(dec8, new Cursor[] {l}));
         oneByteInstructions.put((char) 0x2B, new InstructionForm(dec16, new Cursor[] {hl}));
         oneByteInstructions.put((char) 0x2D, new InstructionForm(dec8, new Cursor[] {h}));
+        oneByteInstructions.put((char) 0x35, new InstructionForm(dec8, new Cursor[] {ihl}));
         oneByteInstructions.put((char) 0x3B, new InstructionForm(dec16, new Cursor[] {sp}));
         oneByteInstructions.put((char) 0x3D, new InstructionForm(dec8, new Cursor[] {a}));
 
@@ -90,6 +101,7 @@ public class CPU {
         oneByteInstructions.put((char) 0xA3, new InstructionForm(and, new Cursor[] {e}));
         oneByteInstructions.put((char) 0xA4, new InstructionForm(and, new Cursor[] {h}));
         oneByteInstructions.put((char) 0xA5, new InstructionForm(and, new Cursor[] {l}));
+        oneByteInstructions.put((char) 0xA6, new InstructionForm(and, new Cursor[] {ihl}));
         oneByteInstructions.put((char) 0xA7, new InstructionForm(and, new Cursor[] {a}));
         oneByteInstructions.put((char) 0xE6, new InstructionForm(and, new Cursor[] {immediate8}));
 
@@ -100,6 +112,7 @@ public class CPU {
         oneByteInstructions.put((char) 0xAB, new InstructionForm(xor, new Cursor[] {e}));
         oneByteInstructions.put((char) 0xAC, new InstructionForm(xor, new Cursor[] {h}));
         oneByteInstructions.put((char) 0xAD, new InstructionForm(xor, new Cursor[] {l}));
+        oneByteInstructions.put((char) 0xAE, new InstructionForm(xor, new Cursor[] {ihl}));
         oneByteInstructions.put((char) 0xAF, new InstructionForm(xor, new Cursor[] {a}));
         oneByteInstructions.put((char) 0xEE, new InstructionForm(xor, new Cursor[] {immediate8}));
 
@@ -110,6 +123,7 @@ public class CPU {
         oneByteInstructions.put((char) 0xB3, new InstructionForm(or, new Cursor[] {e}));
         oneByteInstructions.put((char) 0xB4, new InstructionForm(or, new Cursor[] {h}));
         oneByteInstructions.put((char) 0xB5, new InstructionForm(or, new Cursor[] {l}));
+        oneByteInstructions.put((char) 0xB6, new InstructionForm(or, new Cursor[] {ihl}));
         oneByteInstructions.put((char) 0xB7, new InstructionForm(or, new Cursor[] {a}));
         oneByteInstructions.put((char) 0xF6, new InstructionForm(or, new Cursor[] {immediate8}));
 
@@ -120,6 +134,7 @@ public class CPU {
         oneByteInstructions.put((char) 0xBB, new InstructionForm(cp, new Cursor[] {e}));
         oneByteInstructions.put((char) 0xBC, new InstructionForm(cp, new Cursor[] {h}));
         oneByteInstructions.put((char) 0xBD, new InstructionForm(cp, new Cursor[] {l}));
+        oneByteInstructions.put((char) 0xBE, new InstructionForm(cp, new Cursor[] {ihl}));
         oneByteInstructions.put((char) 0xBF, new InstructionForm(cp, new Cursor[] {a}));
         oneByteInstructions.put((char) 0xFE, new InstructionForm(cp, new Cursor[] {immediate8}));
 
@@ -128,13 +143,42 @@ public class CPU {
         oneByteInstructions.put((char) 0x06, new InstructionForm(ld, new Cursor[] {b, immediate8}));
         oneByteInstructions.put((char) 0x11, new InstructionForm(ld, new Cursor[] {de, immediate16}));
         oneByteInstructions.put((char) 0x16, new InstructionForm(ld, new Cursor[] {d, immediate8}));
-        oneByteInstructions.put((char) 0x11, new InstructionForm(ld, new Cursor[] {hl, immediate16}));
+        oneByteInstructions.put((char) 0x21, new InstructionForm(ld, new Cursor[] {hl, immediate16}));
         oneByteInstructions.put((char) 0x26, new InstructionForm(ld, new Cursor[] {h, immediate8}));
         oneByteInstructions.put((char) 0x0E, new InstructionForm(ld, new Cursor[] {c, immediate8}));
         oneByteInstructions.put((char) 0x1E, new InstructionForm(ld, new Cursor[] {e, immediate8}));
         oneByteInstructions.put((char) 0x2E, new InstructionForm(ld, new Cursor[] {l, immediate8}));
-        oneByteInstructions.put((char) 0x11, new InstructionForm(ld, new Cursor[] {sp, immediate16}));
+        oneByteInstructions.put((char) 0x31, new InstructionForm(ld, new Cursor[] {sp, immediate16}));
         oneByteInstructions.put((char) 0x3E, new InstructionForm(ld, new Cursor[] {a, immediate8}));
+
+        oneByteInstructions.put((char) 0x08, new InstructionForm(ld, new Cursor[] {indirect16, sp}));
+        oneByteInstructions.put((char) 0x4E, new InstructionForm(ld, new Cursor[] {c, ihl}));
+        oneByteInstructions.put((char) 0x5E, new InstructionForm(ld, new Cursor[] {e, ihl}));
+        oneByteInstructions.put((char) 0x6E, new InstructionForm(ld, new Cursor[] {l, ihl}));
+        oneByteInstructions.put((char) 0x7E, new InstructionForm(ld, new Cursor[] {a, ihl}));
+        oneByteInstructions.put((char) 0xE0, new InstructionForm(ld, new Cursor[] {oneByteIndirect8, a}));
+        oneByteInstructions.put((char) 0xE2, new InstructionForm(ld, new Cursor[] {ic, a}));
+        oneByteInstructions.put((char) 0xEA, new InstructionForm(ld, new Cursor[] {twoByteIndirect8, a}));
+        oneByteInstructions.put((char) 0xF0, new InstructionForm(ld, new Cursor[] {a, oneByteIndirect8}));
+        oneByteInstructions.put((char) 0xF2, new InstructionForm(ld, new Cursor[] {a, ic}));
+        oneByteInstructions.put((char) 0xFA, new InstructionForm(ld, new Cursor[] {a, twoByteIndirect8}));
+
+        oneByteInstructions.put((char) 0x02, new InstructionForm(ld, new Cursor[] {ibc, a}));
+        oneByteInstructions.put((char) 0x0A, new InstructionForm(ld, new Cursor[] {a, ibc}));
+        oneByteInstructions.put((char) 0x12, new InstructionForm(ld, new Cursor[] {ide, a}));
+        oneByteInstructions.put((char) 0x1A, new InstructionForm(ld, new Cursor[] {a, ide}));
+        oneByteInstructions.put((char) 0x46, new InstructionForm(ld, new Cursor[] {b, ihl}));
+        oneByteInstructions.put((char) 0x56, new InstructionForm(ld, new Cursor[] {d, ihl}));
+        oneByteInstructions.put((char) 0x66, new InstructionForm(ld, new Cursor[] {h, ihl}));
+
+        oneByteInstructions.put((char) 0x36, new InstructionForm(ld, new Cursor[] {ihl, immediate8}));
+        oneByteInstructions.put((char) 0x70, new InstructionForm(ld, new Cursor[] {ihl, b}));
+        oneByteInstructions.put((char) 0x71, new InstructionForm(ld, new Cursor[] {ihl, c}));
+        oneByteInstructions.put((char) 0x72, new InstructionForm(ld, new Cursor[] {ihl, d}));
+        oneByteInstructions.put((char) 0x73, new InstructionForm(ld, new Cursor[] {ihl, e}));
+        oneByteInstructions.put((char) 0x74, new InstructionForm(ld, new Cursor[] {ihl, h}));
+        oneByteInstructions.put((char) 0x75, new InstructionForm(ld, new Cursor[] {ihl, l}));
+        oneByteInstructions.put((char) 0x77, new InstructionForm(ld, new Cursor[] {ihl, a}));
 
         oneByteInstructions.put((char) 0x40, new InstructionForm(ld, new Cursor[] {b, b}));
         oneByteInstructions.put((char) 0x41, new InstructionForm(ld, new Cursor[] {b, c}));
@@ -191,6 +235,12 @@ public class CPU {
         oneByteInstructions.put((char) 0x7C, new InstructionForm(ld, new Cursor[] {a, h}));
         oneByteInstructions.put((char) 0x7D, new InstructionForm(ld, new Cursor[] {a, l}));
         oneByteInstructions.put((char) 0x7F, new InstructionForm(ld, new Cursor[] {a, a}));
+        oneByteInstructions.put((char) 0xF9, new InstructionForm(ld, new Cursor[] {sp, hl}));
+
+        oneByteInstructions.put((char) 0x22, new InstructionForm(ldi, new Cursor[] {ihl, a}));
+        oneByteInstructions.put((char) 0x2A, new InstructionForm(ldi, new Cursor[] {a, ihl}));
+        oneByteInstructions.put((char) 0x32, new InstructionForm(ldd, new Cursor[] {ihl, a}));
+        oneByteInstructions.put((char) 0x3A, new InstructionForm(ldd, new Cursor[] {a, ihl}));
 
         // PUSH/POP
         oneByteInstructions.put((char) 0xF1, new InstructionForm(pop, new Cursor[] {af}));
@@ -201,16 +251,20 @@ public class CPU {
         oneByteInstructions.put((char) 0xD5, new InstructionForm(push, new Cursor[] {de}));
         oneByteInstructions.put((char) 0xE1, new InstructionForm(pop, new Cursor[] {hl}));
         oneByteInstructions.put((char) 0xE5, new InstructionForm(push, new Cursor[] {hl}));
+
+
+        /* Build the two-byte instruction lookup table */
+        twoByteInstructions = new HashMap<>();
     }
 
-    public void pushStack(char value) {
+    private void pushStack(char value) {
         // SP points to the address where the next byte will be pushed
         sp.decrement();
         mmu.write16(sp.read(), value);
         sp.decrement();
     }
 
-    public char popStack() {
+    private char popStack() {
         // SP points to the address where the next byte will be pushed
         sp.increment();
         char val = mmu.read16(sp.read());
@@ -244,12 +298,10 @@ public class CPU {
     private static class Register8 implements Register {
         protected char value;
 
-        @Override
         public char read() {
             return value;
         }
 
-        @Override
         public void write(char value) {
             this.value = (char) (value & 255);
         }
@@ -258,7 +310,6 @@ public class CPU {
             value = (char)((value + 1) & 0xFF);
         }
 
-        @Override
         public void decrement() {
             value = (char)((value - 1) & 0xFF);
         }
@@ -335,14 +386,48 @@ public class CPU {
             return (char)((high.read() << 8) | low.read());
         }
 
-        @Override
         public void increment() {
             write((char)(read()+1));
         }
 
-        @Override
         public void decrement() {
             write((char)(read()-1));
+        }
+    }
+
+    private class IndirectRegister8Cursor implements Cursor {
+        private Register reg;
+
+        public IndirectRegister8Cursor(Register r) {
+            reg = r;
+        }
+
+        public char read() {
+            // Get value pointed to by address in register + $FF00
+            return mmu.read8((char)(0xFF00 | reg.read()));
+        }
+
+        public void write(char value) {
+            // Write to address contained in register
+            mmu.write8((char)(0xFF00 | reg.read()), value);
+        }
+    }
+
+    private class IndirectRegister16Cursor implements Cursor {
+        private Register reg;
+
+        public IndirectRegister16Cursor(Register r) {
+            reg = r;
+        }
+
+        public char read() {
+            // Get value pointed to by address in register
+            return mmu.read8(reg.read());
+        }
+
+        public void write(char value) {
+            // Write to address contained in register
+            mmu.write8(reg.read(), value);
         }
     }
 
@@ -353,6 +438,20 @@ public class CPU {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             operands[0].write(operands[1].read());
+        }
+    }
+    private static class LDI implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            operands[0].write(operands[1].read());
+            cpu.hl.increment();
+        }
+    }
+    private static class LDD implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            operands[0].write(operands[1].read());
+            cpu.hl.decrement();
         }
     }
 

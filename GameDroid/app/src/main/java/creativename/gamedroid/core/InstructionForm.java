@@ -13,7 +13,7 @@ public class InstructionForm {
         Cursor[] operands = new Cursor[operandTemplate.length];
         for (int i = 0; i < operandTemplate.length; i++) {
             if (operandTemplate[i] == CPU.immediate8) {
-                // Next byte makes operand
+                // Next byte is operand
                 char val = cpu.mmu.read8(cpu.pc.read());
                 operands[i] = new ConstantCursor8(val);
                 cpu.pc.increment();
@@ -23,7 +23,12 @@ public class InstructionForm {
                 operands[i] = new ConstantCursor16(val);
                 cpu.pc.increment();
                 cpu.pc.increment();
-            } else if (operandTemplate[i] == CPU.indirect8) {
+            } else if (operandTemplate[i] == CPU.oneByteIndirect8) {
+                // Next byte + $FF00 makes pointer to 8-bit operand
+                char address = (char)(0xFF00 | cpu.mmu.read8(cpu.pc.read()));
+                operands[i] = cpu.mmu.getCursor8(address);
+                cpu.pc.increment();
+            } else if (operandTemplate[i] == CPU.twoByteIndirect8) {
                 // Next two bytes make pointer to 8-bit operand
                 char address = cpu.mmu.read16(cpu.pc.read());
                 operands[i] = cpu.mmu.getCursor8(address);

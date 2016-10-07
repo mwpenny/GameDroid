@@ -16,7 +16,7 @@ public class MMU {
         reset();
     }
 
-    protected char read8(char addr){
+    public char read8(char addr){
         switch (addr & 0xF000) {
             case 0xC000:
             case 0xD000:
@@ -30,7 +30,7 @@ public class MMU {
         return 0;
     }
 
-    protected void write8(char addr, char value){
+    public void write8(char addr, char value){
         switch (addr & 0xF000) {
             case 0xC000:
             case 0xD000:
@@ -45,13 +45,13 @@ public class MMU {
         System.err.println(String.format("Warning: invalid memory write at $%04X", (int)addr));
     }
 
-    protected void write16(char addr, char value) {
+    public void write16(char addr, char value) {
         // Write 2 bytes (little-endian)
         write8(addr++, value);
         write8(addr, (char)(value >>> 8));
     }
 
-    protected char read16(char address) {
+    public char read16(char address) {
         // Read 2 bytes (little-endian)
         return (char)(read8(address++) | (read8(address) << 8));
     }
@@ -99,7 +99,7 @@ public class MMU {
         write8((char) 0xFFFF, (char) 0x00);
     }
 
-    private class MemoryCursor16 implements Cursor {
+    public class MemoryCursor16 implements Cursor {
         protected char address;
 
         public MemoryCursor16(char address) {
@@ -117,7 +117,7 @@ public class MMU {
         }
     }
 
-    private class MemoryCursor8 extends MemoryCursor16 implements Cursor {
+    public class MemoryCursor8 extends MemoryCursor16 implements Cursor {
         public MemoryCursor8(char address) {
             super(address);
         }
