@@ -58,11 +58,20 @@ public class CPU {
         InstructionRoot ldhl = new LDHL();
         InstructionRoot push = new PUSH();
         InstructionRoot pop = new POP();
-
         InstructionRoot swap = new SWAP();
         InstructionRoot bit = new BIT();
         InstructionRoot res = new RES();
         InstructionRoot set = new SET();
+        InstructionRoot jp = new JP();
+        InstructionRoot jpnz = new JPNZ();
+        InstructionRoot jpz = new JPZ();
+        InstructionRoot jpnc = new JPNC();
+        InstructionRoot jpc = new JPC();
+        InstructionRoot jr = new JR();
+        InstructionRoot jrnz = new JRNZ();
+        InstructionRoot jrz = new JRZ();
+        InstructionRoot jrnc = new JRNC();
+        InstructionRoot jrc = new JRC();
 
         /* Build the one-byte instruction lookup table */
         oneByteInstructions = new HashMap<>();
@@ -248,6 +257,20 @@ public class CPU {
         oneByteInstructions.put((char) 0x2A, new InstructionForm(ldi, new Cursor[] {a, ihl}));
         oneByteInstructions.put((char) 0x32, new InstructionForm(ldd, new Cursor[] {ihl, a}));
         oneByteInstructions.put((char) 0x3A, new InstructionForm(ldd, new Cursor[] {a, ihl}));
+
+        // Jumps
+        oneByteInstructions.put((char) 0xC3, new InstructionForm(jp, new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xE9, new InstructionForm(jp, new Cursor[] {hl}));
+        oneByteInstructions.put((char) 0xC2, new InstructionForm(jpnz, new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xCA, new InstructionForm(jpz, new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xD2, new InstructionForm(jpnc, new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xDA, new InstructionForm(jpc, new Cursor[] {immediate16}));
+
+        oneByteInstructions.put((char) 0x18, new InstructionForm(jr, new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0x20, new InstructionForm(jrnz, new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0x28, new InstructionForm(jrz, new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0x30, new InstructionForm(jrnc, new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0x38, new InstructionForm(jrc, new Cursor[] {immediate8}));
 
         // PUSH/POP
         oneByteInstructions.put((char) 0xF1, new InstructionForm(pop, new Cursor[] {af}));
@@ -689,6 +712,108 @@ public class CPU {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             operands[1].write((char)(operands[1].read() | (1 << operands[0].read())));
+        }
+    }
+
+    // JP - jump to address
+    private static class JP implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.pc.write(operands[0].read());
+        }
+    }
+
+    // JPNZ - jump to address if zero flag clear
+    private static class JPNZ implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO))
+                cpu.pc.write(operands[0].read());
+        }
+    }
+
+    // JPZ - jump to address if zero flag set
+    private static class JPZ implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO))
+                cpu.pc.write(operands[0].read());
+        }
+    }
+
+    // JPNC - jump to address if carry flag clear
+    private static class JPNC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY))
+                cpu.pc.write(operands[0].read());
+        }
+    }
+
+    // JPC - jump to address if carry flag set
+    private static class JPC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY))
+                cpu.pc.write(operands[0].read());
+        }
+    }
+
+    // JR - jump relative to current address in PC
+    private static class JR implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            // Operand is signed
+            char addr = (char)(cpu.pc.read() + (byte)operands[0].read());
+            cpu.pc.write(addr);
+        }
+    }
+
+    // JRNZ - jump relative to current address in PC if zero flag is clear
+    private static class JRNZ implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
+                // Operand is signed
+                char addr = (char)(cpu.pc.read() + (byte)operands[0].read());
+                cpu.pc.write(addr);
+            }
+        }
+    }
+
+    // JRZ - jump relative to current address in PC if zero flag is set
+    private static class JRZ implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
+                // Operand is signed
+                char addr = (char)(cpu.pc.read() + (byte)operands[0].read());
+                cpu.pc.write(addr);
+            }
+        }
+    }
+
+    // JRNC - jump relative to current address in PC if carry flag is clear
+    private static class JRNC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
+                // Operand is signed
+                char addr = (char)(cpu.pc.read() + (byte)operands[0].read());
+                cpu.pc.write(addr);
+            }
+        }
+    }
+
+    // JRC - jump relative to current address in PC if zero flag is clear
+    private static class JRC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
+                // Operand is signed
+                char addr = (char)(cpu.pc.read() + (byte)operands[0].read());
+                cpu.pc.write(addr);
+            }
         }
     }
 }

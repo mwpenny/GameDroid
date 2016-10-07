@@ -378,6 +378,112 @@ public class CPUTest {
         cpu.execInstruction();
         assertEquals(0, cpu.c.read());
     }
+
+    @Test
+    public void relativeJumps() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x18, 0x02, // JR 2
+                0x3E, 0x00, // LD A,0
+                0x3E, 0xFF, // LD A,$FF
+
+                0xFE, 0x00, // CP A,0
+                0x20, 0x02, // JR NZ,2
+                0x3E, 0x00, // LD A,0
+                0x00,       // NOP
+
+                0xFE, 0xFF, // CP A,$FF
+                0x28, 0x02, // JR Z,2
+                0x3E, 0x00, // LD A,0
+                0x00,       // NOP
+
+                0x37,       // SCF
+                0x38, 0x02, // JR C,2
+                0x3E, 0,    // LD A,0
+                0x00,       // NOP
+
+                0x3F,       // CCF
+                0x30, 0x02, // JR NC,2
+                0x3E, 0x00, // LD A,0
+                0x00        // NOP
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+    }
+
+    @Test
+    public void absoluteJumps() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0xC3, 0x05, 0x01, // JP $0105
+                0x3E, 0x00,       // LD A,0
+
+                // $0105
+                0x3E, 0xFF,       // LD A,$FF
+
+                0xFE, 0x00,       // CP A,0
+                0xC2, 0x0E, 0x01, // JP NZ,$010E
+                0x3E, 0x00,       // LD A,0
+
+                // $010E
+                0x00,             // NOP
+
+                0xFE, 0xFF,       // CP A,$FF
+                0xCA, 0x16, 0x01, // JP Z,$0116
+                0x3E, 0x00,       // LD A,0
+
+                // $0116
+                0x00,             // NOP
+
+                0x37,             // SCF
+                0xDA, 0x1D, 0x01, // JP C,$011D
+                0x3E, 0,          // LD A,0
+
+                // $011D
+                0x00,             // NOP
+
+                0x3F,             // CCF
+                0x30, 0x24, 0x01, // JP NC,$0124
+                0x3E, 0x00,       // LD A,0
+
+                // $0124
+                0x00              // NOP
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0xFF, cpu.a.read());
+    }
 }
 
  class FixtureMMU extends MMU {

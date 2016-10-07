@@ -13,9 +13,9 @@ Repository structure:
 |      | x0       | x1      | x2       | x3      | x4        | x5      | x6       | x7      | x8        | x9      | xA       | xB      | xC       | xD     | xE       | xF    |
 |------|----------|---------|----------|---------|-----------|---------|----------|---------|-----------|---------|----------|---------|----------|--------|----------|-------|
 |**x0**|          |         |          |         |           |         |          |RLCA     |           |ADD HL,BC|          |         |          |        |          |RRCA   |
-|**x1**|STOP 0    |         |          |         |           |         |          |RLA      |JR r8      |ADD HL,DE|          |         |          |        |          |RRA    |
-|**x2**|JR NZ,r8  |         |          |         |           |         |          |DAA      |JR Z,r8    |ADD HL,HL|          |         |          |        |          |CPL    |
-|**x3**|JR NC,r8  |         |          |         |           |         |          |         |JR C,r8    |ADD HL,SP|          |         |          |        |          |       |
+|**x1**|STOP 0    |         |          |         |           |         |          |RLA      |           |ADD HL,DE|          |         |          |        |          |RRA    |
+|**x2**|          |         |          |         |           |         |          |DAA      |           |ADD HL,HL|          |         |          |        |          |CPL    |
+|**x3**|          |         |          |         |           |         |          |         |           |ADD HL,SP|          |         |          |        |          |       |
 |**x4**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**x5**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**x6**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
@@ -24,9 +24,9 @@ Repository structure:
 |**x9**|SUB B     |SUB C    |SUB D     |SUB E    |SUB H      |SUB L    |SUB (HL)  |SUB A    |SBC A,B    |SBC A,C  |SBC A,D   |SBC A,E  |SBC A,H   |SBC A,L |SBC A,(HL)|SBC A,A|
 |**xA**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**xB**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xC**|RET NZ    |         |JP NZ,a16 |JP a16   |CALL NZ,a16|         |ADD A,d8  |RST 00H  |RET Z      |RET      |JP Z,a16  |         |CALL Z,a16|CALL a16|ADC A,d8  |RST 08H|
-|**xD**|RET NC    |         |JP NC,a16 |         |CALL NC,a16|         |SUB d8    |RST 10H  |RET C      |RETI     |JP C,a16  |         |CALL C,a16|        |SBC A,d8  |RST 18H|
-|**xE**|          |         |          |         |           |         |          |RST 20H  |ADD SP,r8  |JP (HL)  |          |         |          |        |          |RST 28H|
+|**xC**|RET NZ    |         |          |         |CALL NZ,a16|         |ADD A,d8  |RST 00H  |RET Z      |RET      |          |         |CALL Z,a16|CALL a16|ADC A,d8  |RST 08H|
+|**xD**|RET NC    |         |          |         |CALL NC,a16|         |SUB d8    |RST 10H  |RET C      |RETI     |          |         |CALL C,a16|        |SBC A,d8  |RST 18H|
+|**xE**|          |         |          |         |           |         |          |RST 20H  |ADD SP,r8  |         |          |         |          |        |          |RST 28H|
 |**xF**|          |         |          |DI       |           |         |          |RST 30H  |           |         |          |EI       |          |        |          |RST 38H|
 
 
