@@ -55,8 +55,14 @@ public class CPU {
         InstructionRoot ld = new LD();
         InstructionRoot ldi = new LDI();
         InstructionRoot ldd = new LDD();
+        InstructionRoot ldhl = new LDHL();
         InstructionRoot push = new PUSH();
         InstructionRoot pop = new POP();
+
+        InstructionRoot swap = new SWAP();
+        InstructionRoot bit = new BIT();
+        InstructionRoot res = new RES();
+        InstructionRoot set = new SET();
 
         /* Build the one-byte instruction lookup table */
         oneByteInstructions = new HashMap<>();
@@ -161,6 +167,7 @@ public class CPU {
         oneByteInstructions.put((char) 0xEA, new InstructionForm(ld, new Cursor[] {twoByteIndirect8, a}));
         oneByteInstructions.put((char) 0xF0, new InstructionForm(ld, new Cursor[] {a, oneByteIndirect8}));
         oneByteInstructions.put((char) 0xF2, new InstructionForm(ld, new Cursor[] {a, ic}));
+        oneByteInstructions.put((char) 0xF8, new InstructionForm(ldhl, new Cursor[] {immediate8}));
         oneByteInstructions.put((char) 0xFA, new InstructionForm(ld, new Cursor[] {a, twoByteIndirect8}));
 
         oneByteInstructions.put((char) 0x02, new InstructionForm(ld, new Cursor[] {ibc, a}));
@@ -255,6 +262,58 @@ public class CPU {
 
         /* Build the two-byte instruction lookup table */
         twoByteInstructions = new HashMap<>();
+
+        // SWAP
+        twoByteInstructions.put((char) 0x30, new InstructionForm(swap, new Cursor[] {b}));
+        twoByteInstructions.put((char) 0x31, new InstructionForm(swap, new Cursor[] {c}));
+        twoByteInstructions.put((char) 0x32, new InstructionForm(swap, new Cursor[] {d}));
+        twoByteInstructions.put((char) 0x33, new InstructionForm(swap, new Cursor[] {e}));
+        twoByteInstructions.put((char) 0x34, new InstructionForm(swap, new Cursor[] {h}));
+        twoByteInstructions.put((char) 0x35, new InstructionForm(swap, new Cursor[] {l}));
+        twoByteInstructions.put((char) 0x36, new InstructionForm(swap, new Cursor[] {ihl}));
+        twoByteInstructions.put((char) 0x37, new InstructionForm(swap, new Cursor[] {a}));
+
+        // BIT
+        Cursor[] bitCursors = new Cursor[8];
+
+        for (int i = 0; i < 8; ++i) {
+            char opcode = (char)(0x40 + 8*i);
+            bitCursors[i] = new ConstantCursor8((char)i);
+            twoByteInstructions.put(opcode, new InstructionForm(bit, new Cursor[] {bitCursors[i], b}));
+            twoByteInstructions.put((char)(opcode+1), new InstructionForm(bit, new Cursor[] {bitCursors[i], c}));
+            twoByteInstructions.put((char)(opcode+2), new InstructionForm(bit, new Cursor[] {bitCursors[i], d}));
+            twoByteInstructions.put((char)(opcode+3), new InstructionForm(bit, new Cursor[] {bitCursors[i], e}));
+            twoByteInstructions.put((char)(opcode+4), new InstructionForm(bit, new Cursor[] {bitCursors[i], h}));
+            twoByteInstructions.put((char)(opcode+5), new InstructionForm(bit, new Cursor[] {bitCursors[i], l}));
+            twoByteInstructions.put((char)(opcode+6), new InstructionForm(bit, new Cursor[] {bitCursors[i], ihl}));
+            twoByteInstructions.put((char)(opcode+7), new InstructionForm(bit, new Cursor[] {bitCursors[i], a}));
+        }
+
+        // RES
+        for (char i = 0; i < 8; ++i) {
+            char opcode = (char)(0x80 + 8*i);
+            twoByteInstructions.put(opcode, new InstructionForm(res, new Cursor[] {bitCursors[i], b}));
+            twoByteInstructions.put((char)(opcode+1), new InstructionForm(res, new Cursor[] {bitCursors[i], c}));
+            twoByteInstructions.put((char)(opcode+2), new InstructionForm(res, new Cursor[] {bitCursors[i], d}));
+            twoByteInstructions.put((char)(opcode+3), new InstructionForm(res, new Cursor[] {bitCursors[i], e}));
+            twoByteInstructions.put((char)(opcode+4), new InstructionForm(res, new Cursor[] {bitCursors[i], h}));
+            twoByteInstructions.put((char)(opcode+5), new InstructionForm(res, new Cursor[] {bitCursors[i], l}));
+            twoByteInstructions.put((char)(opcode+6), new InstructionForm(res, new Cursor[] {bitCursors[i], ihl}));
+            twoByteInstructions.put((char)(opcode+7), new InstructionForm(res, new Cursor[] {bitCursors[i], a}));
+        }
+
+        // SET
+        for (char i = 0; i < 8; ++i) {
+            char opcode = (char)(0xC0 + 8*i);
+            twoByteInstructions.put(opcode, new InstructionForm(set, new Cursor[] {bitCursors[i], b}));
+            twoByteInstructions.put((char)(opcode+1), new InstructionForm(set, new Cursor[] {bitCursors[i], c}));
+            twoByteInstructions.put((char)(opcode+2), new InstructionForm(set, new Cursor[] {bitCursors[i], d}));
+            twoByteInstructions.put((char)(opcode+3), new InstructionForm(set, new Cursor[] {bitCursors[i], e}));
+            twoByteInstructions.put((char)(opcode+4), new InstructionForm(set, new Cursor[] {bitCursors[i], h}));
+            twoByteInstructions.put((char)(opcode+5), new InstructionForm(set, new Cursor[] {bitCursors[i], l}));
+            twoByteInstructions.put((char)(opcode+6), new InstructionForm(set, new Cursor[] {bitCursors[i], ihl}));
+            twoByteInstructions.put((char)(opcode+7), new InstructionForm(set, new Cursor[] {bitCursors[i], a}));
+        }
     }
 
     private void pushStack(char value) {
@@ -454,6 +513,19 @@ public class CPU {
             cpu.hl.decrement();
         }
     }
+    private static class LDHL implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char x = cpu.sp.read();
+            byte y = (byte)operands[0].read();  // Treat as signed
+            int val = x + y;
+            cpu.hl.write((char)val);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, false);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) + (y & 0xF) > 0xF);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (x & 0xFF) + y > 0xFF);
+        }
+    }
 
     // NOP - no operation
     private static class NOP implements InstructionRoot {
@@ -579,6 +651,44 @@ public class CPU {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             operands[0].write(cpu.popStack());
+        }
+    }
+
+    // SWAP - swap upper and lower nibbles
+    private static class SWAP implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char val = operands[0].read();
+            val = (char)(((val << 4) | (val >>> 4)) & 0xFF);
+            operands[0].write(val);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, val == 0);
+        }
+    }
+
+    // BIT - test bit in register
+    private static class BIT implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            boolean bitZero = (operands[1].read() & (1 << operands[0].read())) == 0;
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, bitZero);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, true);
+        }
+    }
+
+    // RES - reset bit in register
+    private static class RES implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            operands[1].write((char)(operands[1].read() & ~(1 << operands[0].read())));
+        }
+    }
+
+    // SET - set bit in register
+    private static class SET implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            operands[1].write((char)(operands[1].read() | (1 << operands[0].read())));
         }
     }
 }
