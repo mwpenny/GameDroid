@@ -21,7 +21,7 @@ public class MMU {
             case 0xC000:
             case 0xD000:
             case 0xE000:
-                return (char) workRam[addr & 0x1FFF];
+                return (char)(workRam[addr & 0x1FFF] & 0xFF);
         }
         if (addr >= 0xFF80 && addr <= 0xFFFE)
             return (char) stack[addr - 0xFF80];
