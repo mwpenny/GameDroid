@@ -7,6 +7,7 @@ public class CPU {
     public Register a, b, c, d, e, h, l, af, bc, de, hl, sp, pc;
     public FlagRegister f;
     public MMU mmu;
+    private boolean interruptsEnabled;
 
     /* These are not actual cursors to read or write from, but special singleton values used as
        signals for interpreting instruction operands. */
@@ -16,9 +17,25 @@ public class CPU {
     public static ConstantCursor8 twoByteIndirect8 = new ConstantCursor8((char) 0);
     public static ConstantCursor16 indirect16 = new ConstantCursor16((char) 0);
 
-
     private HashMap<Character, InstructionForm> oneByteInstructions;
     private HashMap<Character, InstructionForm> twoByteInstructions;
+
+    public enum Interrupt {
+        VBLANK(0x01),
+        LCD(0x02),
+        TIMER(0x04),
+        SERIAL(0x08),
+        JOYPAD(0x10);
+
+        private final byte bitmask;
+        Interrupt(int mask) {
+            bitmask = (byte)mask;
+        }
+
+        public byte getBitmask() {
+            return bitmask;
+        }
+    }
 
     public CPU(MMU mmu) {
         this.mmu = mmu;
@@ -72,6 +89,8 @@ public class CPU {
         oneByteInstructions.put((char) 0x00, new InstructionForm(new NOP(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x37, new InstructionForm(new SCF(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x3F, new InstructionForm(new CCF(), new Cursor[]{}));
+        oneByteInstructions.put((char) 0xF3, new InstructionForm(new DI(), new Cursor[]{}));
+        oneByteInstructions.put((char) 0xFB, new InstructionForm(new EI(), new Cursor[]{}));
 
         // INC
         oneByteInstructions.put((char) 0x03, new InstructionForm(inc16, new Cursor[] {bc}));
@@ -287,6 +306,7 @@ public class CPU {
         oneByteInstructions.put((char) 0xC8, new InstructionForm(new RETZ(), new Cursor[] {}));
         oneByteInstructions.put((char) 0xD0, new InstructionForm(new RETNC(), new Cursor[] {}));
         oneByteInstructions.put((char) 0xD8, new InstructionForm(new RETC(), new Cursor[] {}));
+        oneByteInstructions.put((char) 0xD9, new InstructionForm(new RETI(), new Cursor[] {}));
 
         // PUSH/POP
         oneByteInstructions.put((char) 0xF1, new InstructionForm(pop, new Cursor[] {af}));
@@ -370,6 +390,12 @@ public class CPU {
         return val;
     }
 
+    public void raiseInterrupt(Interrupt interrupt) {
+        // Request an interrupt (to be serviced before executing the next instruction)
+        char raisedInterrupts = (char)(mmu.read8((char)0xFF0F) | interrupt.getBitmask());
+        mmu.write8((char)0xFF0F, raisedInterrupts);
+    }
+
     public void reset() {
         // These are the effective output of the boot rom (an internal rom inside every GameBoy)
         af.write((char) 0x0EB0);
@@ -381,6 +407,37 @@ public class CPU {
     }
 
     public void execInstruction() {
+        char raisedInterrupts = mmu.read8((char)0xFF0F);
+        char enabledInterrupts = mmu.read8((char)0xFFFF);
+        byte raisedEnabledInterrupts = (byte)(enabledInterrupts & raisedInterrupts);
+
+        // Service interrupts
+        if (interruptsEnabled && (raisedEnabledInterrupts & 0x1F) != 0) {
+            interruptsEnabled = false;
+            pushStack(pc.read());
+
+            // Jump to interrupt handler according to priority
+            if ((raisedEnabledInterrupts & Interrupt.VBLANK.getBitmask()) != 0) {
+                raisedInterrupts &= ~Interrupt.VBLANK.getBitmask();
+                pc.write((char)0x40);
+            } else if ((raisedEnabledInterrupts & Interrupt.LCD.getBitmask()) != 0) {
+                raisedInterrupts &= ~Interrupt.LCD.getBitmask();
+                pc.write((char)0x48);
+            } else if ((raisedEnabledInterrupts & Interrupt.TIMER.getBitmask()) != 0) {
+                raisedInterrupts &= ~Interrupt.TIMER.getBitmask();
+                pc.write((char)0x50);
+            } else if ((raisedEnabledInterrupts & Interrupt.SERIAL.getBitmask()) != 0) {
+                raisedInterrupts &= ~Interrupt.SERIAL.getBitmask();
+                pc.write((char)0x58);
+            } else {
+                raisedInterrupts &= ~Interrupt.JOYPAD.getBitmask();
+                pc.write((char)0x60);
+            }
+
+            // Write new flags (with bit for serviced interrupt unset)
+            mmu.write8((char)0xFF0F, raisedInterrupts);
+        }
+
         char optByte = mmu.read8(pc.read());
 
         // $CB prefix -> instruction is two bytes
@@ -940,6 +997,31 @@ public class CPU {
             if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
                 cpu.pc.write(cpu.popStack());
             }
+        }
+    }
+
+    // RETI - return from function and enable interrupts
+    private static class RETI implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.pc.write(cpu.popStack());
+            cpu.interruptsEnabled = true;
+        }
+    }
+
+    // EI - enable interrupts
+    private static class EI implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.interruptsEnabled = true;
+        }
+    }
+
+    // DI - disable interrupts
+    private static class DI implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.interruptsEnabled = false;
         }
     }
 }

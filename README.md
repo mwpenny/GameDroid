@@ -25,9 +25,9 @@ Repository structure:
 |**xA**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**xB**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**xC**|          |         |          |         |           |         |ADD A,d8  |         |           |         |          |         |          |        |ADC A,d8  |       |
-|**xD**|          |         |          |         |           |         |SUB d8    |         |           |RETI     |          |         |          |        |SBC A,d8  |       |
+|**xD**|          |         |          |         |           |         |SUB d8    |         |           |         |          |         |          |        |SBC A,d8  |       |
 |**xE**|          |         |          |         |           |         |          |         |ADD SP,r8  |         |          |         |          |        |          |       |
-|**xF**|          |         |          |DI       |           |         |          |         |           |         |          |EI       |          |        |          |       |
+|**xF**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 
 
 # CPU instructions to implement (prefix CB)

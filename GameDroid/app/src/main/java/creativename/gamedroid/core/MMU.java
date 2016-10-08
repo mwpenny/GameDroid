@@ -7,12 +7,15 @@ package creativename.gamedroid.core;
 public class MMU {
     private byte workRam[];
     private byte stack[];
+    private byte raisedInterrupts;
+    private byte enabledInterrupts;
 
     // TODO: $D000-$DFFF does not mirror $C000-$CFFF
 
     public MMU() {
         workRam = new byte[0x2000];
         stack = new byte[0x7F];
+        raisedInterrupts = 0;
         reset();
     }
 
@@ -23,8 +26,12 @@ public class MMU {
             case 0xE000:
                 return (char)(workRam[addr & 0x1FFF] & 0xFF);
         }
-        if (addr >= 0xFF80 && addr <= 0xFFFE)
-            return (char) stack[addr - 0xFF80];
+        if (addr == 0xFF0F)
+            return (char)(raisedInterrupts & 0xFF);
+        else if (addr >= 0xFF80 && addr <= 0xFFFE)
+            return (char)(stack[addr - 0xFF80] & 0xFF);
+        else if (addr == 0xFFFF)
+            return (char)(enabledInterrupts & 0xFF);
 
         System.err.println(String.format("Warning: invalid memory read at $%04X", (int)addr));
         return 0;
@@ -38,8 +45,14 @@ public class MMU {
                 workRam[addr & 0x1FFF] = (byte) value;
                 return;
         }
-        if (addr >= 0xFF80 && addr <= 0xFFFE) {
+        if (addr == 0xFF0F) {
+            raisedInterrupts = (byte) value;
+            return;
+        } else if (addr >= 0xFF80 && addr <= 0xFFFE) {
             stack[addr - 0xFF80] = (byte) value;
+            return;
+        } else if (addr == 0xFFFF) {
+            enabledInterrupts = (byte) value;
             return;
         }
         System.err.println(String.format("Warning: invalid memory write at $%04X", (int)addr));
