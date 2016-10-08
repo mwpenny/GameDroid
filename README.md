@@ -24,10 +24,10 @@ Repository structure:
 |**x9**|SUB B     |SUB C    |SUB D     |SUB E    |SUB H      |SUB L    |SUB (HL)  |SUB A    |SBC A,B    |SBC A,C  |SBC A,D   |SBC A,E  |SBC A,H   |SBC A,L |SBC A,(HL)|SBC A,A|
 |**xA**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**xB**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xC**|RET NZ    |         |          |         |CALL NZ,a16|         |ADD A,d8  |RST 00H  |RET Z      |RET      |          |         |CALL Z,a16|CALL a16|ADC A,d8  |RST 08H|
-|**xD**|RET NC    |         |          |         |CALL NC,a16|         |SUB d8    |RST 10H  |RET C      |RETI     |          |         |CALL C,a16|        |SBC A,d8  |RST 18H|
-|**xE**|          |         |          |         |           |         |          |RST 20H  |ADD SP,r8  |         |          |         |          |        |          |RST 28H|
-|**xF**|          |         |          |DI       |           |         |          |RST 30H  |           |         |          |EI       |          |        |          |RST 38H|
+|**xC**|          |         |          |         |           |         |ADD A,d8  |         |           |         |          |         |          |        |ADC A,d8  |       |
+|**xD**|          |         |          |         |           |         |SUB d8    |         |           |RETI     |          |         |          |        |SBC A,d8  |       |
+|**xE**|          |         |          |         |           |         |          |         |ADD SP,r8  |         |          |         |          |        |          |       |
+|**xF**|          |         |          |DI       |           |         |          |         |           |         |          |EI       |          |        |          |       |
 
 
 # CPU instructions to implement (prefix CB)

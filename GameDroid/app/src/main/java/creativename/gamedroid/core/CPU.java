@@ -55,7 +55,6 @@ public class CPU {
         InstructionRoot ld = new LD();
         InstructionRoot ldi = new LDI();
         InstructionRoot ldd = new LDD();
-        InstructionRoot ldhl = new LDHL();
         InstructionRoot push = new PUSH();
         InstructionRoot pop = new POP();
         InstructionRoot swap = new SWAP();
@@ -63,15 +62,8 @@ public class CPU {
         InstructionRoot res = new RES();
         InstructionRoot set = new SET();
         InstructionRoot jp = new JP();
-        InstructionRoot jpnz = new JPNZ();
-        InstructionRoot jpz = new JPZ();
-        InstructionRoot jpnc = new JPNC();
-        InstructionRoot jpc = new JPC();
         InstructionRoot jr = new JR();
-        InstructionRoot jrnz = new JRNZ();
-        InstructionRoot jrz = new JRZ();
-        InstructionRoot jrnc = new JRNC();
-        InstructionRoot jrc = new JRC();
+        InstructionRoot rst = new RST();
 
         /* Build the one-byte instruction lookup table */
         oneByteInstructions = new HashMap<>();
@@ -176,7 +168,7 @@ public class CPU {
         oneByteInstructions.put((char) 0xEA, new InstructionForm(ld, new Cursor[] {twoByteIndirect8, a}));
         oneByteInstructions.put((char) 0xF0, new InstructionForm(ld, new Cursor[] {a, oneByteIndirect8}));
         oneByteInstructions.put((char) 0xF2, new InstructionForm(ld, new Cursor[] {a, ic}));
-        oneByteInstructions.put((char) 0xF8, new InstructionForm(ldhl, new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0xF8, new InstructionForm(new LDHL(), new Cursor[] {immediate8}));
         oneByteInstructions.put((char) 0xFA, new InstructionForm(ld, new Cursor[] {a, twoByteIndirect8}));
 
         oneByteInstructions.put((char) 0x02, new InstructionForm(ld, new Cursor[] {ibc, a}));
@@ -261,16 +253,40 @@ public class CPU {
         // Jumps
         oneByteInstructions.put((char) 0xC3, new InstructionForm(jp, new Cursor[] {immediate16}));
         oneByteInstructions.put((char) 0xE9, new InstructionForm(jp, new Cursor[] {hl}));
-        oneByteInstructions.put((char) 0xC2, new InstructionForm(jpnz, new Cursor[] {immediate16}));
-        oneByteInstructions.put((char) 0xCA, new InstructionForm(jpz, new Cursor[] {immediate16}));
-        oneByteInstructions.put((char) 0xD2, new InstructionForm(jpnc, new Cursor[] {immediate16}));
-        oneByteInstructions.put((char) 0xDA, new InstructionForm(jpc, new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xC2, new InstructionForm(new JPNZ(), new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xCA, new InstructionForm(new JPZ(), new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xD2, new InstructionForm(new JPNC(), new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xDA, new InstructionForm(new JPC(), new Cursor[] {immediate16}));
 
         oneByteInstructions.put((char) 0x18, new InstructionForm(jr, new Cursor[] {immediate8}));
-        oneByteInstructions.put((char) 0x20, new InstructionForm(jrnz, new Cursor[] {immediate8}));
-        oneByteInstructions.put((char) 0x28, new InstructionForm(jrz, new Cursor[] {immediate8}));
-        oneByteInstructions.put((char) 0x30, new InstructionForm(jrnc, new Cursor[] {immediate8}));
-        oneByteInstructions.put((char) 0x38, new InstructionForm(jrc, new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0x20, new InstructionForm(new JRNZ(), new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0x28, new InstructionForm(new JRZ(), new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0x30, new InstructionForm(new JRNC(), new Cursor[] {immediate8}));
+        oneByteInstructions.put((char) 0x38, new InstructionForm(new JRC(), new Cursor[] {immediate8}));
+
+        // Calls
+        oneByteInstructions.put((char) 0xCD, new InstructionForm(new CALL(), new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xC4, new InstructionForm(new CALLNZ(), new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xCC, new InstructionForm(new CALLZ(), new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xD4, new InstructionForm(new CALLNC(), new Cursor[] {immediate16}));
+        oneByteInstructions.put((char) 0xDC, new InstructionForm(new CALLC(), new Cursor[] {immediate16}));
+
+        // RST
+        oneByteInstructions.put((char) 0xC7, new InstructionForm(rst, new Cursor[]{new ConstantCursor8((char)0x00)}));
+        oneByteInstructions.put((char) 0xCF, new InstructionForm(rst, new Cursor[]{new ConstantCursor8((char)0x08)}));
+        oneByteInstructions.put((char) 0xD7, new InstructionForm(rst, new Cursor[]{new ConstantCursor8((char)0x10)}));
+        oneByteInstructions.put((char) 0xDF, new InstructionForm(rst, new Cursor[]{new ConstantCursor8((char)0x18)}));
+        oneByteInstructions.put((char) 0xE7, new InstructionForm(rst, new Cursor[]{new ConstantCursor8((char)0x20)}));
+        oneByteInstructions.put((char) 0xEF, new InstructionForm(rst, new Cursor[]{new ConstantCursor8((char)0x28)}));
+        oneByteInstructions.put((char) 0xF7, new InstructionForm(rst, new Cursor[]{new ConstantCursor8((char)0x30)}));
+        oneByteInstructions.put((char) 0xFF, new InstructionForm(rst, new Cursor[]{new ConstantCursor8((char)0x38)}));
+
+        // Returns
+        oneByteInstructions.put((char) 0xC9, new InstructionForm(new RET(), new Cursor[] {}));
+        oneByteInstructions.put((char) 0xC0, new InstructionForm(new RETNZ(), new Cursor[] {}));
+        oneByteInstructions.put((char) 0xC8, new InstructionForm(new RETZ(), new Cursor[] {}));
+        oneByteInstructions.put((char) 0xD0, new InstructionForm(new RETNC(), new Cursor[] {}));
+        oneByteInstructions.put((char) 0xD8, new InstructionForm(new RETC(), new Cursor[] {}));
 
         // PUSH/POP
         oneByteInstructions.put((char) 0xF1, new InstructionForm(pop, new Cursor[] {af}));
@@ -813,6 +829,116 @@ public class CPU {
                 // Operand is signed
                 char addr = (char)(cpu.pc.read() + (byte)operands[0].read());
                 cpu.pc.write(addr);
+            }
+        }
+    }
+
+    // CALL - push address of next op onto stack and jump
+    private static class CALL implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.pushStack(cpu.pc.read());
+            cpu.pc.write(operands[0].read());
+        }
+    }
+
+    // CALLNZ - if zero flag is clear, push address of next op onto stack and jump
+    private static class CALLNZ implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
+                cpu.pushStack(cpu.pc.read());
+                cpu.pc.write(operands[0].read());
+            }
+        }
+    }
+
+    // CALLZ - if zero flag is set, push address of next op onto stack and jump
+    private static class CALLZ implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
+                cpu.pushStack(cpu.pc.read());
+                cpu.pc.write(operands[0].read());
+            }
+        }
+    }
+
+    // CALLNC - if carry flag is clear, push address of next op onto stack and jump
+    private static class CALLNC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
+                cpu.pushStack(cpu.pc.read());
+                cpu.pc.write(operands[0].read());
+            }
+        }
+    }
+
+    // CALLC - if carry flag is set, push address of next op onto stack and jump
+    private static class CALLC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
+                cpu.pushStack(cpu.pc.read());
+                cpu.pc.write(operands[0].read());
+            }
+        }
+    }
+
+    // RST - restart execution
+    private static class RST implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.pushStack(cpu.pc.read());
+            cpu.pc.write(operands[0].read());
+        }
+    }
+
+    // RET - return from function
+    private static class RET implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.pc.write(cpu.popStack());
+        }
+    }
+
+    // RETNZ - return from function if zero flag is clear
+    private static class RETNZ implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
+                cpu.pc.write(cpu.popStack());
+            }
+        }
+    }
+
+    // RETZ - return from function if zero flag is set
+    private static class RETZ implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
+                cpu.pc.write(cpu.popStack());
+            }
+        }
+    }
+
+    // RETNC - return from function if carry flag is clear
+    private static class RETNC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
+                cpu.pc.write(cpu.popStack());
+            }
+        }
+    }
+
+    // RETC - return from function if carry flag is set
+    private static class RETC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
+                cpu.pc.write(cpu.popStack());
             }
         }
     }
