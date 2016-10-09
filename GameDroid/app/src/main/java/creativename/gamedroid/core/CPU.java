@@ -638,11 +638,12 @@ public class CPU {
         }
     }
 
-    // CCF - clear carry flag
+    // CCF - complement carry flag
     private static class CCF implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
-            cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY,
+                             !cpu.f.isFlagSet(FlagRegister.Flag.CARRY));
         }
     }
 
