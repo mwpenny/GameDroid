@@ -557,6 +557,49 @@ public class CPUTest {
         cpu.execInstruction();
         assertEquals(0x10, cpu.pc.read());
     }
+
+    @Test
+    public void rotateLeft() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+            0x3E, 0b11101010,  // LD A, 0b11101010
+            0x07,              // RLCA
+
+            0x3E, 0b01011010,  // LD A, 0b01011010
+            0x07,              // RLCA
+
+            0x37,              // set carry flag
+            0x3E, 0b10011010,  // LD A, 0b10011010
+            0x17,              // RLA
+
+            0xAF,              // XOR A, A clear carry
+            0x3E, 0b00011010,  // LD A, 0b10011010
+            0x17,              // RLA
+        }));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b11010101, cpu.a.read());
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b10110100, cpu.a.read());
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b00110101, cpu.a.read());
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        cpu.execInstruction();
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b00110100, cpu.a.read());
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+    }
+
 }
 
  class FixtureMMU extends MMU {
