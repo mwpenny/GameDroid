@@ -641,6 +641,35 @@ public class CPUTest {
         assertEquals(0b00001101, cpu.a.read());
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
     }
+
+    @Test
+    public void logicalShiftLeft() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0b11101011,  // LD A, 0b11101011
+                0xCB, 0x27,        // SLA A
+
+                0x3E, 0b01011010,  // LD A, 0b01011010
+                0xCB, 0x27,        // SLA A
+
+                0x3E, 0,           // LD A, 0
+                0xCB, 0x27,        // SLA A
+        }));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b11010110, cpu.a.read());
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b10110100, cpu.a.read());
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+    }
 }
 
  class FixtureMMU extends MMU {

@@ -368,6 +368,16 @@ public class CPU {
         twoByteInstructions.put((char) 0x1D, new InstructionForm(rr, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x1E, new InstructionForm(rr, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x1F, new InstructionForm(rr, new Cursor[]{a}));
+        // SLA
+        InstructionRoot sla = new SLA();
+        twoByteInstructions.put((char) 0x20, new InstructionForm(sla, new Cursor[]{b}));
+        twoByteInstructions.put((char) 0x21, new InstructionForm(sla, new Cursor[]{c}));
+        twoByteInstructions.put((char) 0x22, new InstructionForm(sla, new Cursor[]{d}));
+        twoByteInstructions.put((char) 0x23, new InstructionForm(sla, new Cursor[]{e}));
+        twoByteInstructions.put((char) 0x24, new InstructionForm(sla, new Cursor[]{h}));
+        twoByteInstructions.put((char) 0x25, new InstructionForm(sla, new Cursor[]{l}));
+        twoByteInstructions.put((char) 0x26, new InstructionForm(sla, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x27, new InstructionForm(sla, new Cursor[]{a}));
         // SWAP
         twoByteInstructions.put((char) 0x30, new InstructionForm(swap, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x31, new InstructionForm(swap, new Cursor[]{c}));
@@ -1137,6 +1147,20 @@ public class CPU {
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
+            operands[0].write((char) shifted);
+        }
+    }
+
+    // SLA - logical shift left
+    private static class SLA implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            int shifted = operands[0].read() << 1;
+            cpu.f.write((char) 0);
+            if ((shifted & (1 << 8)) > 0) {
+                cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
+            }
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
             operands[0].write((char) shifted);
         }
