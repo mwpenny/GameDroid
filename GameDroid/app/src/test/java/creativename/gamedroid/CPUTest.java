@@ -653,6 +653,9 @@ public class CPUTest {
 
                 0x3E, 0,           // LD A, 0
                 0xCB, 0x27,        // SLA A
+
+                0x3E, 0b10000000,   // LD A, 0
+                0xCB, 0x27,        // SLA A
         }));
 
         cpu.execInstruction();
@@ -665,6 +668,10 @@ public class CPUTest {
         assertEquals(0b10110100, cpu.a.read());
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
         assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
 
         cpu.execInstruction();
         cpu.execInstruction();
