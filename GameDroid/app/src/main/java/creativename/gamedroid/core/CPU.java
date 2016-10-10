@@ -1098,8 +1098,8 @@ public class CPU {
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & (1 << 8)) > 0);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
             operands[0].write((char) shifted);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
         }
     }
 
