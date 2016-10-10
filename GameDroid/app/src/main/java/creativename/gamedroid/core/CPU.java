@@ -694,6 +694,8 @@ public class CPU {
     private static class SCF implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
         }
     }
@@ -702,6 +704,8 @@ public class CPU {
     private static class CCF implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY,
                     !cpu.f.isFlagSet(FlagRegister.Flag.CARRY));
         }

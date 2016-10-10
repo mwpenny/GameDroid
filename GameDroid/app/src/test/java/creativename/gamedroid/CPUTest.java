@@ -575,7 +575,7 @@ public class CPUTest {
                 0x3E, 0b00011010,  // LD A, 0b00011010
                 0x17,              // RLA
 
-                0x3E, 0b10000000,  // LD A, 0b00011010
+                0x3E, 0b10000000,  // LD A, 0b10000000
                 0x17,              // RLA
         }));
 
@@ -624,7 +624,7 @@ public class CPUTest {
                 0x3E, 0b00011010,  // LD A, 0b00011010
                 0x1F,              // RRA
 
-                0x3E, 0b00000001,  // LD A, 0b00011010
+                0x3E, 0b00000001,  // LD A, 0b00000001
                 0x1F,              // RRA
         }));
 
@@ -668,8 +668,8 @@ public class CPUTest {
                 0x3E, 0,           // LD A, 0
                 0xCB, 0x27,        // SLA A
 
-                0x3E, 0b10000000,   // LD A, 0
-                0xCB, 0x27,        // SLA A
+                0x3E, 0b10000000,   // LD A, 0b10000000
+                0xCB, 0x27,         // SLA A
         }));
 
         cpu.execInstruction();
