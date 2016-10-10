@@ -1,0 +1,7 @@
+2hrs, 30mins	Research on CPU operation and peculiarities (timing information, addressing modes, conditions for flags, interrupt handling, etc.)
+2hrs		CPU and MMU class implementation (MMU tweaks, stack, indirect addressing, and interrupt implementation)
+5hrs, 15mins	Implementing CPU instructions
+1hr, 30mins	Writing tests for CPU instructions
+
+---
+11hrs, 15mins	Total
