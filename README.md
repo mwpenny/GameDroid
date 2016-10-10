@@ -34,8 +34,8 @@ Repository structure:
 
 |      | x0       | x1      | x2       | x3      | x4        | x5      | x6       | x7      | x8        | x9      | xA       | xB      | xC       | xD     | xE       | xF    |
 |------|----------|---------|----------|---------|-----------|---------|----------|---------|-----------|---------|----------|---------|----------|--------|----------|-------|
-|**x0**|          |         |          |         |           |         |          |         |RRC B      |RRC C    |RRC D     |RRC E    |RRC H     |RRC L   |RRC (HL)  |RRC A  |
-|**x1**|          |         |          |         |           |         |          |         |RR B       |RR C     |RR D      |RR E     |RR H      |RR L    |RR (HL)   |RR A   |
+|**x0**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
+|**x1**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**x2**|          |         |          |         |           |         |          |         |SRA B      |SRA C    |SRA D     |SRA E    |SRA H     |SRA L   |SRA (HL)  |SRA A  |
 |**x3**|          |         |          |         |           |         |          |         |SRL B      |SRL C    |SRL D     |SRL E    |SRL H     |SRL L   |SRL (HL)  |SRL A  |
 |**x4**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
