@@ -1,2 +1,6 @@
 6.5hr implementation of CPU and MMU class + some variants of the LD instruction
  .5hr refactor register classes
+2.5hr rotates and left shift
+
+------
+9.5 hours total
