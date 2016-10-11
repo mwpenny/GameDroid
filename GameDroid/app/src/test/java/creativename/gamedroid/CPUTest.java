@@ -691,6 +691,81 @@ public class CPUTest {
         cpu.execInstruction();
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
+
+    @Test
+    public void cpl() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0b11101011,  // LD A, 0b11101011
+                0x2F               // CPL
+        }));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b00010100, cpu.a.read());
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+    }
+
+    @Test
+    public void daa() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x37,       // SCF
+                0x3F,       // CCF
+
+                0x3E, 0x0F, // LD A,$0F
+                0x3C,       // INC A
+                0x27,       // DAA
+
+                0x3E, 0x09, // LD A,$09
+                0x3C,       // INC A
+                0x27,       // DAA
+
+                0x3E, 0xA4, // LD A,$A4
+                0x3C,       // INC A
+                0x27,       // DAA
+
+                0x3E, 0xA6, // LD A,$A6
+                0x3D,       // DEC A
+                0x27,       // DAA
+
+                0x3E, 0x10, // LD A,$10
+                0x3D,       // DEC A
+                0x27        // DAA
+        }));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        // A == $10
+        cpu.execInstruction();
+        assertEquals(0x16, cpu.a.read());
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        // A == $0A
+        cpu.execInstruction();
+        assertEquals(0x10, cpu.a.read());
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        // A == $A5
+        cpu.execInstruction();
+        assertEquals(0x05, cpu.a.read());
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        // A == $05
+        cpu.execInstruction();
+        assertEquals(0x45, cpu.a.read());
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        // A == $0F
+        cpu.execInstruction();
+        assertEquals(0x09, cpu.a.read());
+    }
 }
 
  class FixtureMMU extends MMU {

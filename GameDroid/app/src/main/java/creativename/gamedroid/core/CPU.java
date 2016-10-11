@@ -1,7 +1,5 @@
 package creativename.gamedroid.core;
 
-import android.os.Debug;
-
 import java.util.HashMap;
 
 /* Sharp LR35902 interpreter */
@@ -96,8 +94,10 @@ public class CPU {
         oneByteInstructions.put((char) 0x00, new InstructionForm(new NOP(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x37, new InstructionForm(new SCF(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x3F, new InstructionForm(new CCF(), new Cursor[]{}));
+        oneByteInstructions.put((char) 0x2F, new InstructionForm(new CPL(), new Cursor[]{}));
         oneByteInstructions.put((char) 0xF3, new InstructionForm(new DI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0xFB, new InstructionForm(new EI(), new Cursor[]{}));
+        oneByteInstructions.put((char) 0x27, new InstructionForm(new DAA(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x07, new InstructionForm(rlc, new Cursor[]{a}));
         oneByteInstructions.put((char) 0x17, new InstructionForm(rl, new Cursor[]{a}));
         oneByteInstructions.put((char) 0x0F, new InstructionForm(rrc, new Cursor[]{a}));
@@ -711,6 +711,16 @@ public class CPU {
         }
     }
 
+    // CPL - complement A register
+    private static class CPL implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, true);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
+            cpu.a.write((char)(~cpu.a.read() & 0xFF));
+        }
+    }
+
     // CP - compare A with n
     private static class CP implements InstructionRoot {
         @Override
@@ -1101,7 +1111,7 @@ public class CPU {
                 shifted ^= 1;
             }
             cpu.f.write((char) 0);
-            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & (1 << 8)) > 0);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & 0x100) > 0);
             operands[0].write((char) shifted);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
         }
@@ -1113,7 +1123,7 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             cpu.f.write((char) 0);
             int shifted = operands[0].read() << 1;
-            if ((shifted & (1 << 8)) > 0) {
+            if ((shifted & 0x100) > 0) {
                 shifted ^= 1;
                 cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
             }
@@ -1130,7 +1140,7 @@ public class CPU {
             final boolean zerothBitWasSet = (val & 1) > 0;
             int shifted = val >> 1;
             if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
-                shifted ^= 1 << 7;
+                shifted ^= 0x80;
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
@@ -1147,7 +1157,7 @@ public class CPU {
             final boolean zerothBitWasSet = (val & 1) > 0;
             int shifted = val >> 1;
             if (zerothBitWasSet) {
-                shifted ^= 1 << 7;
+                shifted ^= 0x80;
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
@@ -1162,11 +1172,34 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             int shifted = operands[0].read() << 1;
             cpu.f.write((char) 0);
-            if ((shifted & (1 << 8)) > 0) {
-                cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
-            }
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & 0x100) != 0);
             operands[0].write((char) shifted);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
+        }
+    }
+
+    // DAA - decimal adjust A register
+    private static class DAA implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char val = cpu.a.read();
+
+            // Apply BCD correction depending on the last operation performed
+            if (cpu.f.isFlagSet(FlagRegister.Flag.SUBTRACTION)) {
+                if (cpu.f.isFlagSet(FlagRegister.Flag.HALF_CARRY))
+                    val -= 6;
+                if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY))
+                    val -= 0x60;
+            } else {
+                if ((val & 0xF) > 9 || cpu.f.isFlagSet(FlagRegister.Flag.HALF_CARRY))
+                    val += 6;
+                if (val > 0x9F || cpu.f.isFlagSet(FlagRegister.Flag.CARRY))
+                    val += 0x60;
+            }
+            cpu.a.write(val);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, (val & 0xFF) == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (val & 0x100) != 0);
         }
     }
 }
