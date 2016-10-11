@@ -766,6 +766,53 @@ public class CPUTest {
         cpu.execInstruction();
         assertEquals(0x09, cpu.a.read());
     }
+
+    @Test
+    public void halting() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x16, 0x00,       // LD D,$00
+                0x3E, 0x00,       // LD A,$00
+                0xF3,             // DI
+                0xEA, 0xFF, 0xFF, // LD ($FFFF),A
+                0xEA, 0x0F, 0xFF, // LD ($FF0F),A
+                0x76,             // HALT
+                0x3E, 0x12,       // LD A,$12
+
+                0x3E, 0x01,       // LD A,$01
+                0xEA, 0xFF, 0xFF, // LD ($FFFF),A
+                0xEA, 0x0F, 0xFF, // LD ($FF0F),A
+                0x76,             // HALT
+                0x3E, 0x14        // Due to the halt bug this will become LD A,$3E + INC D
+        }));
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertFalse(cpu.haltBugTriggered);
+        // CPU should be halted
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0x00, cpu.a.read());
+        // CPU should resume execution, but not jump to joypad interrupt vector
+        cpu.raiseInterrupt(CPU.Interrupt.JOYPAD);
+        cpu.execInstruction();
+        assertEquals(0x12, cpu.a.read());
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.haltBugTriggered);
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0x3E, cpu.a.read());
+        assertEquals(0x01, cpu.d.read());
+    }
 }
 
  class FixtureMMU extends MMU {

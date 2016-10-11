@@ -8,6 +8,8 @@ public class CPU {
     public FlagRegister f;
     public MMU mmu;
     private boolean interruptsEnabled;
+    private boolean halted;
+    public boolean haltBugTriggered;
 
     /* These are not actual cursors to read or write from, but special singleton values used as
        signals for interpreting instruction operands. */
@@ -95,6 +97,7 @@ public class CPU {
         oneByteInstructions.put((char) 0x37, new InstructionForm(new SCF(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x3F, new InstructionForm(new CCF(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x2F, new InstructionForm(new CPL(), new Cursor[]{}));
+        oneByteInstructions.put((char) 0x76, new InstructionForm(new HALT(), new Cursor[]{}));
         oneByteInstructions.put((char) 0xF3, new InstructionForm(new DI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0xFB, new InstructionForm(new EI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x27, new InstructionForm(new DAA(), new Cursor[]{}));
@@ -450,6 +453,7 @@ public class CPU {
         // Request an interrupt (to be serviced before executing the next instruction)
         char raisedInterrupts = (char) (mmu.read8((char) 0xFF0F) | interrupt.getBitmask());
         mmu.write8((char) 0xFF0F, raisedInterrupts);
+        halted = false;
     }
 
     public void reset() {
@@ -463,6 +467,8 @@ public class CPU {
     }
 
     public void execInstruction() {
+        if (halted) return;
+
         char raisedInterrupts = mmu.read8((char) 0xFF0F);
         char enabledInterrupts = mmu.read8((char) 0xFFFF);
         byte raisedEnabledInterrupts = (byte) (enabledInterrupts & raisedInterrupts);
@@ -1086,6 +1092,26 @@ public class CPU {
         }
     }
 
+    // HALT - stop execution until an interrupt is raised
+    private static class HALT implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char raisedInterrupts = cpu.mmu.read8((char)0xFF0F);
+            char enabledInterrupts = cpu.mmu.read8((char)0xFFFF);
+
+            /* BUG: If interrupt master enable is unset but some interrupts are enabled and raised,
+               halt mode is not entered and PC will not be incremented after fetching the next
+               opcode. E.g.,
+
+               $3E $14  (LD A,$14) will be executed as:
+
+               $3E $3E  (LD A,$3E)
+               $14      (INC D) */
+            cpu.halted = (cpu.interruptsEnabled || (enabledInterrupts & raisedInterrupts & 0x1F) == 0);
+            cpu.haltBugTriggered = !cpu.halted;
+        }
+    }
+
     // EI - enable interrupts
     private static class EI implements InstructionRoot {
         @Override
@@ -1138,7 +1164,7 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             int val = operands[0].read();
             final boolean zerothBitWasSet = (val & 1) > 0;
-            int shifted = val >> 1;
+            int shifted = val >>> 1;
             if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
                 shifted ^= 0x80;
             }
@@ -1155,7 +1181,7 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             int val = operands[0].read();
             final boolean zerothBitWasSet = (val & 1) > 0;
-            int shifted = val >> 1;
+            int shifted = val >>> 1;
             if (zerothBitWasSet) {
                 shifted ^= 0x80;
             }

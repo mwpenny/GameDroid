@@ -48,7 +48,18 @@ public class InstructionForm {
     }
 
     public void execute(CPU cpu) {
-        cpu.pc.increment();
+        /* BUG: If interrupt master enable is unset but some interrupts are enabled and raised,
+           halt mode is not entered and PC will not be incremented after fetching the next
+           opcode. E.g.,
+
+           $3E $14  (LD A,$14) will be executed as:
+
+           $3E $3E  (LD A,$3E)
+           $14      (INC D) */
+        if (!cpu.haltBugTriggered)
+            cpu.pc.increment();
+        else
+            cpu.haltBugTriggered = false;
         Cursor[] operands = readOperands(operandTemplate, cpu);
         root.execute(cpu, operands);
     }

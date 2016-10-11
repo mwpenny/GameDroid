@@ -19,7 +19,7 @@ Repository structure:
 |**x4**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**x5**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**x6**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x7**|          |         |          |         |           |         |HALT      |         |           |         |          |         |          |        |          |       |
+|**x7**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 |**x8**|ADD A,B   |ADD A,C  |ADD A,D   |ADD A,E  |ADD A,H    |ADD A,L  |ADD A,(HL)|ADD A,A  |ADC A,B    |ADC A,C  |ADC A,D   |ADC A,E  |ADC A,H   |ADC A,L |ADC A,(HL)|ADC A,A|
 |**x9**|SUB B     |SUB C    |SUB D     |SUB E    |SUB H      |SUB L    |SUB (HL)  |SUB A    |SBC A,B    |SBC A,C  |SBC A,D   |SBC A,E  |SBC A,H   |SBC A,L |SBC A,(HL)|SBC A,A|
 |**xA**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
