@@ -1,0 +1,11 @@
+=======================================
+Time    :   Task
+---------------------------------------
+6 hours :   Layout development into Prototype
+2 hours :   Creating handlers for layout management
+=======================================
+Total time
+---------------------------------------
+8 hours
+=======================================
+
