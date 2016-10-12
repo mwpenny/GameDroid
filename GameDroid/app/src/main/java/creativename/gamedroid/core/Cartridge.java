@@ -9,7 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /* Loads, stores, and provides access to data from ROM files */
-public class Cartridge implements MemoryMappable {
+public class Cartridge {
     public enum ColorMode {
         MONOCHROME,
         COLOR_SUPPORTED,
@@ -121,12 +121,11 @@ public class Cartridge implements MemoryMappable {
     private String licensee;
     private boolean supportsSGB;    // SGB = Super GameBoy
     private byte cartType;          // i.e., Which MBC, clock, battery, etc. are present
-    private byte[] rom;             // Size depends on ROM header
-    private int romBank1Start;      // Where in the rom array does $4000 point?
-    private byte[] extRam;          // Not always allocated (depends on ROM header)
-    private int extRamStart;        // Where in the extRam array (if allocated) does $A000 point?
+    private int romSize;
+    private int ramSize;
     private GameLocale locale;
     private byte gameVersion;
+    public MBC mbc;
 
     // Getters for public data
     public String getTitle() { return title; }
@@ -135,6 +134,8 @@ public class Cartridge implements MemoryMappable {
     public String getLicensee() { return licensee; }
     public boolean supportsSGB() { return supportsSGB; }
     public byte getCartType() { return cartType; }
+    public int getRomSize() { return romSize; }
+    public int getRamSize() { return ramSize; }
     public GameLocale getLocale() { return locale; }
     public byte getGameVersion() { return gameVersion; }
 
@@ -187,16 +188,15 @@ public class Cartridge implements MemoryMappable {
         cartType = bank0[0x147];  // TODO: make this field more granular (i.e., hasBattery, hasTimer, MBCType)
 
         // $0149 - ROM size
-        rom = new byte[(32 << bank0[0x148]) * 1024];
-        // Assume cartType 0 (ROM ONLY) for now (TODO: detect proper bank1 offset depending on MBC being used)
-        romBank1Start = 0x4000;
+        romSize = (32 << bank0[0x148]) * 1024;
 
         // $0149 - RAM Size (0x00 -> 0KB,  0x01 -> 2KB/16Kb, ...)
-        extRam = new byte[((int)Math.pow(4, bank0[0x149]+1)/8) * 1024];
-        // Assume cartType 0 (ROM ONLY) for now (TODO: detect proper ram bank offset depending on MBC being used)
-        extRamStart = 0;
+        ramSize = ((int)Math.pow(4, bank0[0x149]+1)/8) * 1024;
 
+        // $14A - Game region
         locale = (bank0[0x14A] == 1) ? GameLocale.WORLD : GameLocale.JAPAN;
+
+        // $14C - Game software revision
         gameVersion = bank0[0x14C];
     }
 
@@ -219,42 +219,34 @@ public class Cartridge implements MemoryMappable {
                 throw new IOException("Invalid ROM image");
 
             parseHeader(buf);
-            if (f.length() != rom.length)
-                throw new IOException("ROM size mismatch (" + f.length() + "/" + rom.length + ")");
+            if (f.length() != romSize)
+                throw new IOException("ROM size mismatch (expected: " + romSize +
+                                      ", actual: " + f.length() + ")");
+            else {
+                // Good to go! Load ROM
+                byte rom[] = new byte[romSize];
+                boolean hasBattery = (cartType == 0x03 || cartType == 0x06 || cartType == 0x09 ||
+                                      cartType == 0x0D || cartType == 0x0F || cartType == 0x10 ||
+                                      cartType == 0x13 || cartType == 0x17 || cartType == 0x1B ||
+                                      cartType == 0x1E || cartType == 0x22 || cartType == (byte)0xFF);
+                System.arraycopy(buf, 0, rom, 0, buf.length);
+                if (in.read(rom, 0x4000, rom.length - 0x4000) != rom.length - 0x4000)
+                    throw new IOException("Error reading ROM banks");
 
-            // Good to go! Load ROM
-            System.arraycopy(buf, 0, rom, 0, buf.length);
-            if (in.read(rom, 0x4000, rom.length - 0x4000) != rom.length - 0x4000)
-                throw new IOException("Error reading ROM banks");
+                // TODO: detect RTC and rumble
+                switch (cartType) {
+                    case 0x00:  // ROM ONLY
+                    case 0x08:  // ROM+RAM
+                    case 0x09:  // ROM+RAM+BATTERY
+                        mbc = new MBC0(rom, ramSize, hasBattery);
+                        break;
+                    default:
+                        throw new IllegalArgumentException(String.format("Unsupported cartridge type ($%02X)", cartType));
+                }
+            }
         } catch (IOException ex) {
             in.close();
             throw ex;
         }
-    }
-
-    public byte read(char address) {
-        // ROM bank 0 is fixed, 1 is switchable
-        if (address < 0x4000)
-            return rom[address];
-        else if (address < 0x8000)
-            return rom[address - 0x4000 + romBank1Start];
-
-        // Cartridge RAM may not be present
-        else if (extRam.length > 0 && address > 0x9FFF && address < 0xC000)
-            return extRam[address - 0xA000 + extRamStart];
-
-        else
-            throw new IllegalArgumentException(String.format("Invalid ROM read address ($%04X)", (int)address));
-    }
-
-    public void write(char address, byte value) {
-        // TODO: MBC logic (where value "written" actually signifies which bank to switch to)
-
-        // Write to cartridge RAM if present
-        // TODO: also write this information to disk if cartridge contains battery (check cartType)
-        if (extRam.length > 0 && address > 0x9FFF && address < 0xC000)
-            extRam[address - 0xA000 + extRamStart] = value;
-        else if (address > 0x7FFF)
-            throw new IllegalArgumentException(String.format("Invalid ROM write address ($%04X)", (int)address));
     }
 }
