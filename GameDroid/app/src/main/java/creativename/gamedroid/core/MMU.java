@@ -5,15 +5,17 @@ package creativename.gamedroid.core;
  */
 
 public class MMU {
-    final private MemoryMappable workRam;
-    final private MemoryMappable stack;
-    final private MemoryMappable raisedInterrupts;
-    final private MemoryMappable enabledInterrupts;
+    final private MBC mbc;
+    final private Ram workRam;
+    final private Stack stack;
+    final private ByteRegion raisedInterrupts;
+    final private ByteRegion enabledInterrupts;
     final static private InvalidRegion invalidMemory = new InvalidRegion();
 
     // TODO: $D000-$DFFF does not mirror $C000-$CFFF
 
-    public MMU() {
+    public MMU(MBC mbc) {
+        this.mbc = mbc;
         workRam = new Ram();
         stack = new Stack();
         raisedInterrupts = new ByteRegion();
@@ -34,6 +36,8 @@ public class MMU {
             return stack;
         else if (addr == 0xFFFF)
             return enabledInterrupts;
+        else if (addr < 0x8000 && addr >= 0x0100)
+            return mbc;
         return invalidMemory;
     }
 

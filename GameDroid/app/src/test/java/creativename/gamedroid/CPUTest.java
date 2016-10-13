@@ -905,15 +905,15 @@ public class CPUTest {
  class FixtureMMU extends MMU {
      int[] fixtureRom;
 
-
      public FixtureMMU(int[] machineCode) {
+         super(null);
          this.fixtureRom = machineCode;
      }
 
      @Override
      public char read8(char address) {
          int offset = address - 0x100;
-         if (offset <= fixtureRom.length && offset >= 0) {
+         if (offset < fixtureRom.length && offset >= 0) {
              return (char) fixtureRom[offset];
          }
          return super.read8(address);
