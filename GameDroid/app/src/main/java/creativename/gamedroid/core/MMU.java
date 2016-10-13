@@ -5,68 +5,55 @@ package creativename.gamedroid.core;
  */
 
 public class MMU {
-    private byte workRam[];
-    private byte stack[];
-    private byte raisedInterrupts;
-    private byte enabledInterrupts;
+    final private MemoryMappable workRam;
+    final private MemoryMappable stack;
+    final private MemoryMappable raisedInterrupts;
+    final private MemoryMappable enabledInterrupts;
+    final static private InvalidRegion invalidMemory = new InvalidRegion();
 
     // TODO: $D000-$DFFF does not mirror $C000-$CFFF
 
     public MMU() {
-        workRam = new byte[0x2000];
-        stack = new byte[0x7F];
-        raisedInterrupts = 0;
+        workRam = new Ram();
+        stack = new Stack();
+        raisedInterrupts = new ByteRegion();
+        enabledInterrupts = new ByteRegion();
         reset();
     }
 
-    public char read8(char addr){
+    private MemoryMappable dispatchAddress(char addr) {
         switch (addr & 0xF000) {
             case 0xC000:
             case 0xD000:
             case 0xE000:
-                return (char)(workRam[addr & 0x1FFF] & 0xFF);
+                return workRam;
         }
         if (addr == 0xFF0F)
-            return (char)(raisedInterrupts & 0xFF);
+            return raisedInterrupts;
         else if (addr >= 0xFF80 && addr <= 0xFFFE)
-            return (char)(stack[addr - 0xFF80] & 0xFF);
+            return stack;
         else if (addr == 0xFFFF)
-            return (char)(enabledInterrupts & 0xFF);
-
-        System.err.println(String.format("Warning: invalid memory read at $%04X", (int)addr));
-        return 0;
+            return enabledInterrupts;
+        return invalidMemory;
     }
 
-    public void write8(char addr, char value){
-        switch (addr & 0xF000) {
-            case 0xC000:
-            case 0xD000:
-            case 0xE000:
-                workRam[addr & 0x1FFF] = (byte) value;
-                return;
-        }
-        if (addr == 0xFF0F) {
-            raisedInterrupts = (byte) value;
-            return;
-        } else if (addr >= 0xFF80 && addr <= 0xFFFE) {
-            stack[addr - 0xFF80] = (byte) value;
-            return;
-        } else if (addr == 0xFFFF) {
-            enabledInterrupts = (byte) value;
-            return;
-        }
-        System.err.println(String.format("Warning: invalid memory write at $%04X", (int)addr));
+    public char read8(char addr) {
+        return (char) (dispatchAddress(addr).read(addr) & 0xFF);
+    }
+
+    public void write8(char addr, char value) {
+        dispatchAddress(addr).write(addr, (byte) value);
     }
 
     public void write16(char addr, char value) {
         // Write 2 bytes (little-endian)
         write8(addr++, value);
-        write8(addr, (char)(value >>> 8));
+        write8(addr, (char) (value >>> 8));
     }
 
     public char read16(char address) {
         // Read 2 bytes (little-endian)
-        return (char)(read8(address++) | (read8(address) << 8));
+        return (char) (read8(address++) | (read8(address) << 8));
     }
 
     public MemoryCursor8 getCursor8(char address) {
@@ -143,6 +130,72 @@ public class MMU {
         @Override
         public void write(char value) {
             write8(address, value);
+        }
+    }
+
+    private static class Ram implements MemoryMappable {
+        byte data[];
+        final int MASK = 0x1FFF;
+
+        public Ram() {
+            data = new byte[0x2000];
+        }
+
+        @Override
+        public byte read(char address) {
+            return data[address & MASK];
+        }
+
+        @Override
+        public void write(char address, byte value) {
+            data[address & MASK] = value;
+        }
+    }
+
+    private static class Stack implements MemoryMappable {
+        byte data[];
+        final int OFFSET = 0xFF80;
+
+        public Stack() {
+            data = new byte[0x7F];
+        }
+
+        @Override
+        public byte read(char address) {
+            return data[address - OFFSET];
+        }
+
+        @Override
+        public void write(char address, byte value) {
+            data[address - OFFSET] = value;
+        }
+    }
+
+    private static class ByteRegion implements MemoryMappable {
+        byte data;
+
+        @Override
+        public byte read(char address) {
+            return data;
+        }
+
+        @Override
+        public void write(char address, byte value) {
+            data = value;
+        }
+    }
+
+    // null object for MemoryMappable
+    private static class InvalidRegion implements MemoryMappable {
+        @Override
+        public byte read(char address) {
+            System.err.format("Warning: invalid memory read at $%04X", (int) address);
+            return 0;
+        }
+
+        @Override
+        public void write(char address, byte value) {
+            System.err.format("Warning: invalid memory write at $%04X\n", (int) address);
         }
     }
 }
