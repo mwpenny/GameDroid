@@ -657,7 +657,7 @@ public class CPUTest {
     }
 
     @Test
-    public void logicalShiftLeft() throws Exception {
+    public void logicalLeftShift() throws Exception {
         CPU cpu = new CPU(new FixtureMMU(new int[]{
                 0x3E, 0b11101011,  // LD A, 0b11101011
                 0xCB, 0x27,        // SLA A
@@ -691,6 +691,93 @@ public class CPUTest {
         cpu.execInstruction();
         assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
+
+    @Test
+    public void logicalRightShift() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0b11101011,  // LD A, 0b11101011
+                0xCB, 0x3F,        // SRL A
+
+                0x3E, 0b01011010,  // LD A, 0b01011010
+                0xCB, 0x3F,        // SRL A
+
+                0x3E, 0,           // LD A, 0
+                0xCB, 0x3F,        // SRL A
+
+                0x3E, 0b10,        // LD A, 0b10
+                0xCB, 0x3F,        // SRL A
+
+                0x3E, 1,           // LD A, 1
+                0xCB, 0x3F,        // SRL A
+        }));
+
+        cpu.f.write((char) 0);
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b01110101, cpu.a.read());
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b00101101, cpu.a.read());
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+    }
+
+    @Test
+    public void arithmeticRightShift() throws Exception {
+        CPU cpu = new CPU(new FixtureMMU(new int[]{
+                0x3E, 0b11101011,  // LD A, 0b11101011
+                0xCB, 0x2F,        // SRL A
+
+                0x3E, 0b01011010,  // LD A, 0b01011010
+                0xCB, 0x2F,        // SRL A
+
+                0x3E, 0,           // LD A, 0
+                0xCB, 0x2F,        // SRL A
+
+                0x3E, 0b10,        // LD A, 0b10
+                0xCB, 0x2F,        // SRL A
+
+                0x3E, 1,           // LD A, 1
+                0xCB, 0x2F,        // SRL A
+        }));
+
+        cpu.f.write((char) 0);
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b11110101, cpu.a.read());
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertEquals(0b00101101, cpu.a.read());
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertFalse(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+
+        cpu.execInstruction();
+        cpu.execInstruction();
+        assertTrue(cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+    }
+
 
     @Test
     public void cpl() throws Exception {

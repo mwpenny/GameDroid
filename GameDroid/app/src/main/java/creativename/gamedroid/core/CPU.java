@@ -381,6 +381,26 @@ public class CPU {
         twoByteInstructions.put((char) 0x25, new InstructionForm(sla, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x26, new InstructionForm(sla, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x27, new InstructionForm(sla, new Cursor[]{a}));
+        // SRA
+        InstructionRoot sra = new SRA();
+        twoByteInstructions.put((char) 0x28, new InstructionForm(sra, new Cursor[]{b}));
+        twoByteInstructions.put((char) 0x29, new InstructionForm(sra, new Cursor[]{c}));
+        twoByteInstructions.put((char) 0x2A, new InstructionForm(sra, new Cursor[]{d}));
+        twoByteInstructions.put((char) 0x2B, new InstructionForm(sra, new Cursor[]{e}));
+        twoByteInstructions.put((char) 0x2C, new InstructionForm(sra, new Cursor[]{h}));
+        twoByteInstructions.put((char) 0x2D, new InstructionForm(sra, new Cursor[]{l}));
+        twoByteInstructions.put((char) 0x2E, new InstructionForm(sra, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x2F, new InstructionForm(sra, new Cursor[]{a}));
+        // SLA
+        InstructionRoot srl = new SRL();
+        twoByteInstructions.put((char) 0x38, new InstructionForm(srl, new Cursor[]{b}));
+        twoByteInstructions.put((char) 0x39, new InstructionForm(srl, new Cursor[]{c}));
+        twoByteInstructions.put((char) 0x3A, new InstructionForm(srl, new Cursor[]{d}));
+        twoByteInstructions.put((char) 0x3B, new InstructionForm(srl, new Cursor[]{e}));
+        twoByteInstructions.put((char) 0x3C, new InstructionForm(srl, new Cursor[]{h}));
+        twoByteInstructions.put((char) 0x3D, new InstructionForm(srl, new Cursor[]{l}));
+        twoByteInstructions.put((char) 0x3E, new InstructionForm(srl, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x3F, new InstructionForm(srl, new Cursor[]{a}));
         // SWAP
         twoByteInstructions.put((char) 0x30, new InstructionForm(swap, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x31, new InstructionForm(swap, new Cursor[]{c}));
@@ -723,7 +743,7 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, true);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
-            cpu.a.write((char)(~cpu.a.read() & 0xFF));
+            cpu.a.write((char) (~cpu.a.read() & 0xFF));
         }
     }
 
@@ -1096,8 +1116,8 @@ public class CPU {
     private static class HALT implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
-            char raisedInterrupts = cpu.mmu.read8((char)0xFF0F);
-            char enabledInterrupts = cpu.mmu.read8((char)0xFFFF);
+            char raisedInterrupts = cpu.mmu.read8((char) 0xFF0F);
+            char enabledInterrupts = cpu.mmu.read8((char) 0xFFFF);
 
             /* BUG: If interrupt master enable is unset but some interrupts are enabled and raised,
                halt mode is not entered and PC will not be incremented after fetching the next
@@ -1192,13 +1212,40 @@ public class CPU {
         }
     }
 
-    // SLA - logical shift left
+    // SLA - arithmetic shift left
     private static class SLA implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             int shifted = operands[0].read() << 1;
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & 0x100) != 0);
+            operands[0].write((char) shifted);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
+        }
+    }
+
+    // SRA - arithmetic right shift
+    private static class SRA implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char original = operands[0].read();
+            cpu.f.write((char) 0);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (original & 1) > 0);
+            int shifted = ((byte) original) >> 1;
+            operands[0].write((char) shifted);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
+        }
+    }
+
+    // SRL - logical right shift
+    private static class SRL implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char original = operands[0].read();
+            cpu.f.write((char) 0);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (original & 1) > 0);
+            // upper 8 bits always zero. SRL operates on 8-bit values
+            int shifted = original >> 1;
             operands[0].write((char) shifted);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
         }

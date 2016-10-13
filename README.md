@@ -30,28 +30,6 @@ Repository structure:
 |**xF**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
 
 
-# CPU instructions to implement (prefix CB)
-
-|      | x0       | x1      | x2       | x3      | x4        | x5      | x6       | x7      | x8        | x9      | xA       | xB      | xC       | xD     | xE       | xF    |
-|------|----------|---------|----------|---------|-----------|---------|----------|---------|-----------|---------|----------|---------|----------|--------|----------|-------|
-|**x0**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x1**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x2**|          |         |          |         |           |         |          |         |SRA B      |SRA C    |SRA D     |SRA E    |SRA H     |SRA L   |SRA (HL)  |SRA A  |
-|**x3**|          |         |          |         |           |         |          |         |SRL B      |SRL C    |SRL D     |SRL E    |SRL H     |SRL L   |SRL (HL)  |SRL A  |
-|**x4**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x5**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x6**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x7**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x8**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x9**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xA**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xB**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xC**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xD**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xE**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xF**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-
-
 * [Original opcode table](http://pastraiser.com/cpu/gameboy/gameboy_opcodes.html) with more info (such as flags modified and cycle count).
 * [Opcode summary](http://gameboy.mongenel.com/dmg/opcodes.html)
 
