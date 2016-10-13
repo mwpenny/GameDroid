@@ -458,7 +458,7 @@ public class CPUTest {
                 0x00,             // NOP
 
                 0x3F,             // CCF
-                0x30, 0x24, 0x01, // JP NC,$0124
+                0xD2, 0x24, 0x01, // JP NC,$0124
                 0x3E, 0x00,       // LD A,0
 
                 // $0124
