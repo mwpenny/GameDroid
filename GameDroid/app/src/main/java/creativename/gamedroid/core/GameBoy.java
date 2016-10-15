@@ -35,6 +35,7 @@ public class GameBoy {
     public final CPU cpu;
     public final LCD lcd;
     public final Controller gamepad;
+    public boolean stopped;
 
     public GameBoy() {
         cartridge = null;  // For now
@@ -42,13 +43,16 @@ public class GameBoy {
         cpu = new CPU(this);
         lcd = new LCD(this);
         gamepad = new Controller(this);
+        stopped = false;
     }
 
     public void run() {
         /* TODO: load cartridge and start emulation loop
            e.g.,
 
-           while (true)
-              cpu.execInstruction(); */
+           while (true) {
+               if (!stopped)
+                   cpu.execInstruction();
+           } */
     }
 }

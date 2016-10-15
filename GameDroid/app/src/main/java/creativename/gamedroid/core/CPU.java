@@ -98,6 +98,7 @@ public class CPU {
         oneByteInstructions.put((char) 0x3F, new InstructionForm(new CCF(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x2F, new InstructionForm(new CPL(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x76, new InstructionForm(new HALT(), new Cursor[]{}));
+        oneByteInstructions.put((char) 0x10, new InstructionForm(new STOP(), new Cursor[]{immediate8}));
         oneByteInstructions.put((char) 0xF3, new InstructionForm(new DI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0xFB, new InstructionForm(new EI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x27, new InstructionForm(new DAA(), new Cursor[]{}));
@@ -474,6 +475,7 @@ public class CPU {
         char raisedInterrupts = (char) (gb.mmu.read8((char) 0xFF0F) | interrupt.getBitmask());
         gb.mmu.write8((char) 0xFF0F, raisedInterrupts);
         halted = false;
+        gb.stopped = false;
     }
 
     public void reset() {
@@ -1129,6 +1131,14 @@ public class CPU {
                $14      (INC D) */
             cpu.halted = (cpu.interruptsEnabled || (enabledInterrupts & raisedInterrupts & 0x1F) == 0);
             cpu.haltBugTriggered = !cpu.halted;
+        }
+    }
+
+    // STOP - halt GameBoy hardware
+    private static class STOP implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.gb.stopped = true;
         }
     }
 
