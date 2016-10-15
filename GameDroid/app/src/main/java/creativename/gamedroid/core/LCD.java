@@ -179,7 +179,7 @@ public class LCD implements MemoryMappable {
             case 0xFF45:
                 return cmpScanline;
             case 0xFF46:
-                return oam;
+                return oamdma;
             case 0xFF47:
                 return bgPalette;
             case 0xFF48:
