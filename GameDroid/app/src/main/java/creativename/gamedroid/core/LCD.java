@@ -370,7 +370,7 @@ public class LCD implements MemoryMappable {
             // Copy 160 bytes from (written value * 256) into OAM
             char src = (char) (value << 8);
             for (int i = 0; i < 0xA0; ++i)
-                oam.data[i] = (byte)(gb.mmu.read8(src));
+                oam.data[i] = (byte)(gb.mmu.read8((char) (src + i)));
         }
     }
 }
