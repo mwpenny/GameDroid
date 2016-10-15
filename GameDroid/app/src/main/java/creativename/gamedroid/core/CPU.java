@@ -6,7 +6,7 @@ import java.util.HashMap;
 public class CPU {
     public Register a, b, c, d, e, h, l, af, bc, de, hl, sp, pc;
     public FlagRegister f;
-    public MMU mmu;
+    public final GameBoy gb;
     private boolean interruptsEnabled;
     private boolean halted;
     public boolean haltBugTriggered;
@@ -40,8 +40,8 @@ public class CPU {
         }
     }
 
-    public CPU(MMU mmu) {
-        this.mmu = mmu;
+    public CPU(GameBoy gb) {
+        this.gb = gb;
 
         a = new Register8();
         b = new Register8();
@@ -457,22 +457,22 @@ public class CPU {
     private void pushStack(char value) {
         // SP points to the address where the next byte will be pushed
         sp.decrement();
-        mmu.write16(sp.read(), value);
+        gb.mmu.write16(sp.read(), value);
         sp.decrement();
     }
 
     private char popStack() {
         // SP points to the address where the next byte will be pushed
         sp.increment();
-        char val = mmu.read16(sp.read());
+        char val = gb.mmu.read16(sp.read());
         sp.increment();
         return val;
     }
 
     public void raiseInterrupt(Interrupt interrupt) {
         // Request an interrupt (to be serviced before executing the next instruction)
-        char raisedInterrupts = (char) (mmu.read8((char) 0xFF0F) | interrupt.getBitmask());
-        mmu.write8((char) 0xFF0F, raisedInterrupts);
+        char raisedInterrupts = (char) (gb.mmu.read8((char) 0xFF0F) | interrupt.getBitmask());
+        gb.mmu.write8((char) 0xFF0F, raisedInterrupts);
         halted = false;
     }
 
@@ -489,8 +489,8 @@ public class CPU {
     public void execInstruction() {
         if (halted) return;
 
-        char raisedInterrupts = mmu.read8((char) 0xFF0F);
-        char enabledInterrupts = mmu.read8((char) 0xFFFF);
+        char raisedInterrupts = gb.mmu.read8((char) 0xFF0F);
+        char enabledInterrupts = gb.mmu.read8((char) 0xFFFF);
         byte raisedEnabledInterrupts = (byte) (enabledInterrupts & raisedInterrupts);
 
         // Service interrupts
@@ -517,15 +517,15 @@ public class CPU {
             }
 
             // Write new flags (with bit for serviced interrupt unset)
-            mmu.write8((char) 0xFF0F, raisedInterrupts);
+            gb.mmu.write8((char) 0xFF0F, raisedInterrupts);
         }
 
-        char optByte = mmu.read8(pc.read());
+        char optByte = gb.mmu.read8(pc.read());
 
         // $CB prefix -> instruction is two bytes
         if (optByte == 0xCB) {
             pc.increment();
-            twoByteInstructions.get(mmu.read8(pc.read())).execute(this);
+            twoByteInstructions.get(gb.mmu.read8(pc.read())).execute(this);
         } else {
             oneByteInstructions.get(optByte).execute(this);
         }
@@ -642,12 +642,12 @@ public class CPU {
 
         public char read() {
             // Get value pointed to by address in register + $FF00
-            return mmu.read8((char) (0xFF00 | reg.read()));
+            return gb.mmu.read8((char) (0xFF00 | reg.read()));
         }
 
         public void write(char value) {
             // Write to address contained in register
-            mmu.write8((char) (0xFF00 | reg.read()), value);
+            gb.mmu.write8((char) (0xFF00 | reg.read()), value);
         }
     }
 
@@ -660,12 +660,12 @@ public class CPU {
 
         public char read() {
             // Get value pointed to by address in register
-            return mmu.read8(reg.read());
+            return gb.mmu.read8(reg.read());
         }
 
         public void write(char value) {
             // Write to address contained in register
-            mmu.write8(reg.read(), value);
+            gb.mmu.write8(reg.read(), value);
         }
     }
 
@@ -1116,8 +1116,8 @@ public class CPU {
     private static class HALT implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
-            char raisedInterrupts = cpu.mmu.read8((char) 0xFF0F);
-            char enabledInterrupts = cpu.mmu.read8((char) 0xFFFF);
+            char raisedInterrupts = cpu.gb.mmu.read8((char) 0xFF0F);
+            char enabledInterrupts = cpu.gb.mmu.read8((char) 0xFFFF);
 
             /* BUG: If interrupt master enable is unset but some interrupts are enabled and raised,
                halt mode is not entered and PC will not be incremented after fetching the next

@@ -5,21 +5,19 @@ package creativename.gamedroid.core;
  */
 
 public class MMU {
-    final private MBC mbc;
-    final private Ram workRam;
-    final private Stack stack;
-    final private ByteRegion raisedInterrupts;
-    final private ByteRegion enabledInterrupts;
+    final private GameBoy gb;
+    final private MemoryBuffer workRam;
+    final private MemoryBuffer stack;
+    final private MappableByte raisedInterrupts;
+    final private MappableByte enabledInterrupts;
     final static private InvalidRegion invalidMemory = new InvalidRegion();
 
-    // TODO: $D000-$DFFF does not mirror $C000-$CFFF
-
-    public MMU(MBC mbc) {
-        this.mbc = mbc;
-        workRam = new Ram();
-        stack = new Stack();
-        raisedInterrupts = new ByteRegion();
-        enabledInterrupts = new ByteRegion();
+    public MMU(GameBoy gb) {
+        this.gb = gb;
+        workRam = new MemoryBuffer(0x2000, 0, 0x1FFF);
+        stack = new MemoryBuffer(0x7F, 0xFF80, ~0);
+        raisedInterrupts = new MappableByte();
+        enabledInterrupts = new MappableByte();
         reset();
     }
 
@@ -32,12 +30,16 @@ public class MMU {
         }
         if (addr == 0xFF0F)
             return raisedInterrupts;
+        else if ((addr >= 0x8000 && addr <= 0x9FFF) ||
+                 (addr >= 0xFE00 & addr <= 0xFE9F) ||
+                 (addr >= 0xFF40 && addr <= 0xFF4B))
+            return gb.lcd;
         else if (addr >= 0xFF80 && addr <= 0xFFFE)
             return stack;
         else if (addr == 0xFFFF)
             return enabledInterrupts;
         else if (addr < 0x8000 && addr >= 0x0100)
-            return mbc;
+            return gb.cartridge.mbc;
         return invalidMemory;
     }
 
@@ -91,15 +93,6 @@ public class MMU {
         write8((char) 0xFF24, (char) 0x77);
         write8((char) 0xFF25, (char) 0xF3);
         write8((char) 0xFF26, (char) 0xF1);
-        write8((char) 0xFF40, (char) 0x91);
-        write8((char) 0xFF42, (char) 0x00);
-        write8((char) 0xFF43, (char) 0x00);
-        write8((char) 0xFF45, (char) 0x00);
-        write8((char) 0xFF47, (char) 0xFC);
-        write8((char) 0xFF48, (char) 0xFF);
-        write8((char) 0xFF49, (char) 0xFF);
-        write8((char) 0xFF4A, (char) 0x00);
-        write8((char) 0xFF4B, (char) 0x00);
         write8((char) 0xFFFF, (char) 0x00);
     }
 
@@ -134,58 +127,6 @@ public class MMU {
         @Override
         public void write(char value) {
             write8(address, value);
-        }
-    }
-
-    private static class Ram implements MemoryMappable {
-        byte data[];
-        final int MASK = 0x1FFF;
-
-        public Ram() {
-            data = new byte[0x2000];
-        }
-
-        @Override
-        public byte read(char address) {
-            return data[address & MASK];
-        }
-
-        @Override
-        public void write(char address, byte value) {
-            data[address & MASK] = value;
-        }
-    }
-
-    private static class Stack implements MemoryMappable {
-        byte data[];
-        final int OFFSET = 0xFF80;
-
-        public Stack() {
-            data = new byte[0x7F];
-        }
-
-        @Override
-        public byte read(char address) {
-            return data[address - OFFSET];
-        }
-
-        @Override
-        public void write(char address, byte value) {
-            data[address - OFFSET] = value;
-        }
-    }
-
-    private static class ByteRegion implements MemoryMappable {
-        byte data;
-
-        @Override
-        public byte read(char address) {
-            return data;
-        }
-
-        @Override
-        public void write(char address, byte value) {
-            data = value;
         }
     }
 

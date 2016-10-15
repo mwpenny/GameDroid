@@ -30,4 +30,23 @@ package creativename.gamedroid.core;
 
 /* Entry point to the emulator core */
 public class GameBoy {
+    public Cartridge cartridge;
+    public MMU mmu;
+    public final CPU cpu;
+    public final LCD lcd;
+
+    public GameBoy() {
+        cartridge = null;  // For now
+        mmu = new MMU(this);
+        cpu = new CPU(this);
+        lcd = new LCD(this);
+    }
+
+    public void run() {
+        /* TODO: load cartridge and start emulation loop
+           e.g.,
+
+           while (true)
+              cpu.execInstruction(); */
+    }
 }

@@ -125,7 +125,7 @@ public class Cartridge {
     private int ramSize;
     private GameLocale locale;
     private byte gameVersion;
-    public MBC mbc;
+    public final MBC mbc;
 
     // Getters for public data
     public String getTitle() { return title; }
