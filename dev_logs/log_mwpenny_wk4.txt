@@ -1,0 +1,11 @@
+30min		Research on CPU operation and peculiarities (halt behavior and halt bug)
+1hr		Implementing CPU instructions
+30mins		Writing tests for CPU instructions
+1hr		Research on GameBoy memory bank controllers (MBC) and their operation
+1hr, 45mins	Implementing MBC architecture, MBC0, MBC1, MBC5, and refactoring the Cartridge class to use MBCs
+30mins		Refactoring to store emulated hardware instances in the GameBoy class and allow for easy communication
+3hrs, 15mins	Researching GameBoy graphics rendering control, behavior, and timing
+2hrs		Implementing preliminary structure and state machine for graphics rendering
+
+---
+10hrs, 30mins	Total
