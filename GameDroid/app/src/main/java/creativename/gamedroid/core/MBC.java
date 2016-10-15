@@ -23,6 +23,7 @@ public abstract class MBC implements MemoryMappable {
     protected abstract void writeMBC(char address, byte value);
 
     // TODO: RTC registers
+    @Override
     public byte read(char address) {
         // ROM bank 0 is fixed, 1 is switchable
         if (address < 0x4000)
@@ -41,6 +42,7 @@ public abstract class MBC implements MemoryMappable {
             throw new IllegalArgumentException(String.format("Invalid ROM read address ($%04X)", (int)address));
     }
 
+    @Override
     public void write(char address, byte value) {
         if (address < 0x8000)
             writeMBC(address, value);

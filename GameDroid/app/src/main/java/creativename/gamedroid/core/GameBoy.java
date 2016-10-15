@@ -34,12 +34,14 @@ public class GameBoy {
     public MMU mmu;
     public final CPU cpu;
     public final LCD lcd;
+    public final Controller gamepad;
 
     public GameBoy() {
         cartridge = null;  // For now
         mmu = new MMU(this);
         cpu = new CPU(this);
         lcd = new LCD(this);
+        gamepad = new Controller(this);
     }
 
     public void run() {
