@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/controller_screen"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="16dp"
+    android:paddingTop="16dp"
+    android:orientation="vertical"
+    android:background="@color/background_color">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/game_screen"
+        android:text="This is where the screen will be...."
+        android:gravity="center"
+        android:layout_weight="1"/>
+
+    <!-- A controller using the controller_layout XML layout is added here -->
+    <include android:id="@+id/controller_layout" layout="@layout/controller_layout"/>
+
+</LinearLayout>

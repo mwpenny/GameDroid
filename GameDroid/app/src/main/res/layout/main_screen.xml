@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_screen"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="16dp"
+    android:paddingTop="16dp"
+    android:orientation="vertical"
+    android:background="@color/background_color">
+
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/title_logo"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:src="@mipmap/test"
+    />
+
+    <!-- List for menu buttons (Start, Settings, Help) -->
+    <LinearLayout
+        android:id="@+id/start_menu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Start Button -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_start"
+            android:text="Start"
+            android:onClick="start_button"
+            android:layout_marginBottom="@dimen/button_gap"
+        />
+
+        <!-- Settings Button -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_settings"
+            android:text="Settings"
+            android:onClick="settings_button"
+            android:layout_marginBottom="@dimen/button_gap"
+        />
+
+        <!-- Help Button -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_help"
+            android:text="Help"
+            android:onClick="help_button"
+            android:layout_marginBottom="@dimen/button_gap"
+        />
+
+    </LinearLayout>
+
+</LinearLayout>
