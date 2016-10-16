@@ -1,0 +1,12 @@
+=======================================
+Time    :   Task
+---------------------------------------
+2 hours :   Added ControllerLayout to ControllerScreen
+1 hour  :   Changed ControllerLayout gravity settings
+1 hour  :   Added ControllerScreen class
+1 hour  :   Pushed UI files onto Gib and merged project
+=======================================
+Total time
+---------------------------------------
+5 hours
+=======================================
