@@ -1,49 +1,31 @@
-// #################################################################################################
+package creativename.gamedroid.ui;
 
-package creativename.gamedroid;
-
-// #################################################################################################
-
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.text.Layout;
 import android.content.Intent;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-// #################################################################################################
+import creativename.gamedroid.R;
 
-public class SecondScreen extends AppCompatActivity
-{
-
-    // #################################################################################################
-
+public class SecondScreen extends AppCompatActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.second_screen);
         build_rom_list();
-    } // end : onCreate
+    }
 
-    // #################################################################################################
-
-    // This function builds entries for the ListView by loading ROM data from loaded ROMs
-    public void build_rom_list()
-    {
+    public void build_rom_list() {
 
         System.out.println("Inside build_rom_list()");
         System.out.println("Building List...");
 
         ArrayList<RomEntry> rom_list = new ArrayList<RomEntry>();
 
-        RomEntry e1 = new RomEntry("Pokemon XY",  "06/27/1951");
+        RomEntry e1 = new RomEntry("Pokemon XY", "06/27/1951");
         RomEntry e2 = new RomEntry("Super Smash Bros Melee", "12/12/2012");
         RomEntry e3 = new RomEntry("Mario", "20/12/1988");
         RomEntry e4 = new RomEntry("Paper Mario", "20/14/2015");
@@ -74,21 +56,13 @@ public class SecondScreen extends AppCompatActivity
 
         System.out.println("Exiting build_rom_list()");
 
-    } // end : build_rom_list
+    }
 
-    // #################################################################################################
-
-    public void rom_execute_handler(View currView)
-    {
+    public void rom_execute_handler(View currView) {
 
         System.out.println("Inside rom_execute_handler");
         Intent next_page = new Intent(getApplicationContext(), ControllerScreen.class);
         startActivity(next_page);
 
-    } // end : execute_rom_handler
-
-    // #################################################################################################
-
-} // end : SecondScreen
-
-// #################################################################################################
+    }
+}
