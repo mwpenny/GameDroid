@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+This file is used for the storage of values including strings, dimensions, and colours.
+-->
+
+<resources>
+
+    <!-- Dimensions -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="app_name_title">48dp</dimen>
+    <dimen name="filler_text">24dp</dimen>
+    <dimen name="button_gap">3dp</dimen>
+    <dimen name="rom_execute">15dp</dimen>
+
+    <!-- Strings -->
+    <string name="app_title">GameDroid</string>
+    <string name="app_header">GameDroid Emulator</string>
+    <string name="start">START</string>
+
+    <!-- Colours -->
+    <color name="colorPrimary">#121207</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#808080</color>
+    <color name="background_color">#C0C0C0</color>
+
+</resources>
+

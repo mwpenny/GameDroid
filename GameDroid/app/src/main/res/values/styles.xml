@@ -1,11 +1,35 @@
 <resources>
 
-    <!-- Base application theme. -->
+     <!-- Base Theme -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!-- Custom Action Bar Style -->
+    <style name="SecondActionBar" parent="@style/Widget.AppCompat.Light.ActionBar">
+
+    </style>
+
+    <!-- Main Screen Theme -->
+    <style name="MainScreen" parent="AppTheme">
+        <item name="actionBarStyle">@style/SecondActionBar</item>
+    </style>
+
+    <!-- Second Screen Theme -->
+    <style name="SecondScreen" parent="AppTheme">
+        <item name="actionBarStyle">@style/SecondActionBar</item>
+    </style>
+
+    <!-- Controller Screen -->
+    <style name="ControllerScreen" parent="AppTheme">
+
+    </style>
+
+    <!-- ListView Entries -->
+    <style name="ListEntries" parent="AppTheme">
+        
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -16,5 +40,7 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
 
 </resources>
