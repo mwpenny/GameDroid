@@ -1,5 +1,7 @@
 package creativename.gamedroid.core;
 
+import java.util.ArrayList;
+
 /* Provides GameBoy graphics data manipulation, processing, and output */
 public class LCD implements MemoryMappable {
     private enum ScreenState {
@@ -34,6 +36,7 @@ public class LCD implements MemoryMappable {
     private char cycle;
     private MappableByte scrollX, scrollY;
     private MappableByte windowX, windowY;  // Window = BG layer that can overlay normal BG
+    private ArrayList<Sprite> foundSprites;
 
     // TODO: don't store actual addresses? Look more into how memory accesses are made
     private LCDControlRegister lcdControl;
@@ -121,6 +124,7 @@ public class LCD implements MemoryMappable {
         bgPalette = new WriteOnlyRegister();
         sprPalette1 = new WriteOnlyRegister();
         sprPalette2 = new WriteOnlyRegister();
+        foundSprites = new ArrayList<>(10);
         reset();
     }
 
@@ -234,11 +238,31 @@ public class LCD implements MemoryMappable {
         }
     }
 
+    private void discoverSprites() {
+        int sprHeight = tallSpritesEnabled ? 16 : 8;
+        int oamPos = 0;
+
+        // Find the first 10 sprites in memory on the current scanline
+        while (foundSprites.size() < 10 && oamPos < oam.data.length) {
+            // The first byte of sprite data in OAM is the Y coordinate, use it to check position
+            if (oam.data[oamPos] <= scanline.data && oam.data[oamPos] + sprHeight > scanline.data) {
+                // Sprite is on the current scanline. Copy to sprite buffer
+                // TODO: is this object creation too expensive? Should we reuse objects instead?
+                foundSprites.add(new Sprite(oam.data[oamPos++], oam.data[oamPos++],
+                                 oam.data[oamPos++], oam.data[oamPos++]));
+            } else {
+                // Move to next sprite in OAM
+                oamPos += 4;
+            }
+        }
+    }
+
     public void tick() {
         // TODO: implement state behavior!
         switch (screenState) {
             case OAM_SEARCH:
-                // TODO: Scan OAM for first 10 sprites appearing on this scanline
+                if (cycle == 0)
+                    discoverSprites();
                 break;
 
             case DATA_TRANSFER:
@@ -357,7 +381,7 @@ public class LCD implements MemoryMappable {
     private static class WriteOnlyRegister extends MappableByte {
         @Override
         public byte read(char address) {
-            System.err.println(String.format("Read made to write-only location ($%04X)", (int)address));
+            System.err.format("Read made to write-only location ($%04X)", (int)address);
             return 0;
         }
     }
@@ -371,6 +395,24 @@ public class LCD implements MemoryMappable {
             char src = (char) (value << 8);
             for (int i = 0; i < 0xA0; ++i)
                 oam.data[i] = (byte)(gb.mmu.read8((char) (src + i)));
+        }
+    }
+
+    private class Sprite {
+        public byte x, y;
+        public byte tileNum;
+        public boolean flippedVert, flippedHoriz;
+        public boolean frontPriority;
+        public MappableByte palette;
+
+        public Sprite(byte y, byte x, byte tile, byte flags) {
+            this.x = x;
+            this.y = y;
+            tileNum = tile;
+            frontPriority = ((flags & 0x80) != 0);
+            flippedVert = ((flags & 0x40) != 0);
+            flippedHoriz = ((flags & 0x20) != 0);
+            palette = ((flags & 0x10) != 0) ? sprPalette1 : sprPalette2;
         }
     }
 }
