@@ -10,16 +10,19 @@ import java.util.ArrayList;
 
 import creativename.gamedroid.R;
 
-public class SecondScreen extends AppCompatActivity {
+public class SecondScreen extends AppCompatActivity
+{
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.second_screen);
         build_rom_list();
     }
 
-    public void build_rom_list() {
-
+    public void build_rom_list()
+    {
         System.out.println("Inside build_rom_list()");
         System.out.println("Building List...");
 
@@ -53,16 +56,14 @@ public class SecondScreen extends AppCompatActivity {
         ListView list_view = (ListView) findViewById(R.id.scrollable_list);
         list_view.setAdapter(list_handler);
 
-
         System.out.println("Exiting build_rom_list()");
-
     }
 
-    public void rom_execute_handler(View currView) {
-
+    public void rom_execute_handler(View currView)
+    {
         System.out.println("Inside rom_execute_handler");
         Intent next_page = new Intent(getApplicationContext(), ControllerScreen.class);
         startActivity(next_page);
-
     }
+
 }
