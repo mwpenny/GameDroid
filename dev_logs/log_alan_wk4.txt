@@ -1,0 +1,5 @@
+3hr Logical and arithmetic right shift ins. MMU refactor + MBC in MMU
+
+---
+3 hours  Total
+
