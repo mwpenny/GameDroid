@@ -30,7 +30,7 @@ public class LCD implements MemoryMappable {
     };
 
     private GameBoy gb;
-    private byte[][] framebuffer;
+    private int[][] framebuffer;
     private ScreenState screenState;
     private MappableByte scanline, cmpScanline;
     private char cycle;
@@ -38,13 +38,12 @@ public class LCD implements MemoryMappable {
     private MappableByte windowX, windowY;  // Window = BG layer that can overlay normal BG
     private ArrayList<Sprite> foundSprites;
 
-    // TODO: don't store actual addresses? Look more into how memory accesses are made
     private LCDControlRegister lcdControl;
     private boolean lcdEnabled;
-    private char windowTileMapStart;     // Tile map 0 = $9800, tile map 1 = $9C00
+    private char windowTileMapOfs;       // i.e., second tile map starts $400 bytes into buffer
     private boolean windowEnabled;
-    private char bgTilesetStart;         // Tileset 0 = $8800, tileset 1 = $8000
-    private char bgTileMapStart;         // Tile map 0 = $9800, tile map 1 = $9C00
+    private char bgTilesetOfs;           // i.e., second tileset starts $800 bytes into buffer
+    private char bgTileMapOfs;           // i.e., second tile map starts $400 bytes into buffer
     private boolean tallSpritesEnabled;  // Whether or not to use 8x16 sprites
     private boolean spritesEnabled;
     private boolean bgEnabled;
@@ -55,8 +54,10 @@ public class LCD implements MemoryMappable {
     private boolean vblankCheckEnabled;    // Raise LCD interrupt if PPU is in VBlank?
     private boolean hblankCheckEnabled;    // Raise LCD interrupt if PPU is in HBlank?
 
-    /* Each tile in the bitmap buffer is made up of 16
-       bytes (2 per 8px row, each one plane of a bitplane).
+    /* 6144 bytes (384 tiles) in size.
+
+       Each tile is made up of 16 bytes (2 per 8px row,
+       each one plane of a bitplane).
 
        The two planes combine to form a 2-bit index into the
        background palette (first byte = low bits, second
@@ -80,8 +81,9 @@ public class LCD implements MemoryMappable {
                                            00000000 -> $00 */
     private MemoryBuffer tileBitmaps;
 
-    // Buffer indices correspond to on-screen location. Values are tile numbers
-    private MemoryBuffer bgTileMap1, bgTileMap2;
+    /* 2 tile maps, each 1024 bytes in size (32x32 tiles). Buffer indices
+       correspond to on-screen location. Values are tile numbers */
+    private MemoryBuffer bgTileMaps;
 
     /* Palettes: PP PP PP PP
                  || || || ||
@@ -108,11 +110,10 @@ public class LCD implements MemoryMappable {
         this.gb = gb;
 
         tileBitmaps = new MemoryBuffer(0x1800, 0x8000, ~0);
-        bgTileMap1 = new MemoryBuffer(0x400, 0x9800, ~0);
-        bgTileMap2 = new MemoryBuffer(0x400, 0x9C00, ~0);
+        bgTileMaps = new MemoryBuffer(0x800, 0x9800, ~0);
         oamdma = new OAMDMARegister();
         oam = new MemoryBuffer(0xA0, 0xFE00, ~0);
-        framebuffer = new byte[160][144];
+        framebuffer = new int[144][160];
         lcdControl = new LCDControlRegister();
         lcdStatus = new LCDStatusRegister();
         scanline = new MappableByte();
@@ -131,10 +132,10 @@ public class LCD implements MemoryMappable {
     public void reset() {
         // Effective bootrom output
         lcdEnabled = true;
-        windowTileMapStart = 0x9800;
+        windowTileMapOfs = 0;
         windowEnabled = false;
-        bgTilesetStart = 0x8000;
-        bgTileMapStart = 0x9800;
+        bgTilesetOfs = 0;
+        bgTileMapOfs = 0;
         tallSpritesEnabled = false;
         spritesEnabled = false;
         bgEnabled = true;
@@ -163,10 +164,8 @@ public class LCD implements MemoryMappable {
     private MemoryMappable dispatchAddress(char address) {
         if (address >= 0x8000 && address <= 0x97FF)
             return tileBitmaps;
-        else if (address >= 0x9800 && address <= 0x9BFF)
-            return bgTileMap1;
-        else if (address >= 0x9C00 && address <= 0x9FFF)
-            return bgTileMap2;
+        else if (address >= 0x9800 && address <= 0x9FFF)
+            return bgTileMaps;
         else if (address >= 0xFE00 && address <= 0xFE9F)
             return oam;
         else switch (address) {
@@ -219,8 +218,7 @@ public class LCD implements MemoryMappable {
         boolean vramEnabled = (state != ScreenState.DATA_TRANSFER);
         oam.setEnabled(state != ScreenState.OAM_SEARCH);
         tileBitmaps.setEnabled(vramEnabled);
-        bgTileMap1.setEnabled(vramEnabled);
-        bgTileMap2.setEnabled(vramEnabled);
+        bgTileMaps.setEnabled(vramEnabled);
         screenState = state;
 
         if (state == ScreenState.VBLANK) {
@@ -257,26 +255,37 @@ public class LCD implements MemoryMappable {
         }
     }
 
-    public void tick() {
-        // TODO: implement state behavior!
-        switch (screenState) {
-            case OAM_SEARCH:
-                if (cycle == 0)
-                    discoverSprites();
-                break;
+    private void renderLine() {
+        /* Render current scanline to framebuffer
 
-            case DATA_TRANSFER:
-                /* TODO: VRAM accesses (fetch and render tiles to framebuffer)
-                   This should be probably implemented on a pixel per pixel basis.
-                   If it is not, game effects that occur mid-scanline or mid-tile
-                   may not display correctly.
+           Note: A /very/ small subset of games may use mid-scanline effects, which will
+                 not be correctly displayed using this approach. We will disregard them
+                 for this project, as its focus is primarily software design. */
+        // TODO: Sprite and window rendering
+        // TODO: respect flags (i.e., sprite enable/disable, sprite size, window enable/disable, window tilemap)
+        int y = scanline.data + scrollY.data;
+        for (int px = 0; px < 160; ++px) {
+            if (bgEnabled) {
+                /* Which tile needs to be drawn? Tile indices are treated as signed
+                   if using the second tile set */
+                int x = (px + scrollX.data) % 8;
+                int tileNum = bgTileMaps.data[bgTileMapOfs + ((px + scrollX.data) / 8) + (y * 4)];
+                if (bgTilesetOfs == 0x800)
+                    tileNum = (byte)tileNum + 128;
 
-                   Each memory access takes 2 cycles (first the tile number
-                   is fetched, then the low and high bit planes). More fetches are
-                   needed if the window is being used. */
-                break;
+                /* Fetch 2-bit palette index from bitplanes for current row of current tile (tiles
+                   are 8x8, one row = 2 bytes). Use this value to render the appropriate color */
+                int bitmapIdx = bgTilesetOfs + (tileNum * 16) + (2 * (y % 8));
+                int pIdx = ((tileBitmaps.data[bitmapIdx] >>> (7 - x)) & 1) |
+                            ((tileBitmaps.data[bitmapIdx + 1] >>> (6 - x)) & 2);
+                framebuffer[scanline.data][px] = palette[bgPalette.data >>> (pIdx * 2)];
+            } else {
+                framebuffer[scanline.data][px] = palette[0];
+            }
         }
+    }
 
+    public void tick() {
         // 456 cycles/scanline, 154 scanlines/frame
         cycle = (char)((cycle + 1) % 456);
 
@@ -297,9 +306,12 @@ public class LCD implements MemoryMappable {
             switch (cycle) {
                 case 0:
                     setScreenState(ScreenState.OAM_SEARCH);
+                    foundSprites.clear();
+                    discoverSprites();
                     break;
                 case 80:
                     setScreenState(ScreenState.DATA_TRANSFER);
+                    renderLine();
                     break;
                 case 252:
                     setScreenState(ScreenState.HBLANK);
@@ -324,10 +336,10 @@ public class LCD implements MemoryMappable {
         @Override
         public byte read(char address) {
             return (byte)(((lcdEnabled ? 1 : 0) << 7) |
-                          ((windowTileMapStart == 0x9C00 ? 1 : 0) << 6) |
+                          ((windowTileMapOfs == 0x400 ? 1 : 0) << 6) |
                           ((windowEnabled ? 1 : 0) << 5) |
-                          ((bgTilesetStart == 0x8000 ? 1 : 0) << 4) |
-                          ((bgTileMapStart == 0x9C00 ? 1 : 0) << 3) |
+                          ((bgTilesetOfs == 0 ? 1 : 0) << 4) |
+                          ((bgTileMapOfs == 0x400 ? 1 : 0) << 3) |
                           ((tallSpritesEnabled ? 1 : 0) << 2) |
                           ((spritesEnabled ? 1 : 0) << 1) |
                           ((bgEnabled ? 1 : 0) << 1));
@@ -336,10 +348,10 @@ public class LCD implements MemoryMappable {
         @Override
         public void write(char address, byte value) {
             lcdEnabled = ((value & 0x80) != 0);
-            windowTileMapStart = (char) (0x9800 + ((value & 0x40) * 0x10));
+            windowTileMapOfs = (char) ((value & 0x40) * 0x10);
             windowEnabled = ((value & 0x20) != 0);
-            bgTilesetStart = (char) (0x8800 - ((value & 0x10) * 0x80));
-            bgTileMapStart = (char) (0x9800 + ((value & 8) * 0x80));
+            bgTilesetOfs = (char) (0x800 - ((value & 0x10) * 0x80));
+            bgTileMapOfs = (char) ((value & 8) * 0x80);
             tallSpritesEnabled = ((value & 4) != 0);
             spritesEnabled = ((value & 2) != 0);
             bgEnabled = ((value & 1) != 0);
@@ -382,7 +394,7 @@ public class LCD implements MemoryMappable {
         @Override
         public byte read(char address) {
             System.err.format("Read made to write-only location ($%04X)", (int)address);
-            return 0;
+            return (byte)0xFF;
         }
     }
 

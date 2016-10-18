@@ -17,7 +17,7 @@ public class MemoryBuffer implements MemoryMappable {
         if (enabled)
             return data[(address - offset) & mask];
         System.err.format("Warning: read from disabled memory buffer ($%04X)", (int) address);
-        return 0;
+        return (byte)0xFF;
     }
 
     @Override
