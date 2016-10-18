@@ -7,24 +7,30 @@ import android.content.Intent;
 
 import creativename.gamedroid.R;
 
-public class MainScreen extends AppCompatActivity {
+public class MainScreen extends AppCompatActivity
+{
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_screen);
     }
 
-    public void start_button(View currView) {
+    public void start_button(View currView)
+    {
         System.out.println("Inside start_button()");
         Intent next_page = new Intent(getApplicationContext(), SecondScreen.class);
         startActivity(next_page);
     }
 
-    public void settings_button(View currView) {
+    public void settings_button(View currView)
+    {
         System.out.println("Inside settings_button()");
     }
 
-    public void help_button(View currView) {
+    public void help_button(View currView)
+    {
         System.out.println("Inside help_button()");
     }
 }
