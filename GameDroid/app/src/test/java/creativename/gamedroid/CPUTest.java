@@ -227,6 +227,132 @@ public class CPUTest {
     }
 
     @Test
+    public void add() throws Exception {
+        GameBoy gb = new GameBoy();
+        gb.mmu = new FixtureMMU(new int[]{
+                0x3E, 0b11101011,  // LD A, 0b11101011
+                0x06, 0b00000001,  // LD B, 0b00000001
+                0x80,              // ADD A,B
+                0x0E, 0b00001111,  // LD C, 0b00001111
+                0x81,              // ADD A,C
+
+                0x3E, 0b11111111,  // LD A, 0b11111111
+                0xC6, 0b00000001,  // ADD A, 0b00000001
+
+                0x3E, 0b00000001,  // LD A, 0x01
+                0xC6, 0b00000001   // ADD A, 0x01
+        });
+
+        //Test 1
+        gb.cpu.execInstruction(); //LD A ~
+        assertEquals(0b11101011, gb.cpu.a.read());
+        gb.cpu.execInstruction(); //LD B ~
+        assertEquals(0b00000001, gb.cpu.b.read());
+        gb.cpu.execInstruction(); // ADD A,B
+        assertEquals(0b11101100, gb.cpu.a.read());
+
+        //Test 2
+        gb.cpu.execInstruction(); //LD C, ~
+        gb.cpu.execInstruction(); //ADD A,C
+        assertEquals(0b11111011, gb.cpu.a.read());
+
+        //Edge case with immediate8 & Flag setting
+        gb.cpu.execInstruction(); // LD A ~
+        assertEquals(0b11111111, gb.cpu.a.read());
+        gb.cpu.execInstruction(); //ADD A, immediate8
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY)); //Half Carry Set?
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY)); //Carry Set?
+
+        //Testing Flags to be False
+        gb.cpu.execInstruction(); // LD A, 0x01
+        gb.cpu.execInstruction(); // ADD A, 0x01
+        assertEquals(0b00000010, gb.cpu.a.read());
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY)); //Half Carry Set?
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY)); //Carry Set?
+    }
+
+
+    @Test
+    public void adc() throws Exception {
+        GameBoy gb = new GameBoy();
+        gb.mmu = new FixtureMMU(new int[]{
+                0x3E, 0b11101011,  // LD A, 0b11101011
+                0x06, 0b00000001,  // LD B, 0b00000001
+                0x88,              // ADC A,B //No flag should be added
+
+                0x0E, 0b00001111,  // LD C, 0b00001111
+                0x89,              // ADC A,C
+
+                0x3E, 0b11111111,  // LD A, 0b11111111
+                0xCE, 0b00000001,  // ADC A, 0b00000001
+
+                0x3E, 0b00000001,  // LD A, 0x01
+                0xCE, 0b00000001   // ADC A, 0x01
+        });
+
+        //Test 1
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        gb.cpu.execInstruction(); //LD A ~
+        assertEquals(0b11101011, gb.cpu.a.read());
+        gb.cpu.execInstruction(); //LD B ~
+        assertEquals(0b00000001, gb.cpu.b.read());
+        gb.cpu.execInstruction(); // ADC A,B
+        assertEquals(0b11101101, gb.cpu.a.read()); //Does not remain 11101100
+
+        //Test 2
+        gb.cpu.execInstruction(); //LD C, ~
+        gb.cpu.execInstruction(); //ADC A,C //Half Carry gets set
+        assertEquals(0b11111100, gb.cpu.a.read());
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+
+        //immediate8 add Test with Flag
+        gb.cpu.execInstruction(); // LD A ~
+        assertEquals(0b11111111, gb.cpu.a.read());
+        gb.cpu.execInstruction(); //ADC A, immediate8
+        assertEquals(0b00000000, gb.cpu.a.read());
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY)); //Half Carry Set?
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY)); //Carry Set?
+
+        //Testing Flags to be False
+        gb.cpu.execInstruction(); // LD A, 0x01
+        gb.cpu.execInstruction(); // ADC A, 0x01
+        assertEquals(0b00000011, gb.cpu.a.read()); //Add extra 1 because of carry flag above
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY)); //Half Carry Set?
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY)); //Carry Set?
+    }
+
+/*    @Test
+    public void subtract() throws Exception {
+        GameBoy gb = new GameBoy();
+        gb.mmu = new FixtureMMU(new int[]{
+                0x3E, 0b11101011,  // LD A, 0b11101011
+                0xD6, 0b00000001,   // SUB 1 => A-1
+
+                0x3E, 0b11111111,  //LD A, 11111111
+                0xD6, 0b00000111,  //SUB 7 => A-7
+
+                0x3E, 0b00001111,  //LD A, 00001111
+                0xD6, 0b00101100,  //SUB
+        });
+
+        //Test 1
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0b11101010, gb.cpu.a.read());
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0b11111000, gb.cpu.a.read());
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+    }*/
+
+
+    @Test
     public void and() throws Exception {
         GameBoy gb = new GameBoy();
         gb.mmu = new FixtureMMU(new int[]{

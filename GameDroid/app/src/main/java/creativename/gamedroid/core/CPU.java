@@ -68,6 +68,10 @@ public class CPU {
         InstructionRoot inc16 = new INC16();
         InstructionRoot dec8 = new DEC8();
         InstructionRoot dec16 = new DEC16();
+        InstructionRoot add = new ADD();
+        InstructionRoot adc = new ADC();
+        //InstructionRoot sub = new SUB();
+        //InstructionRoot sbc = new SBC();
         InstructionRoot and = new AND();
         InstructionRoot xor = new XOR();
         InstructionRoot or = new OR();
@@ -167,6 +171,51 @@ public class CPU {
         oneByteInstructions.put((char) 0xB6, new InstructionForm(or, new Cursor[]{ihl}));
         oneByteInstructions.put((char) 0xB7, new InstructionForm(or, new Cursor[]{a}));
         oneByteInstructions.put((char) 0xF6, new InstructionForm(or, new Cursor[]{immediate8}));
+
+        //ADD
+        oneByteInstructions.put((char) 0x87, new InstructionForm(add, new Cursor[]{a, a}));
+        oneByteInstructions.put((char) 0x80, new InstructionForm(add, new Cursor[]{a, b}));
+        oneByteInstructions.put((char) 0x81, new InstructionForm(add, new Cursor[]{a, c}));
+        oneByteInstructions.put((char) 0x82, new InstructionForm(add, new Cursor[]{a, d}));
+        oneByteInstructions.put((char) 0x83, new InstructionForm(add, new Cursor[]{a, e}));
+        oneByteInstructions.put((char) 0x84, new InstructionForm(add, new Cursor[]{a, h}));
+        oneByteInstructions.put((char) 0x85, new InstructionForm(add, new Cursor[]{a, l}));
+        oneByteInstructions.put((char) 0x86, new InstructionForm(add, new Cursor[]{a, hl}));
+        oneByteInstructions.put((char) 0xC6, new InstructionForm(add, new Cursor[]{a, immediate8}));
+
+        //ADC
+        oneByteInstructions.put((char) 0x8F, new InstructionForm(adc, new Cursor[]{a, a}));
+        oneByteInstructions.put((char) 0x88, new InstructionForm(adc, new Cursor[]{a, b}));
+        oneByteInstructions.put((char) 0x89, new InstructionForm(adc, new Cursor[]{a, c}));
+        oneByteInstructions.put((char) 0x8A, new InstructionForm(adc, new Cursor[]{a, d}));
+        oneByteInstructions.put((char) 0x8B, new InstructionForm(adc, new Cursor[]{a, e}));
+        oneByteInstructions.put((char) 0x8C, new InstructionForm(adc, new Cursor[]{a, h}));
+        oneByteInstructions.put((char) 0x8D, new InstructionForm(adc, new Cursor[]{a, l}));
+        oneByteInstructions.put((char) 0x8E, new InstructionForm(adc, new Cursor[]{a, hl}));
+        oneByteInstructions.put((char) 0xCE, new InstructionForm(adc, new Cursor[]{a, immediate8}));
+
+        //SUB
+/*        oneByteInstructions.put((char) 0x97, new InstructionForm(sub, new Cursor[]{a}));
+        oneByteInstructions.put((char) 0x90, new InstructionForm(sub, new Cursor[]{b}));
+        oneByteInstructions.put((char) 0x91, new InstructionForm(sub, new Cursor[]{c}));
+        oneByteInstructions.put((char) 0x92, new InstructionForm(sub, new Cursor[]{d}));
+        oneByteInstructions.put((char) 0x93, new InstructionForm(sub, new Cursor[]{e}));
+        oneByteInstructions.put((char) 0x94, new InstructionForm(sub, new Cursor[]{h}));
+        oneByteInstructions.put((char) 0x95, new InstructionForm(sub, new Cursor[]{l}));
+        oneByteInstructions.put((char) 0x96, new InstructionForm(sub, new Cursor[]{hl}));
+        oneByteInstructions.put((char) 0xD6, new InstructionForm(sub, new Cursor[]{immediate8}));
+
+        //SBC
+        oneByteInstructions.put((char) 0x9F, new InstructionForm(sbc, new Cursor[]{a, a}));
+        oneByteInstructions.put((char) 0x98, new InstructionForm(sbc, new Cursor[]{a, b}));
+        oneByteInstructions.put((char) 0x99, new InstructionForm(sbc, new Cursor[]{a, c}));
+        oneByteInstructions.put((char) 0x9A, new InstructionForm(sbc, new Cursor[]{a, d}));
+        oneByteInstructions.put((char) 0x9B, new InstructionForm(sbc, new Cursor[]{a, e}));
+        oneByteInstructions.put((char) 0x9C, new InstructionForm(sbc, new Cursor[]{a, h}));
+        oneByteInstructions.put((char) 0x9D, new InstructionForm(sbc, new Cursor[]{a, l}));
+        oneByteInstructions.put((char) 0x9E, new InstructionForm(sbc, new Cursor[]{a, hl}));*/
+        //Says ??
+        //oneByteInstructions.put((char) 0x9F, new InstructionForm(sbc, new Cursor[]{a, a}));
 
         // CP
         oneByteInstructions.put((char) 0xB8, new InstructionForm(cp, new Cursor[]{b}));
@@ -797,6 +846,37 @@ public class CPU {
         public void execute(CPU cpu, Cursor[] operands) {
             char x = operands[0].read();
             operands[0].write((char) (x - 1));
+        }
+    }
+
+    private static class ADD implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char result = (char) (cpu.a.read() + operands[1].read());
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            boolean halfCarryValue = (((cpu.a.read()&0xf) + (operands[1].read()&0xf))&0x10) == 0x10;
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, halfCarryValue);
+            boolean carryValue = (((int)result) > 255);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, carryValue);
+            cpu.a.write(result);
+        }
+    }
+
+    private static class ADC implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            char result = (char) (cpu.a.read() + operands[1].read());
+            if(cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
+                result += 0x01;
+            }
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            boolean halfCarryValue = (((cpu.a.read()&0xF) + (operands[1].read()&0xF))&0x10) == 0x10;
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, halfCarryValue);
+            boolean carryValue = (((int)result) > 255);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, carryValue);
+            cpu.a.write(result);
         }
     }
 
