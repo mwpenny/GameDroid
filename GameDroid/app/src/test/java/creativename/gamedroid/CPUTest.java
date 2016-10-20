@@ -287,7 +287,12 @@ public class CPUTest {
                 0xCE, 0b00000001,  // ADC A, 0b00000001
 
                 0x3E, 0b00000001,  // LD A, 0x01
-                0xCE, 0b00000001   // ADC A, 0x01
+                0xCE, 0b00000001,  // ADC A, 0x01
+
+
+                0x37,              // SCF
+                0x3E, 0b00001111,  // LD A, 0b00001111
+                0xCE, 0b00000000   // ADC A, 0b00000000
         });
 
         //Test 1
@@ -319,6 +324,14 @@ public class CPUTest {
         assertEquals(0b00000011, gb.cpu.a.read()); //Add extra 1 because of carry flag above
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY)); //Half Carry Set?
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY)); //Carry Set?
+
+        // Carry flag should cause half carry overflow
+        gb.cpu.f.updateFlag(CPU.FlagRegister.Flag.HALF_CARRY, false);
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0b00010000, gb.cpu.a.read());
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
     }
 
 /*    @Test
