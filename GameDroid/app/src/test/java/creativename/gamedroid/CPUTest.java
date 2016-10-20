@@ -271,6 +271,72 @@ public class CPUTest {
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY)); //Carry Set?
     }
 
+    @Test
+    public void add16() throws Exception {
+        GameBoy gb = new GameBoy();
+        gb.mmu = new FixtureMMU(new int[]{
+                0x21, 0x12, 0xA7,  // LD HL,$A712
+                0x01, 0x34, 0x12,  // LD BC,$1234
+                0x09,              // ADD HL,BC
+
+                0x21, 0xFF, 0xFF,  // LD HL,$FFFF
+                0x01, 0x01, 0x00,  // LD BC,$0001
+                0x09,              // ADD HL,BC
+
+                0x21, 0x12, 0x00,  // LD HL,$0012
+                0x01, 0xAF, 0x00,  // LD BC,$00AF
+                0x09,              // ADD HL,BC
+
+                0x21, 0x00, 0x00,  // LD HL,0000
+                0x01, 0x00, 0x00,  // LD BC,$0000
+                0x09,              // ADD HL,BC
+
+                0x31, 0x04, 0x30,  // LD SP,$3004
+                0xE8, 0xAF         // ADD SP,$AF
+        });
+
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0xB946, gb.cpu.hl.read());
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0x0000, gb.cpu.hl.read());
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0x00C1, gb.cpu.hl.read());
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+
+        // 16-bit ADD shouldn't set the zero flag
+        gb.cpu.f.updateFlag(CPU.FlagRegister.Flag.ZERO, false);
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+
+        // ADD SP,d8 should clear the zero flag
+        gb.cpu.f.updateFlag(CPU.FlagRegister.Flag.ZERO, true);
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0x30B3, gb.cpu.sp.read());
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+    }
+
 
     @Test
     public void adc() throws Exception {

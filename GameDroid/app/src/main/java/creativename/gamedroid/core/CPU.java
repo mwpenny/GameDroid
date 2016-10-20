@@ -68,7 +68,8 @@ public class CPU {
         InstructionRoot inc16 = new INC16();
         InstructionRoot dec8 = new DEC8();
         InstructionRoot dec16 = new DEC16();
-        InstructionRoot add = new ADD();
+        InstructionRoot add8 = new ADD8();
+        InstructionRoot add16 = new ADD16();
         InstructionRoot adc = new ADC();
         //InstructionRoot sub = new SUB();
         //InstructionRoot sbc = new SBC();
@@ -173,15 +174,21 @@ public class CPU {
         oneByteInstructions.put((char) 0xF6, new InstructionForm(or, new Cursor[]{immediate8}));
 
         // ADD
-        oneByteInstructions.put((char) 0x80, new InstructionForm(add, new Cursor[]{b}));
-        oneByteInstructions.put((char) 0x81, new InstructionForm(add, new Cursor[]{c}));
-        oneByteInstructions.put((char) 0x82, new InstructionForm(add, new Cursor[]{d}));
-        oneByteInstructions.put((char) 0x83, new InstructionForm(add, new Cursor[]{e}));
-        oneByteInstructions.put((char) 0x84, new InstructionForm(add, new Cursor[]{h}));
-        oneByteInstructions.put((char) 0x85, new InstructionForm(add, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0x86, new InstructionForm(add, new Cursor[]{ihl}));
-        oneByteInstructions.put((char) 0x87, new InstructionForm(add, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xC6, new InstructionForm(add, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0x80, new InstructionForm(add8, new Cursor[]{b}));
+        oneByteInstructions.put((char) 0x81, new InstructionForm(add8, new Cursor[]{c}));
+        oneByteInstructions.put((char) 0x82, new InstructionForm(add8, new Cursor[]{d}));
+        oneByteInstructions.put((char) 0x83, new InstructionForm(add8, new Cursor[]{e}));
+        oneByteInstructions.put((char) 0x84, new InstructionForm(add8, new Cursor[]{h}));
+        oneByteInstructions.put((char) 0x85, new InstructionForm(add8, new Cursor[]{l}));
+        oneByteInstructions.put((char) 0x86, new InstructionForm(add8, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0x87, new InstructionForm(add8, new Cursor[]{a}));
+        oneByteInstructions.put((char) 0xC6, new InstructionForm(add8, new Cursor[]{immediate8}));
+
+        oneByteInstructions.put((char) 0x09, new InstructionForm(add16, new Cursor[]{hl, bc}));
+        oneByteInstructions.put((char) 0x19, new InstructionForm(add16, new Cursor[]{hl, de}));
+        oneByteInstructions.put((char) 0x29, new InstructionForm(add16, new Cursor[]{hl, hl}));
+        oneByteInstructions.put((char) 0x39, new InstructionForm(add16, new Cursor[]{hl, sp}));
+        oneByteInstructions.put((char) 0xE8, new InstructionForm(new ADD16Z(), new Cursor[]{sp, immediate8}));
 
         // ADC
         oneByteInstructions.put((char) 0x88, new InstructionForm(adc, new Cursor[]{b}));
@@ -850,7 +857,7 @@ public class CPU {
     }
 
     // ADD - add operand to A register
-    private static class ADD implements InstructionRoot {
+    private static class ADD8 implements InstructionRoot {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             int x = cpu.a.read();
@@ -861,6 +868,25 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, ((x & 0xF) + (y & 0xF)) > 0xF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, result > 0xFF);
             cpu.a.write(result);
+        }
+    }
+    private static class ADD16 implements InstructionRoot {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            int x = operands[0].read();
+            int y = operands[1].read();
+            int result = x + y;
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xFFF) + (y & 0xFFF) > 0xFFF);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, result > 0xFFFF);
+            operands[0].write((char)result);
+        }
+    }
+    private static class ADD16Z extends ADD16 {
+        @Override
+        public void execute(CPU cpu, Cursor[] operands) {
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, false);
+            super.execute(cpu, operands);
         }
     }
 
