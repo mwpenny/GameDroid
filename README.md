@@ -8,31 +8,6 @@ Repository structure:
 * `docs/` contains documents related to the project. This is mostly documentation of GameBoy hardware to refer to while implementing the emulator. Unless otherwise stated, this material is by other authors and is used purely as reference material
 * `GameDroid/` contains the application's source code
 
-# CPU instructions to implement (single byte)
-
-|      | x0       | x1      | x2       | x3      | x4        | x5      | x6       | x7      | x8        | x9      | xA       | xB      | xC       | xD     | xE       | xF    |
-|------|----------|---------|----------|---------|-----------|---------|----------|---------|-----------|---------|----------|---------|----------|--------|----------|-------|
-|**x0**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x1**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x2**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x3**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x4**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x5**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x6**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x7**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x8**|          |  |      |      |   |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**x9**|SUB B     |SUB C    |SUB D     |SUB E    |SUB H      |SUB L    |SUB (HL)  |SUB A    |SBC A,B    |SBC A,C  |SBC A,D   |SBC A,E  |SBC A,H   |SBC A,L |SBC A,(HL)|SBC A,A|
-|**xA**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xB**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xC**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xD**|          |         |          |         |           |         |SUB d8    |         |           |         |          |         |          |        |SBC A,d8  |       |
-|**xE**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-|**xF**|          |         |          |         |           |         |          |         |           |         |          |         |          |        |          |       |
-
-
-* [Original opcode table](http://pastraiser.com/cpu/gameboy/gameboy_opcodes.html) with more info (such as flags modified and cycle count).
-* [Opcode summary](http://gameboy.mongenel.com/dmg/opcodes.html)
-
 # Unsupported cartridge types
 
 | Number | Description                 |
