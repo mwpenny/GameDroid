@@ -400,7 +400,7 @@ public class CPUTest {
         assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
     }
 
-/*    @Test
+    @Test
     public void subtract() throws Exception {
         GameBoy gb = new GameBoy();
         gb.mmu = new FixtureMMU(new int[]{
@@ -428,8 +428,47 @@ public class CPUTest {
         gb.cpu.execInstruction();
         assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
-    }*/
+    }
 
+/*    @Test
+    public void sbc() throws Exception {
+        GameBoy gb = new GameBoy();
+        gb.mmu = new FixtureMMU(new int[]{
+                0x3E, 0b11101011,  // LD A, 0b11101011
+                0x06, 0b00000001,  // LD B, 0b00000001
+                0x98,              // SBC 1 => A-B
+
+                0x3E, 0b11111111,  //LD A, 11111111
+                0x9F, 0b00000111,  //SUB 7 => A-7
+
+                0x3E, 0b00001111,  //LD A, 00001111
+                0xD6, 0b00101100,  //SUB
+
+                0x3E, 0b00000001, //LD A
+                0xD6, 0b11110000
+        });
+
+        //Test 1
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0b11101001, gb.cpu.a.read());
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0b11111000, gb.cpu.a.read());
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+    }*/
 
     @Test
     public void and() throws Exception {
