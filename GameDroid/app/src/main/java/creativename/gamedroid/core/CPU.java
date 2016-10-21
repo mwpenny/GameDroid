@@ -638,6 +638,12 @@ public class CPU {
         public boolean isFlagSet(Flag flag) {
             return (value & flag.getBitmask()) != 0;
         }
+
+        @Override
+        public void write(char value) {
+            // writes to the lower nibble of the flag register has no effect - it's always zero.
+            super.write((char) (value & 0xF0));
+        }
     }
 
     /* 16-bit CPU register */
