@@ -401,6 +401,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x05, new InstructionForm(rlc, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x06, new InstructionForm(rlc, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x07, new InstructionForm(rlc, new Cursor[]{a}));
+
         // RL
         twoByteInstructions.put((char) 0x10, new InstructionForm(rl, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x11, new InstructionForm(rl, new Cursor[]{c}));
@@ -410,6 +411,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x15, new InstructionForm(rl, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x16, new InstructionForm(rl, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x17, new InstructionForm(rl, new Cursor[]{a}));
+
         // RRC
         twoByteInstructions.put((char) 0x08, new InstructionForm(rrc, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x09, new InstructionForm(rrc, new Cursor[]{c}));
@@ -419,6 +421,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x0D, new InstructionForm(rrc, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x0E, new InstructionForm(rrc, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x0F, new InstructionForm(rrc, new Cursor[]{a}));
+
         // RR
         twoByteInstructions.put((char) 0x18, new InstructionForm(rr, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x19, new InstructionForm(rr, new Cursor[]{c}));
@@ -428,6 +431,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x1D, new InstructionForm(rr, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x1E, new InstructionForm(rr, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x1F, new InstructionForm(rr, new Cursor[]{a}));
+
         // SLA
         InstructionRoot sla = new SLA();
         twoByteInstructions.put((char) 0x20, new InstructionForm(sla, new Cursor[]{b}));
@@ -438,6 +442,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x25, new InstructionForm(sla, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x26, new InstructionForm(sla, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x27, new InstructionForm(sla, new Cursor[]{a}));
+
         // SRA
         InstructionRoot sra = new SRA();
         twoByteInstructions.put((char) 0x28, new InstructionForm(sra, new Cursor[]{b}));
@@ -448,6 +453,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x2D, new InstructionForm(sra, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x2E, new InstructionForm(sra, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x2F, new InstructionForm(sra, new Cursor[]{a}));
+
         // SLA
         InstructionRoot srl = new SRL();
         twoByteInstructions.put((char) 0x38, new InstructionForm(srl, new Cursor[]{b}));
@@ -458,6 +464,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x3D, new InstructionForm(srl, new Cursor[]{l}));
         twoByteInstructions.put((char) 0x3E, new InstructionForm(srl, new Cursor[]{ihl}));
         twoByteInstructions.put((char) 0x3F, new InstructionForm(srl, new Cursor[]{a}));
+
         // SWAP
         twoByteInstructions.put((char) 0x30, new InstructionForm(swap, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x31, new InstructionForm(swap, new Cursor[]{c}));
@@ -998,6 +1005,7 @@ public class CPU {
             char val = operands[0].read();
             val = (char) (((val << 4) | (val >>> 4)) & 0xFF);
             operands[0].write(val);
+            cpu.f.write((char)0);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, val == 0);
         }
     }
