@@ -1306,7 +1306,7 @@ public class CPU {
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & 0x100) > 0);
             operands[0].write((char) shifted);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, !operands[0].equals(cpu.a) && operands[0].read() == 0);
         }
     }
 
@@ -1320,7 +1320,7 @@ public class CPU {
                 shifted ^= 1;
                 cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
             }
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, !operands[0].equals(cpu.a) && shifted == 0);
             operands[0].write((char) shifted);
         }
     }
@@ -1337,7 +1337,7 @@ public class CPU {
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, !operands[0].equals(cpu.a) && shifted == 0);
             operands[0].write((char) shifted);
         }
     }
@@ -1354,7 +1354,7 @@ public class CPU {
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, !operands[0].equals(cpu.a) && shifted == 0);
             operands[0].write((char) shifted);
         }
     }
