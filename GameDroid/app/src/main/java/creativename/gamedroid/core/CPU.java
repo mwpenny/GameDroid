@@ -511,16 +511,14 @@ public class CPU {
     }
 
     private void pushStack(char value) {
-        // SP points to the address where the next byte will be pushed
+        sp.decrement();
         sp.decrement();
         gb.mmu.write16(sp.read(), value);
-        sp.decrement();
     }
 
     private char popStack() {
-        // SP points to the address where the next byte will be pushed
-        sp.increment();
         char val = gb.mmu.read16(sp.read());
+        sp.increment();
         sp.increment();
         return val;
     }
@@ -531,6 +529,8 @@ public class CPU {
         gb.mmu.write8((char) 0xFF0F, raisedInterrupts);
         halted = false;
         gb.stopped = false;
+
+        // TODO: wakeup from stop if IME disabled
     }
 
     public void reset() {
@@ -1279,6 +1279,7 @@ public class CPU {
 
     // STOP - halt GameBoy hardware
     private static class STOP implements InstructionRoot {
+        // TODO: invalid opcode if operand is not 0
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             cpu.gb.stopped = true;

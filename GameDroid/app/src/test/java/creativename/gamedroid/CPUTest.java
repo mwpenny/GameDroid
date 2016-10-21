@@ -555,15 +555,13 @@ public class CPUTest {
             0x01, 0x04, 0x30,  // LD BC,$3004
             0xC5,              // PUSH BC
             0xC5,              // PUSH BC
-            0xF1,              // POP AF
-            0xF5,              // PUSH AF
+            0x01, 0x00, 0x00,  // LD BC,$0000
             0xD1,              // POP DE
             0xD5,              // PUSH DE
             0xE1,              // POP HL
             0xE5,              // PUSH HL
             0xC1               // POP BC
         });
-        gb.cpu.execInstruction();
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
