@@ -3,6 +3,7 @@ package creativename.gamedroid;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import creativename.gamedroid.core.Cartridge;
 import creativename.gamedroid.core.GameBoy;
 import creativename.gamedroid.core.CPU;
 import creativename.gamedroid.core.MMU;
@@ -122,7 +123,7 @@ public class CPUTest {
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
         assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
-        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
     }
 
     @Test
@@ -330,10 +331,10 @@ public class CPUTest {
         gb.cpu.f.updateFlag(CPU.FlagRegister.Flag.ZERO, true);
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
-        assertEquals(0x30B3, gb.cpu.sp.read());
+        assertEquals(0x2FB3, gb.cpu.sp.read());  // Should be signed
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.SUBTRACTION));
-        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
+        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.HALF_CARRY));
         assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.CARRY));
     }
 
@@ -591,6 +592,7 @@ public class CPUTest {
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
         assertEquals(0xF3, gb.mmu.read8((char)0xC000));
+        assertEquals(0, gb.cpu.f.read());
     }
 
     @Test
@@ -880,7 +882,7 @@ public class CPUTest {
 
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
-        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
 
     @Test
@@ -930,7 +932,7 @@ public class CPUTest {
 
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
-        assertTrue(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
+        assertFalse(gb.cpu.f.isFlagSet(CPU.FlagRegister.Flag.ZERO));
     }
 
     @Test
