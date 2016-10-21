@@ -68,6 +68,7 @@ public class CPU {
         InstructionRoot inc16 = new INC16();
         InstructionRoot dec8 = new DEC8();
         InstructionRoot dec16 = new DEC16();
+        InstructionRoot addsp = new ADDSP();
         InstructionRoot add8 = new ADD8();
         InstructionRoot add16 = new ADD16();
         InstructionRoot adc = new ADC();
@@ -133,9 +134,9 @@ public class CPU {
         oneByteInstructions.put((char) 0x15, new InstructionForm(dec8, new Cursor[]{d}));
         oneByteInstructions.put((char) 0x1B, new InstructionForm(dec16, new Cursor[]{de}));
         oneByteInstructions.put((char) 0x1D, new InstructionForm(dec8, new Cursor[]{e}));
-        oneByteInstructions.put((char) 0x25, new InstructionForm(dec8, new Cursor[]{l}));
+        oneByteInstructions.put((char) 0x25, new InstructionForm(dec8, new Cursor[]{h}));
         oneByteInstructions.put((char) 0x2B, new InstructionForm(dec16, new Cursor[]{hl}));
-        oneByteInstructions.put((char) 0x2D, new InstructionForm(dec8, new Cursor[]{h}));
+        oneByteInstructions.put((char) 0x2D, new InstructionForm(dec8, new Cursor[]{l}));
         oneByteInstructions.put((char) 0x35, new InstructionForm(dec8, new Cursor[]{ihl}));
         oneByteInstructions.put((char) 0x3B, new InstructionForm(dec16, new Cursor[]{sp}));
         oneByteInstructions.put((char) 0x3D, new InstructionForm(dec8, new Cursor[]{a}));
@@ -188,7 +189,7 @@ public class CPU {
         oneByteInstructions.put((char) 0x19, new InstructionForm(add16, new Cursor[]{hl, de}));
         oneByteInstructions.put((char) 0x29, new InstructionForm(add16, new Cursor[]{hl, hl}));
         oneByteInstructions.put((char) 0x39, new InstructionForm(add16, new Cursor[]{hl, sp}));
-        oneByteInstructions.put((char) 0xE8, new InstructionForm(new ADD16Z(), new Cursor[]{sp, immediate8}));
+        oneByteInstructions.put((char) 0xE8, new InstructionForm(addsp, new Cursor[]{sp, immediate8}));
 
         // ADC
         oneByteInstructions.put((char) 0x88, new InstructionForm(adc, new Cursor[]{b}));
@@ -257,7 +258,7 @@ public class CPU {
         oneByteInstructions.put((char) 0xEA, new InstructionForm(ld, new Cursor[]{twoByteIndirect8, a}));
         oneByteInstructions.put((char) 0xF0, new InstructionForm(ld, new Cursor[]{a, oneByteIndirect8}));
         oneByteInstructions.put((char) 0xF2, new InstructionForm(ld, new Cursor[]{a, ic}));
-        oneByteInstructions.put((char) 0xF8, new InstructionForm(new LDHL(), new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xF8, new InstructionForm(addsp, new Cursor[]{hl, immediate8}));  // LDHL
         oneByteInstructions.put((char) 0xFA, new InstructionForm(ld, new Cursor[]{a, twoByteIndirect8}));
 
         oneByteInstructions.put((char) 0x02, new InstructionForm(ld, new Cursor[]{ibc, a}));
@@ -758,20 +759,6 @@ public class CPU {
         }
     }
 
-    private static class LDHL implements InstructionRoot {
-        @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            char x = cpu.sp.read();
-            byte y = (byte) operands[0].read();  // Treat as signed
-            int val = x + y;
-            cpu.hl.write((char) val);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, false);
-            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
-            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) + (y & 0xF) > 0xF);
-            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (x & 0xFF) + y > 0xFF);
-        }
-    }
-
     // NOP - no operation
     private static class NOP implements InstructionRoot {
         @Override
@@ -887,11 +874,17 @@ public class CPU {
             operands[0].write((char)result);
         }
     }
-    private static class ADD16Z extends ADD16 {
+    private static class ADDSP extends ADD16 {
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
+            int x = cpu.sp.read();
+            byte y = (byte)operands[1].read();  // Treat as signed
+            int result = x + y;
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, false);
-            super.execute(cpu, operands);
+            cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) + (y & 0xF) > 0xF);
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (x & 0xFF) + (y & 0xFF) > 0xFF);
+            operands[0].write((char)result);
         }
     }
 
@@ -935,7 +928,7 @@ public class CPU {
             int y = operands[0].read();
             int c = cpu.f.isFlagSet(FlagRegister.Flag.CARRY) ? 1 : 0;
             char result = (char) (cpu.a.read() - operands[0].read() - c);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, (result & 0xFF) == 0);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (cpu.a.read() & 0xF) < (operands[0].read() & 0xF) + c);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, x < y + c);
