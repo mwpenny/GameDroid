@@ -868,7 +868,7 @@ public class CPU {
             int x = cpu.a.read();
             int y = operands[0].read();
             char result = (char) (x + y);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, (result & 0xFF) == 0);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, ((x & 0xF) + (y & 0xF)) > 0xF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, result > 0xFF);
@@ -903,7 +903,7 @@ public class CPU {
             int y = operands[0].read();
             int c = cpu.f.isFlagSet(FlagRegister.Flag.CARRY) ? 1 : 0;
             char result = (char) (x + y + c);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
+            cpu.f.updateFlag(FlagRegister.Flag.ZERO, (result & 0xFF) == 0);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, ((x & 0xF) + (y & 0xF) + c) > 0xF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, result > 0xFF);
