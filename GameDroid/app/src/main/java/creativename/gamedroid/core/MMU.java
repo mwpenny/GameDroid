@@ -28,7 +28,9 @@ public class MMU {
             case 0xE000:
                 return workRam;
         }
-        if (addr == 0xFF0F)
+        if (addr == 0xFF00)
+            return gb.gamepad;
+        else if (addr == 0xFF0F)
             return raisedInterrupts;
         else if ((addr >= 0x8000 && addr <= 0x9FFF) ||
                  (addr >= 0xFE00 & addr <= 0xFE9F) ||
