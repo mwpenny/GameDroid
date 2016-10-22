@@ -136,8 +136,8 @@ public class MMU {
     private static class InvalidRegion implements MemoryMappable {
         @Override
         public byte read(char address) {
-            System.err.format("Warning: invalid memory read at $%04X", (int) address);
-            return 0;
+            System.err.format("Warning: invalid memory read at $%04X\n", (int) address);
+            return (byte) 0xFF;  // mimic actual hardware
         }
 
         @Override
