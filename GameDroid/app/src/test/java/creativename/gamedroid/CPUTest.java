@@ -605,7 +605,7 @@ public class CPUTest {
             0xCB, 0x7F,       // BIT 7,A
             0x21, 0x00, 0xC0, // LD HL,$C000
             0xCB, 0x5E,       // BIT 3,(HL)
-            0xCB, 0x76        // BIT 6,(HL)
+            0xCB, 0x76,       // BIT 6,(HL)
         });
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
@@ -639,7 +639,9 @@ public class CPUTest {
             0xCB, 0xE1, // SET 4,C
             0xCB, 0x81, // RES 0,C
             0xCB, 0x91, // RES 2,C
-            0xCB, 0xA1  // RES 4,C
+            0xCB, 0xA1, // RES 4,C
+            0xAF,       // XOR A
+            0xCB, 0xFF, // SET 7, A
         });
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
@@ -651,6 +653,9 @@ public class CPUTest {
         gb.cpu.execInstruction();
         gb.cpu.execInstruction();
         assertEquals(0, gb.cpu.c.read());
+        gb.cpu.execInstruction();
+        gb.cpu.execInstruction();
+        assertEquals(0b1000_0000, gb.cpu.a.read());
     }
 
     @Test

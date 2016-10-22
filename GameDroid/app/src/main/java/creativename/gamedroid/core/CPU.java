@@ -90,10 +90,14 @@ public class CPU {
         InstructionRoot jp = new JP();
         InstructionRoot jr = new JR();
         InstructionRoot rst = new RST();
-        InstructionRoot rl = new RL();
-        InstructionRoot rlc = new RLC();
-        InstructionRoot rr = new RR();
-        InstructionRoot rrc = new RRC();
+        InstructionRoot rl = new RL(false);
+        InstructionRoot rlc = new RLC(false);
+        InstructionRoot rr = new RR(false);
+        InstructionRoot rrc = new RRC(false);
+        InstructionRoot rla = new RL(true);
+        InstructionRoot rlca = new RLC(true);
+        InstructionRoot rra = new RR(true);
+        InstructionRoot rrca = new RRC(true);
 
         /* Build the one-byte instruction lookup table */
         oneByteInstructions = new HashMap<>();
@@ -108,10 +112,10 @@ public class CPU {
         oneByteInstructions.put((char) 0xF3, new InstructionForm(new DI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0xFB, new InstructionForm(new EI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x27, new InstructionForm(new DAA(), new Cursor[]{}));
-        oneByteInstructions.put((char) 0x07, new InstructionForm(rlc, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0x17, new InstructionForm(rl, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0x0F, new InstructionForm(rrc, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0x1F, new InstructionForm(rr, new Cursor[]{a}));
+        oneByteInstructions.put((char) 0x07, new InstructionForm(rlca, new Cursor[]{a}));
+        oneByteInstructions.put((char) 0x17, new InstructionForm(rla, new Cursor[]{a}));
+        oneByteInstructions.put((char) 0x0F, new InstructionForm(rrca, new Cursor[]{a}));
+        oneByteInstructions.put((char) 0x1F, new InstructionForm(rra, new Cursor[]{a}));
 
         // INC
         oneByteInstructions.put((char) 0x03, new InstructionForm(inc16, new Cursor[]{bc}));
@@ -1305,6 +1309,11 @@ public class CPU {
 
     // RL - rotate left through carry flag
     private static class RL implements InstructionRoot {
+        boolean clearZeroFlag;
+        public RL(boolean clearZeroFlag) {
+            this.clearZeroFlag = clearZeroFlag;
+        }
+
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             int shifted = operands[0].read() << 1;
@@ -1314,12 +1323,18 @@ public class CPU {
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & 0x100) > 0);
             operands[0].write((char) shifted);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, !operands[0].equals(cpu.a) && operands[0].read() == 0);
+            if (!clearZeroFlag)
+                cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
         }
     }
 
     // RLC - rotate left
     private static class RLC implements InstructionRoot {
+        boolean clearZeroFlag;
+        public RLC(boolean clearZeroFlag) {
+            this.clearZeroFlag = clearZeroFlag;
+        }
+
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             cpu.f.write((char) 0);
@@ -1328,13 +1343,20 @@ public class CPU {
                 shifted ^= 1;
                 cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
             }
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, !operands[0].equals(cpu.a) && shifted == 0);
+            if (!clearZeroFlag)
+                cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
+
             operands[0].write((char) shifted);
         }
     }
 
     // RR - rotate right through carry flag
     private static class RR implements InstructionRoot {
+        boolean clearZeroFlag;
+        public RR(boolean clearZeroFlag) {
+            this.clearZeroFlag = clearZeroFlag;
+        }
+
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             int val = operands[0].read();
@@ -1345,13 +1367,19 @@ public class CPU {
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, !operands[0].equals(cpu.a) && shifted == 0);
+            if (!clearZeroFlag)
+                cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
             operands[0].write((char) shifted);
         }
     }
 
     // RRC - rotate right
     private static class RRC implements InstructionRoot {
+        boolean clearZeroFlag;
+        public RRC(boolean clearZeroFlag) {
+            this.clearZeroFlag = clearZeroFlag;
+        }
+
         @Override
         public void execute(CPU cpu, Cursor[] operands) {
             int val = operands[0].read();
@@ -1362,7 +1390,8 @@ public class CPU {
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
-            cpu.f.updateFlag(FlagRegister.Flag.ZERO, !operands[0].equals(cpu.a) && shifted == 0);
+            if (!clearZeroFlag)
+                cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
             operands[0].write((char) shifted);
         }
     }
