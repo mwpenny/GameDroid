@@ -1,0 +1,5 @@
+Week 3 Dev Log
+
+-  3 hours : Developed ALU instructions (ADD & SUB). 
+
+Total: 3 hours
