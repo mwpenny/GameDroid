@@ -40,7 +40,7 @@ public class MMU {
             return stack;
         else if (addr == 0xFFFF)
             return enabledInterrupts;
-        else if (addr < 0x8000 && addr >= 0x0100)
+        else if (addr < 0x8000)
             return gb.cartridge.mbc;
         return invalidMemory;
     }
