@@ -1,0 +1,7 @@
+Week 4 Dev Log
+
+- 3 hours : Writing Tests, Debugging and Fixing ADD/SUB implementations (Flags).
+- 1 hour: Reviewing how specific flags work (Mainly half-carry)
+- 30 minutes : Learning more about how graphics works
+
+Total: 4.5 hours
