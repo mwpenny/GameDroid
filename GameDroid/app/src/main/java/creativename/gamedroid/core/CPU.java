@@ -90,14 +90,14 @@ public class CPU {
         InstructionRoot jp = new JP();
         InstructionRoot jr = new JR();
         InstructionRoot rst = new RST();
-        InstructionRoot rl = new RL(false);
-        InstructionRoot rlc = new RLC(false);
-        InstructionRoot rr = new RR(false);
-        InstructionRoot rrc = new RRC(false);
-        InstructionRoot rla = new RL(true);
-        InstructionRoot rlca = new RLC(true);
-        InstructionRoot rra = new RR(true);
-        InstructionRoot rrca = new RRC(true);
+        InstructionRoot rl = new RL(ZeroFlagBehavior.DEPEND_ON_RESULT);
+        InstructionRoot rlc = new RLC(ZeroFlagBehavior.DEPEND_ON_RESULT);
+        InstructionRoot rr = new RR(ZeroFlagBehavior.DEPEND_ON_RESULT);
+        InstructionRoot rrc = new RRC(ZeroFlagBehavior.DEPEND_ON_RESULT);
+        InstructionRoot rla = new RL(ZeroFlagBehavior.ALWAYS_CLEAR);
+        InstructionRoot rlca = new RLC(ZeroFlagBehavior.ALWAYS_CLEAR);
+        InstructionRoot rra = new RR(ZeroFlagBehavior.ALWAYS_CLEAR);
+        InstructionRoot rrca = new RRC(ZeroFlagBehavior.ALWAYS_CLEAR);
 
         /* Build the one-byte instruction lookup table */
         oneByteInstructions = new HashMap<>();
@@ -112,10 +112,10 @@ public class CPU {
         oneByteInstructions.put((char) 0xF3, new InstructionForm(new DI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0xFB, new InstructionForm(new EI(), new Cursor[]{}));
         oneByteInstructions.put((char) 0x27, new InstructionForm(new DAA(), new Cursor[]{}));
-        oneByteInstructions.put((char) 0x07, new InstructionForm(rlca, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0x17, new InstructionForm(rla, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0x0F, new InstructionForm(rrca, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0x1F, new InstructionForm(rra, new Cursor[]{a}));
+        oneByteInstructions.put((char) 0x07, new ConstantCycleInstruction(rlca, new Cursor[]{a}, 4));
+        oneByteInstructions.put((char) 0x17, new ConstantCycleInstruction(rla, new Cursor[]{a}, 4));
+        oneByteInstructions.put((char) 0x0F, new ConstantCycleInstruction(rrca, new Cursor[]{a}, 4));
+        oneByteInstructions.put((char) 0x1F, new ConstantCycleInstruction(rra, new Cursor[]{a}, 4));
 
         // INC
         oneByteInstructions.put((char) 0x03, new InstructionForm(inc16, new Cursor[]{bc}));
@@ -128,7 +128,7 @@ public class CPU {
         oneByteInstructions.put((char) 0x24, new InstructionForm(inc8, new Cursor[]{h}));
         oneByteInstructions.put((char) 0x2C, new InstructionForm(inc8, new Cursor[]{l}));
         oneByteInstructions.put((char) 0x33, new InstructionForm(inc16, new Cursor[]{sp}));
-        oneByteInstructions.put((char) 0x34, new InstructionForm(inc8, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0x34, new ConstantCycleInstruction(inc8, new Cursor[]{ihl}, 12));
         oneByteInstructions.put((char) 0x3C, new InstructionForm(inc8, new Cursor[]{a}));
 
         // DEC
@@ -141,7 +141,7 @@ public class CPU {
         oneByteInstructions.put((char) 0x25, new InstructionForm(dec8, new Cursor[]{h}));
         oneByteInstructions.put((char) 0x2B, new InstructionForm(dec16, new Cursor[]{hl}));
         oneByteInstructions.put((char) 0x2D, new InstructionForm(dec8, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0x35, new InstructionForm(dec8, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0x35, new ConstantCycleInstruction(dec8, new Cursor[]{ihl}, 12));
         oneByteInstructions.put((char) 0x3B, new InstructionForm(dec16, new Cursor[]{sp}));
         oneByteInstructions.put((char) 0x3D, new InstructionForm(dec8, new Cursor[]{a}));
 
@@ -152,9 +152,9 @@ public class CPU {
         oneByteInstructions.put((char) 0xA3, new InstructionForm(and, new Cursor[]{e}));
         oneByteInstructions.put((char) 0xA4, new InstructionForm(and, new Cursor[]{h}));
         oneByteInstructions.put((char) 0xA5, new InstructionForm(and, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0xA6, new InstructionForm(and, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0xA6, new ConstantCycleInstruction(and, new Cursor[]{ihl}, 8));
         oneByteInstructions.put((char) 0xA7, new InstructionForm(and, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xE6, new InstructionForm(and, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xE6, new ConstantCycleInstruction(and, new Cursor[]{immediate8}, 8));
 
         // XOR
         oneByteInstructions.put((char) 0xA8, new InstructionForm(xor, new Cursor[]{b}));
@@ -163,9 +163,9 @@ public class CPU {
         oneByteInstructions.put((char) 0xAB, new InstructionForm(xor, new Cursor[]{e}));
         oneByteInstructions.put((char) 0xAC, new InstructionForm(xor, new Cursor[]{h}));
         oneByteInstructions.put((char) 0xAD, new InstructionForm(xor, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0xAE, new InstructionForm(xor, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0xAE, new ConstantCycleInstruction(xor, new Cursor[]{ihl}, 8));
         oneByteInstructions.put((char) 0xAF, new InstructionForm(xor, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xEE, new InstructionForm(xor, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xEE, new ConstantCycleInstruction(xor, new Cursor[]{immediate8}, 8));
 
         // OR
         oneByteInstructions.put((char) 0xB0, new InstructionForm(or, new Cursor[]{b}));
@@ -174,9 +174,9 @@ public class CPU {
         oneByteInstructions.put((char) 0xB3, new InstructionForm(or, new Cursor[]{e}));
         oneByteInstructions.put((char) 0xB4, new InstructionForm(or, new Cursor[]{h}));
         oneByteInstructions.put((char) 0xB5, new InstructionForm(or, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0xB6, new InstructionForm(or, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0xB6, new ConstantCycleInstruction(or, new Cursor[]{ihl}, 8));
         oneByteInstructions.put((char) 0xB7, new InstructionForm(or, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xF6, new InstructionForm(or, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xF6, new ConstantCycleInstruction(or, new Cursor[]{immediate8}, 8));
 
         // ADD
         oneByteInstructions.put((char) 0x80, new InstructionForm(add8, new Cursor[]{b}));
@@ -185,15 +185,15 @@ public class CPU {
         oneByteInstructions.put((char) 0x83, new InstructionForm(add8, new Cursor[]{e}));
         oneByteInstructions.put((char) 0x84, new InstructionForm(add8, new Cursor[]{h}));
         oneByteInstructions.put((char) 0x85, new InstructionForm(add8, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0x86, new InstructionForm(add8, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0x86, new ConstantCycleInstruction(add8, new Cursor[]{ihl}, 8));
         oneByteInstructions.put((char) 0x87, new InstructionForm(add8, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xC6, new InstructionForm(add8, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xC6, new ConstantCycleInstruction(add8, new Cursor[]{immediate8}, 8));
 
-        oneByteInstructions.put((char) 0x09, new InstructionForm(add16, new Cursor[]{hl, bc}));
-        oneByteInstructions.put((char) 0x19, new InstructionForm(add16, new Cursor[]{hl, de}));
-        oneByteInstructions.put((char) 0x29, new InstructionForm(add16, new Cursor[]{hl, hl}));
-        oneByteInstructions.put((char) 0x39, new InstructionForm(add16, new Cursor[]{hl, sp}));
-        oneByteInstructions.put((char) 0xE8, new InstructionForm(addsp, new Cursor[]{sp, immediate8}));
+        oneByteInstructions.put((char) 0x09, new ConstantCycleInstruction(add16, new Cursor[]{hl, bc}, 8));
+        oneByteInstructions.put((char) 0x19, new ConstantCycleInstruction(add16, new Cursor[]{hl, de}, 8));
+        oneByteInstructions.put((char) 0x29, new ConstantCycleInstruction(add16, new Cursor[]{hl, hl}, 8));
+        oneByteInstructions.put((char) 0x39, new ConstantCycleInstruction(add16, new Cursor[]{hl, sp}, 8));
+        oneByteInstructions.put((char) 0xE8, new ConstantCycleInstruction(addsp, new Cursor[]{sp, immediate8}, 16));
 
         // ADC
         oneByteInstructions.put((char) 0x88, new InstructionForm(adc, new Cursor[]{b}));
@@ -202,9 +202,9 @@ public class CPU {
         oneByteInstructions.put((char) 0x8B, new InstructionForm(adc, new Cursor[]{e}));
         oneByteInstructions.put((char) 0x8C, new InstructionForm(adc, new Cursor[]{h}));
         oneByteInstructions.put((char) 0x8D, new InstructionForm(adc, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0x8E, new InstructionForm(adc, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0x8E, new ConstantCycleInstruction(adc, new Cursor[]{ihl}, 8));
         oneByteInstructions.put((char) 0x8F, new InstructionForm(adc, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xCE, new InstructionForm(adc, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xCE, new ConstantCycleInstruction(adc, new Cursor[]{immediate8}, 8));
 
         // SUB
         oneByteInstructions.put((char) 0x90, new InstructionForm(sub, new Cursor[]{b}));
@@ -213,9 +213,9 @@ public class CPU {
         oneByteInstructions.put((char) 0x93, new InstructionForm(sub, new Cursor[]{e}));
         oneByteInstructions.put((char) 0x94, new InstructionForm(sub, new Cursor[]{h}));
         oneByteInstructions.put((char) 0x95, new InstructionForm(sub, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0x96, new InstructionForm(sub, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0x96, new ConstantCycleInstruction(sub, new Cursor[]{ihl}, 8));
         oneByteInstructions.put((char) 0x97, new InstructionForm(sub, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xD6, new InstructionForm(sub, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xD6, new ConstantCycleInstruction(sub, new Cursor[]{immediate8}, 8));
 
         // SBC
         oneByteInstructions.put((char) 0x98, new InstructionForm(sbc, new Cursor[]{b}));
@@ -224,9 +224,9 @@ public class CPU {
         oneByteInstructions.put((char) 0x9B, new InstructionForm(sbc, new Cursor[]{e}));
         oneByteInstructions.put((char) 0x9C, new InstructionForm(sbc, new Cursor[]{h}));
         oneByteInstructions.put((char) 0x9D, new InstructionForm(sbc, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0x9E, new InstructionForm(sbc, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0x9E, new ConstantCycleInstruction(sbc, new Cursor[]{ihl}, 8));
         oneByteInstructions.put((char) 0x9F, new InstructionForm(sbc, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xDE, new InstructionForm(sbc, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xDE, new ConstantCycleInstruction(sbc, new Cursor[]{immediate8}, 8));
 
         // CP
         oneByteInstructions.put((char) 0xB8, new InstructionForm(cp, new Cursor[]{b}));
@@ -235,52 +235,52 @@ public class CPU {
         oneByteInstructions.put((char) 0xBB, new InstructionForm(cp, new Cursor[]{e}));
         oneByteInstructions.put((char) 0xBC, new InstructionForm(cp, new Cursor[]{h}));
         oneByteInstructions.put((char) 0xBD, new InstructionForm(cp, new Cursor[]{l}));
-        oneByteInstructions.put((char) 0xBE, new InstructionForm(cp, new Cursor[]{ihl}));
+        oneByteInstructions.put((char) 0xBE, new ConstantCycleInstruction(cp, new Cursor[]{ihl}, 8));
         oneByteInstructions.put((char) 0xBF, new InstructionForm(cp, new Cursor[]{a}));
-        oneByteInstructions.put((char) 0xFE, new InstructionForm(cp, new Cursor[]{immediate8}));
+        oneByteInstructions.put((char) 0xFE, new ConstantCycleInstruction(cp, new Cursor[]{immediate8}, 8));
 
         // LD
-        oneByteInstructions.put((char) 0x01, new InstructionForm(ld, new Cursor[]{bc, immediate16}));
-        oneByteInstructions.put((char) 0x06, new InstructionForm(ld, new Cursor[]{b, immediate8}));
-        oneByteInstructions.put((char) 0x11, new InstructionForm(ld, new Cursor[]{de, immediate16}));
-        oneByteInstructions.put((char) 0x16, new InstructionForm(ld, new Cursor[]{d, immediate8}));
-        oneByteInstructions.put((char) 0x21, new InstructionForm(ld, new Cursor[]{hl, immediate16}));
-        oneByteInstructions.put((char) 0x26, new InstructionForm(ld, new Cursor[]{h, immediate8}));
-        oneByteInstructions.put((char) 0x0E, new InstructionForm(ld, new Cursor[]{c, immediate8}));
-        oneByteInstructions.put((char) 0x1E, new InstructionForm(ld, new Cursor[]{e, immediate8}));
-        oneByteInstructions.put((char) 0x2E, new InstructionForm(ld, new Cursor[]{l, immediate8}));
-        oneByteInstructions.put((char) 0x31, new InstructionForm(ld, new Cursor[]{sp, immediate16}));
-        oneByteInstructions.put((char) 0x3E, new InstructionForm(ld, new Cursor[]{a, immediate8}));
+        oneByteInstructions.put((char) 0x01, new ConstantCycleInstruction(ld, new Cursor[]{bc, immediate16}, 12));
+        oneByteInstructions.put((char) 0x11, new ConstantCycleInstruction(ld, new Cursor[]{de, immediate16}, 12));
+        oneByteInstructions.put((char) 0x21, new ConstantCycleInstruction(ld, new Cursor[]{hl, immediate16}, 12));
+        oneByteInstructions.put((char) 0x31, new ConstantCycleInstruction(ld, new Cursor[]{sp, immediate16}, 12));
+        oneByteInstructions.put((char) 0x06, new ConstantCycleInstruction(ld, new Cursor[]{b, immediate8}, 8));
+        oneByteInstructions.put((char) 0x16, new ConstantCycleInstruction(ld, new Cursor[]{d, immediate8}, 8));
+        oneByteInstructions.put((char) 0x26, new ConstantCycleInstruction(ld, new Cursor[]{h, immediate8}, 8));
+        oneByteInstructions.put((char) 0x0E, new ConstantCycleInstruction(ld, new Cursor[]{c, immediate8}, 8));
+        oneByteInstructions.put((char) 0x1E, new ConstantCycleInstruction(ld, new Cursor[]{e, immediate8}, 8));
+        oneByteInstructions.put((char) 0x2E, new ConstantCycleInstruction(ld, new Cursor[]{l, immediate8}, 8));
+        oneByteInstructions.put((char) 0x3E, new ConstantCycleInstruction(ld, new Cursor[]{a, immediate8}, 8));
 
-        oneByteInstructions.put((char) 0x08, new InstructionForm(ld, new Cursor[]{indirect16, sp}));
-        oneByteInstructions.put((char) 0x4E, new InstructionForm(ld, new Cursor[]{c, ihl}));
-        oneByteInstructions.put((char) 0x5E, new InstructionForm(ld, new Cursor[]{e, ihl}));
-        oneByteInstructions.put((char) 0x6E, new InstructionForm(ld, new Cursor[]{l, ihl}));
-        oneByteInstructions.put((char) 0x7E, new InstructionForm(ld, new Cursor[]{a, ihl}));
-        oneByteInstructions.put((char) 0xE0, new InstructionForm(ld, new Cursor[]{oneByteIndirect8, a}));
-        oneByteInstructions.put((char) 0xE2, new InstructionForm(ld, new Cursor[]{ic, a}));
-        oneByteInstructions.put((char) 0xEA, new InstructionForm(ld, new Cursor[]{twoByteIndirect8, a}));
-        oneByteInstructions.put((char) 0xF0, new InstructionForm(ld, new Cursor[]{a, oneByteIndirect8}));
-        oneByteInstructions.put((char) 0xF2, new InstructionForm(ld, new Cursor[]{a, ic}));
-        oneByteInstructions.put((char) 0xF8, new InstructionForm(addsp, new Cursor[]{hl, immediate8}));  // LDHL
-        oneByteInstructions.put((char) 0xFA, new InstructionForm(ld, new Cursor[]{a, twoByteIndirect8}));
+        oneByteInstructions.put((char) 0x08, new ConstantCycleInstruction(ld, new Cursor[]{indirect16, sp}, 20));
+        oneByteInstructions.put((char) 0x4E, new ConstantCycleInstruction(ld, new Cursor[]{c, ihl}, 8));
+        oneByteInstructions.put((char) 0x5E, new ConstantCycleInstruction(ld, new Cursor[]{e, ihl}, 8));
+        oneByteInstructions.put((char) 0x6E, new ConstantCycleInstruction(ld, new Cursor[]{l, ihl}, 8));
+        oneByteInstructions.put((char) 0x7E, new ConstantCycleInstruction(ld, new Cursor[]{a, ihl}, 8));
+        oneByteInstructions.put((char) 0xE2, new ConstantCycleInstruction(ld, new Cursor[]{ic, a}, 8));
+        oneByteInstructions.put((char) 0xF2, new ConstantCycleInstruction(ld, new Cursor[]{a, ic}, 8));
+        oneByteInstructions.put((char) 0xF8, new ConstantCycleInstruction(addsp, new Cursor[]{hl, immediate8}, 12));  // LDHL
+        oneByteInstructions.put((char) 0xE0, new ConstantCycleInstruction(ld, new Cursor[]{oneByteIndirect8, a}, 12));
+        oneByteInstructions.put((char) 0xF0, new ConstantCycleInstruction(ld, new Cursor[]{a, oneByteIndirect8}, 12));
+        oneByteInstructions.put((char) 0xEA, new ConstantCycleInstruction(ld, new Cursor[]{twoByteIndirect8, a}, 16));
+        oneByteInstructions.put((char) 0xFA, new ConstantCycleInstruction(ld, new Cursor[]{a, twoByteIndirect8}, 16));
 
-        oneByteInstructions.put((char) 0x02, new InstructionForm(ld, new Cursor[]{ibc, a}));
-        oneByteInstructions.put((char) 0x0A, new InstructionForm(ld, new Cursor[]{a, ibc}));
-        oneByteInstructions.put((char) 0x12, new InstructionForm(ld, new Cursor[]{ide, a}));
-        oneByteInstructions.put((char) 0x1A, new InstructionForm(ld, new Cursor[]{a, ide}));
-        oneByteInstructions.put((char) 0x46, new InstructionForm(ld, new Cursor[]{b, ihl}));
-        oneByteInstructions.put((char) 0x56, new InstructionForm(ld, new Cursor[]{d, ihl}));
-        oneByteInstructions.put((char) 0x66, new InstructionForm(ld, new Cursor[]{h, ihl}));
+        oneByteInstructions.put((char) 0x02, new ConstantCycleInstruction(ld, new Cursor[]{ibc, a}, 8));
+        oneByteInstructions.put((char) 0x0A, new ConstantCycleInstruction(ld, new Cursor[]{a, ibc}, 8));
+        oneByteInstructions.put((char) 0x12, new ConstantCycleInstruction(ld, new Cursor[]{ide, a}, 8));
+        oneByteInstructions.put((char) 0x1A, new ConstantCycleInstruction(ld, new Cursor[]{a, ide}, 8));
+        oneByteInstructions.put((char) 0x46, new ConstantCycleInstruction(ld, new Cursor[]{b, ihl}, 8));
+        oneByteInstructions.put((char) 0x56, new ConstantCycleInstruction(ld, new Cursor[]{d, ihl}, 8));
+        oneByteInstructions.put((char) 0x66, new ConstantCycleInstruction(ld, new Cursor[]{h, ihl}, 8));
 
-        oneByteInstructions.put((char) 0x36, new InstructionForm(ld, new Cursor[]{ihl, immediate8}));
-        oneByteInstructions.put((char) 0x70, new InstructionForm(ld, new Cursor[]{ihl, b}));
-        oneByteInstructions.put((char) 0x71, new InstructionForm(ld, new Cursor[]{ihl, c}));
-        oneByteInstructions.put((char) 0x72, new InstructionForm(ld, new Cursor[]{ihl, d}));
-        oneByteInstructions.put((char) 0x73, new InstructionForm(ld, new Cursor[]{ihl, e}));
-        oneByteInstructions.put((char) 0x74, new InstructionForm(ld, new Cursor[]{ihl, h}));
-        oneByteInstructions.put((char) 0x75, new InstructionForm(ld, new Cursor[]{ihl, l}));
-        oneByteInstructions.put((char) 0x77, new InstructionForm(ld, new Cursor[]{ihl, a}));
+        oneByteInstructions.put((char) 0x36, new ConstantCycleInstruction(ld, new Cursor[]{ihl, immediate8}, 12));
+        oneByteInstructions.put((char) 0x70, new ConstantCycleInstruction(ld, new Cursor[]{ihl, b}, 8));
+        oneByteInstructions.put((char) 0x71, new ConstantCycleInstruction(ld, new Cursor[]{ihl, c}, 8));
+        oneByteInstructions.put((char) 0x72, new ConstantCycleInstruction(ld, new Cursor[]{ihl, d}, 8));
+        oneByteInstructions.put((char) 0x73, new ConstantCycleInstruction(ld, new Cursor[]{ihl, e}, 8));
+        oneByteInstructions.put((char) 0x74, new ConstantCycleInstruction(ld, new Cursor[]{ihl, h}, 8));
+        oneByteInstructions.put((char) 0x75, new ConstantCycleInstruction(ld, new Cursor[]{ihl, l}, 8));
+        oneByteInstructions.put((char) 0x77, new ConstantCycleInstruction(ld, new Cursor[]{ihl, a}, 8));
 
         oneByteInstructions.put((char) 0x40, new InstructionForm(ld, new Cursor[]{b, b}));
         oneByteInstructions.put((char) 0x41, new InstructionForm(ld, new Cursor[]{b, c}));
@@ -346,7 +346,7 @@ public class CPU {
 
         // Jumps
         oneByteInstructions.put((char) 0xC3, new InstructionForm(jp, new Cursor[]{immediate16}));
-        oneByteInstructions.put((char) 0xE9, new InstructionForm(jp, new Cursor[]{hl}));
+        oneByteInstructions.put((char) 0xE9, new ConstantCycleInstruction(jp, new Cursor[]{hl}, 4));
         oneByteInstructions.put((char) 0xC2, new InstructionForm(new JPNZ(), new Cursor[]{immediate16}));
         oneByteInstructions.put((char) 0xCA, new InstructionForm(new JPZ(), new Cursor[]{immediate16}));
         oneByteInstructions.put((char) 0xD2, new InstructionForm(new JPNC(), new Cursor[]{immediate16}));
@@ -403,7 +403,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x03, new InstructionForm(rlc, new Cursor[]{e}));
         twoByteInstructions.put((char) 0x04, new InstructionForm(rlc, new Cursor[]{h}));
         twoByteInstructions.put((char) 0x05, new InstructionForm(rlc, new Cursor[]{l}));
-        twoByteInstructions.put((char) 0x06, new InstructionForm(rlc, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x06, new ConstantCycleInstruction(rlc, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x07, new InstructionForm(rlc, new Cursor[]{a}));
 
         // RL
@@ -413,7 +413,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x13, new InstructionForm(rl, new Cursor[]{e}));
         twoByteInstructions.put((char) 0x14, new InstructionForm(rl, new Cursor[]{h}));
         twoByteInstructions.put((char) 0x15, new InstructionForm(rl, new Cursor[]{l}));
-        twoByteInstructions.put((char) 0x16, new InstructionForm(rl, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x16, new ConstantCycleInstruction(rl, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x17, new InstructionForm(rl, new Cursor[]{a}));
 
         // RRC
@@ -423,7 +423,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x0B, new InstructionForm(rrc, new Cursor[]{e}));
         twoByteInstructions.put((char) 0x0C, new InstructionForm(rrc, new Cursor[]{h}));
         twoByteInstructions.put((char) 0x0D, new InstructionForm(rrc, new Cursor[]{l}));
-        twoByteInstructions.put((char) 0x0E, new InstructionForm(rrc, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x0E, new ConstantCycleInstruction(rrc, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x0F, new InstructionForm(rrc, new Cursor[]{a}));
 
         // RR
@@ -433,7 +433,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x1B, new InstructionForm(rr, new Cursor[]{e}));
         twoByteInstructions.put((char) 0x1C, new InstructionForm(rr, new Cursor[]{h}));
         twoByteInstructions.put((char) 0x1D, new InstructionForm(rr, new Cursor[]{l}));
-        twoByteInstructions.put((char) 0x1E, new InstructionForm(rr, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x1E, new ConstantCycleInstruction(rr, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x1F, new InstructionForm(rr, new Cursor[]{a}));
 
         // SLA
@@ -444,7 +444,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x23, new InstructionForm(sla, new Cursor[]{e}));
         twoByteInstructions.put((char) 0x24, new InstructionForm(sla, new Cursor[]{h}));
         twoByteInstructions.put((char) 0x25, new InstructionForm(sla, new Cursor[]{l}));
-        twoByteInstructions.put((char) 0x26, new InstructionForm(sla, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x26, new ConstantCycleInstruction(sla, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x27, new InstructionForm(sla, new Cursor[]{a}));
 
         // SRA
@@ -455,7 +455,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x2B, new InstructionForm(sra, new Cursor[]{e}));
         twoByteInstructions.put((char) 0x2C, new InstructionForm(sra, new Cursor[]{h}));
         twoByteInstructions.put((char) 0x2D, new InstructionForm(sra, new Cursor[]{l}));
-        twoByteInstructions.put((char) 0x2E, new InstructionForm(sra, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x2E, new ConstantCycleInstruction(sra, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x2F, new InstructionForm(sra, new Cursor[]{a}));
 
         // SLA
@@ -466,7 +466,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x3B, new InstructionForm(srl, new Cursor[]{e}));
         twoByteInstructions.put((char) 0x3C, new InstructionForm(srl, new Cursor[]{h}));
         twoByteInstructions.put((char) 0x3D, new InstructionForm(srl, new Cursor[]{l}));
-        twoByteInstructions.put((char) 0x3E, new InstructionForm(srl, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x3E, new ConstantCycleInstruction(srl, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x3F, new InstructionForm(srl, new Cursor[]{a}));
 
         // SWAP
@@ -476,7 +476,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x33, new InstructionForm(swap, new Cursor[]{e}));
         twoByteInstructions.put((char) 0x34, new InstructionForm(swap, new Cursor[]{h}));
         twoByteInstructions.put((char) 0x35, new InstructionForm(swap, new Cursor[]{l}));
-        twoByteInstructions.put((char) 0x36, new InstructionForm(swap, new Cursor[]{ihl}));
+        twoByteInstructions.put((char) 0x36, new ConstantCycleInstruction(swap, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x37, new InstructionForm(swap, new Cursor[]{a}));
 
         // BIT
@@ -491,7 +491,7 @@ public class CPU {
             twoByteInstructions.put((char) (opcode + 3), new InstructionForm(bit, new Cursor[]{bitCursors[i], e}));
             twoByteInstructions.put((char) (opcode + 4), new InstructionForm(bit, new Cursor[]{bitCursors[i], h}));
             twoByteInstructions.put((char) (opcode + 5), new InstructionForm(bit, new Cursor[]{bitCursors[i], l}));
-            twoByteInstructions.put((char) (opcode + 6), new InstructionForm(bit, new Cursor[]{bitCursors[i], ihl}));
+            twoByteInstructions.put((char) (opcode + 6), new ConstantCycleInstruction(bit, new Cursor[]{bitCursors[i], ihl}, 12));
             twoByteInstructions.put((char) (opcode + 7), new InstructionForm(bit, new Cursor[]{bitCursors[i], a}));
         }
 
@@ -504,7 +504,7 @@ public class CPU {
             twoByteInstructions.put((char) (opcode + 3), new InstructionForm(res, new Cursor[]{bitCursors[i], e}));
             twoByteInstructions.put((char) (opcode + 4), new InstructionForm(res, new Cursor[]{bitCursors[i], h}));
             twoByteInstructions.put((char) (opcode + 5), new InstructionForm(res, new Cursor[]{bitCursors[i], l}));
-            twoByteInstructions.put((char) (opcode + 6), new InstructionForm(res, new Cursor[]{bitCursors[i], ihl}));
+            twoByteInstructions.put((char) (opcode + 6), new ConstantCycleInstruction(res, new Cursor[]{bitCursors[i], ihl}, 16));
             twoByteInstructions.put((char) (opcode + 7), new InstructionForm(res, new Cursor[]{bitCursors[i], a}));
         }
 
@@ -517,7 +517,7 @@ public class CPU {
             twoByteInstructions.put((char) (opcode + 3), new InstructionForm(set, new Cursor[]{bitCursors[i], e}));
             twoByteInstructions.put((char) (opcode + 4), new InstructionForm(set, new Cursor[]{bitCursors[i], h}));
             twoByteInstructions.put((char) (opcode + 5), new InstructionForm(set, new Cursor[]{bitCursors[i], l}));
-            twoByteInstructions.put((char) (opcode + 6), new InstructionForm(set, new Cursor[]{bitCursors[i], ihl}));
+            twoByteInstructions.put((char) (opcode + 6), new ConstantCycleInstruction(set, new Cursor[]{bitCursors[i], ihl}, 16));
             twoByteInstructions.put((char) (opcode + 7), new InstructionForm(set, new Cursor[]{bitCursors[i], a}));
         }
     }
@@ -749,120 +749,132 @@ public class CPU {
     // LD - load data
     private static class LD implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             operands[0].write(operands[1].read());
+            return 4;
         }
     }
 
     private static class LDI implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             operands[0].write(operands[1].read());
             cpu.hl.increment();
+            return 8;
         }
     }
 
     private static class LDD implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             operands[0].write(operands[1].read());
             cpu.hl.decrement();
+            return 8;
         }
     }
 
     // NOP - no operation
     private static class NOP implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
+            return 4;
         }
     }
 
     // SCF - set carry flag
     private static class SCF implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
+            return 4;
         }
     }
 
     // CCF - complement carry flag
     private static class CCF implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY,
                     !cpu.f.isFlagSet(FlagRegister.Flag.CARRY));
+            return 4;
         }
     }
 
     // CPL - complement A register
     private static class CPL implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, true);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
             cpu.a.write((char) (~cpu.a.read() & 0xFF));
+            return 4;
         }
     }
 
     // CP - compare A with n
     private static class CP implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char x = cpu.a.read(), y = operands[0].read();
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, (x - y) == 0);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (y & 0xF) > (x & 0xF));
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, y > x);
+            return 4;
         }
     }
 
     // INC - increment
     private static class INC8 implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char x = operands[0].read();
             operands[0].write((char) (x + 1));
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, x == 0xFF);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) + 1 > 0xF);
+            return 4;
         }
     }
 
     private static class INC16 implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             operands[0].write((char) (operands[0].read() + 1));
+            return 8;
         }
     }
 
     // DEC - decrement
     private static class DEC8 implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char x = operands[0].read();
             operands[0].write((char) (x - 1));
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, x == 1);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) - 1 < 0);
+            return 4;
         }
     }
 
     private static class DEC16 implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char x = operands[0].read();
             operands[0].write((char) (x - 1));
+            return 8;
         }
     }
 
     // ADD - add operand to A register
     private static class ADD8 implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int x = cpu.a.read();
             int y = operands[0].read();
             char result = (char) (x + y);
@@ -871,11 +883,12 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, ((x & 0xF) + (y & 0xF)) > 0xF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, result > 0xFF);
             cpu.a.write(result);
+            return 4;
         }
     }
     private static class ADD16 implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int x = operands[0].read();
             int y = operands[1].read();
             int result = x + y;
@@ -883,11 +896,12 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xFFF) + (y & 0xFFF) > 0xFFF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, result > 0xFFFF);
             operands[0].write((char)result);
+            return 8;
         }
     }
     private static class ADDSP extends ADD16 {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int x = cpu.sp.read();
             byte y = (byte)operands[1].read();  // Treat as signed
             int result = x + y;
@@ -896,13 +910,14 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) + (y & 0xF) > 0xF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (x & 0xFF) + (y & 0xFF) > 0xFF);
             operands[0].write((char)result);
+            return 16;
         }
     }
 
     // ADC - add with carry
     private static class ADC implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int x = cpu.a.read();
             int y = operands[0].read();
             int c = cpu.f.isFlagSet(FlagRegister.Flag.CARRY) ? 1 : 0;
@@ -912,13 +927,14 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, ((x & 0xF) + (y & 0xF) + c) > 0xF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, result > 0xFF);
             cpu.a.write(result);
+            return 4;
         }
     }
 
     // SUB - subtract operand from A register
     private static class SUB implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int x = cpu.a.read();
             int y = operands[0].read();
             char result = (char) (cpu.a.read() - operands[0].read());
@@ -928,13 +944,14 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (cpu.a.read() & 0xF) < (operands[0].read() & 0xF));
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, cpu.a.read() < operands[0].read());
             cpu.a.write(result);
+            return 4;
         }
     }
 
     // SBC - subtract with carry
     private static class SBC implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int x = cpu.a.read();
             int y = operands[0].read();
             int c = cpu.f.isFlagSet(FlagRegister.Flag.CARRY) ? 1 : 0;
@@ -944,328 +961,392 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (cpu.a.read() & 0xF) < (operands[0].read() & 0xF) + c);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, x < y + c);
             cpu.a.write(result);
+            return 4;
         }
     }
 
     // AND - AND n with A
     private static class AND implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char result = (char) (cpu.a.read() & operands[0].read());
             cpu.a.write(result);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, true);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
+            return 4;
         }
     }
 
     // XOR - XOR n with A
     private static class XOR implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char result = (char) (cpu.a.read() ^ operands[0].read());
             cpu.a.write(result);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
+            return 4;
         }
     }
 
     // OR - OR n with A
     private static class OR implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char result = (char) (cpu.a.read() | operands[0].read());
             cpu.a.write(result);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, false);
+            return 4;
         }
     }
 
     // PUSH - push register pair onto stack
     private static class PUSH implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.pushStack(operands[0].read());
+            return 16;
         }
     }
 
     // POP - pop 2 bytes off stack into register pair
     private static class POP implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             operands[0].write(cpu.popStack());
+            return 12;
         }
     }
 
     // SWAP - swap upper and lower nibbles
     private static class SWAP implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char val = operands[0].read();
             val = (char) (((val << 4) | (val >>> 4)) & 0xFF);
             operands[0].write(val);
             cpu.f.write((char)0);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, val == 0);
+            return 8;
         }
     }
 
     // BIT - test bit in register
     private static class BIT implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             boolean bitZero = (operands[1].read() & (1 << operands[0].read())) == 0;
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, bitZero);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, true);
+            return 8;
         }
     }
 
     // RES - reset bit in register
     private static class RES implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             operands[1].write((char) (operands[1].read() & ~(1 << operands[0].read())));
+            return 8;
         }
     }
 
     // SET - set bit in register
     private static class SET implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             operands[1].write((char) (operands[1].read() | (1 << operands[0].read())));
+            return 8;
         }
     }
 
     // JP - jump to address
     private static class JP implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.pc.write(operands[0].read());
+            return 16;
         }
     }
 
-    // JPNZ - jump to address if zero flag clear
-    private static class JPNZ implements InstructionRoot {
+    private static class ConditionalJump implements InstructionRoot {
+        protected JumpConfig config;
+        FlagRegister.Flag flagToCheck;
+        boolean expectedFlagValue;
+
+        public ConditionalJump(JumpConfig config, FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
+            this.config = config;
+            this.flagToCheck = flagToCheck;
+            this.expectedFlagValue = expectedFlagValue;
+        }
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO))
-                cpu.pc.write(operands[0].read());
+        public int execute(CPU cpu, Cursor[] operands) {
+            if (cpu.f.isFlagSet(flagToCheck) == expectedFlagValue) {
+                cpu.pc.write(config.jumpDestination(cpu.pc.read(), operands[0].read()));
+                return config.cyclesWhenTaken();
+            }
+            return config.cyclesWhenNotTaken();
+        }
+    }
+
+    private static interface JumpConfig {
+        char jumpDestination(char currentPc, char jumpArgument);
+        int cyclesWhenTaken();
+        int cyclesWhenNotTaken();
+    }
+
+    private static final JumpConfig absoluteJump = new JumpConfig() {
+        @Override
+        public char jumpDestination(char currentPc, char jumpArgument) {
+            return jumpArgument;
+        }
+
+        @Override
+        public int cyclesWhenTaken() {
+            return 16;
+        }
+
+        @Override
+        public int cyclesWhenNotTaken() {
+            return 12;
+        }
+    };
+
+    // JPNZ - jump to address if zero flag clear
+    private static class JPNZ extends ConditionalJump {
+        public JPNZ() {
+            super(absoluteJump, FlagRegister.Flag.ZERO, false);
         }
     }
 
     // JPZ - jump to address if zero flag set
-    private static class JPZ implements InstructionRoot {
-        @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO))
-                cpu.pc.write(operands[0].read());
+    private static class JPZ extends ConditionalJump {
+        public JPZ() {
+            super(absoluteJump, FlagRegister.Flag.ZERO, true);
         }
     }
 
     // JPNC - jump to address if carry flag clear
-    private static class JPNC implements InstructionRoot {
-        @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY))
-                cpu.pc.write(operands[0].read());
+    private static class JPNC extends ConditionalJump {
+        public JPNC() {
+            super(absoluteJump, FlagRegister.Flag.CARRY, false);
         }
     }
 
     // JPC - jump to address if carry flag set
-    private static class JPC implements InstructionRoot {
-        @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY))
-                cpu.pc.write(operands[0].read());
+    private static class JPC extends ConditionalJump {
+        public JPC() {
+            super(absoluteJump, FlagRegister.Flag.CARRY, true);
         }
     }
 
     // JR - jump relative to current address in PC
     private static class JR implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             // Operand is signed
             char addr = (char) (cpu.pc.read() + (byte) operands[0].read());
             cpu.pc.write(addr);
+            return 12;
         }
     }
 
-    // JRNZ - jump relative to current address in PC if zero flag is clear
-    private static class JRNZ implements InstructionRoot {
+    private static final JumpConfig relativeJump = new JumpConfig() {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
-                // Operand is signed
-                char addr = (char) (cpu.pc.read() + (byte) operands[0].read());
-                cpu.pc.write(addr);
-            }
+        public char jumpDestination(char currentPc, char jumpArgument) {
+            return (char) (currentPc + (byte) jumpArgument);
+        }
+
+        @Override
+        public int cyclesWhenTaken() {
+            return 12;
+        }
+
+        @Override
+        public int cyclesWhenNotTaken() {
+            return 8;
+        }
+    };
+
+    // JRNZ - jump relative to current address in PC if zero flag is clear
+    private static class JRNZ extends ConditionalJump {
+        public JRNZ() {
+            super(relativeJump, FlagRegister.Flag.ZERO, false);
         }
     }
 
     // JRZ - jump relative to current address in PC if zero flag is set
-    private static class JRZ implements InstructionRoot {
-        @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
-                // Operand is signed
-                char addr = (char) (cpu.pc.read() + (byte) operands[0].read());
-                cpu.pc.write(addr);
-            }
+    private static class JRZ extends ConditionalJump {
+        public JRZ() {
+            super(relativeJump, FlagRegister.Flag.ZERO, true);
         }
     }
 
     // JRNC - jump relative to current address in PC if carry flag is clear
-    private static class JRNC implements InstructionRoot {
-        @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
-                // Operand is signed
-                char addr = (char) (cpu.pc.read() + (byte) operands[0].read());
-                cpu.pc.write(addr);
-            }
+    private static class JRNC extends ConditionalJump {
+        public JRNC() {
+            super(relativeJump, FlagRegister.Flag.CARRY, false);
         }
     }
 
     // JRC - jump relative to current address in PC if zero flag is clear
-    private static class JRC implements InstructionRoot {
-        @Override
-        public void execute(CPU cpu, Cursor[] operands) {
-            if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
-                // Operand is signed
-                char addr = (char) (cpu.pc.read() + (byte) operands[0].read());
-                cpu.pc.write(addr);
-            }
+    private static class JRC extends ConditionalJump {
+        public JRC() {
+            super(relativeJump, FlagRegister.Flag.CARRY, true);
         }
     }
 
     // CALL - push address of next op onto stack and jump
     private static class CALL implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.pushStack(cpu.pc.read());
             cpu.pc.write(operands[0].read());
+            return 24;
         }
     }
 
     // CALLNZ - if zero flag is clear, push address of next op onto stack and jump
     private static class CALLNZ implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
                 cpu.pushStack(cpu.pc.read());
                 cpu.pc.write(operands[0].read());
+                return 24;
             }
+            return 12;
         }
     }
 
     // CALLZ - if zero flag is set, push address of next op onto stack and jump
     private static class CALLZ implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
                 cpu.pushStack(cpu.pc.read());
                 cpu.pc.write(operands[0].read());
+                return 24;
             }
+            return 12;
         }
     }
 
     // CALLNC - if carry flag is clear, push address of next op onto stack and jump
     private static class CALLNC implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
                 cpu.pushStack(cpu.pc.read());
                 cpu.pc.write(operands[0].read());
+                return 24;
             }
+            return 12;
         }
     }
 
     // CALLC - if carry flag is set, push address of next op onto stack and jump
     private static class CALLC implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
                 cpu.pushStack(cpu.pc.read());
                 cpu.pc.write(operands[0].read());
+                return 24;
             }
+            return 12;
         }
     }
 
     // RST - restart execution
     private static class RST implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.pushStack(cpu.pc.read());
             cpu.pc.write(operands[0].read());
+            return 16;
         }
     }
 
     // RET - return from function
     private static class RET implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.pc.write(cpu.popStack());
+            return 16;
         }
     }
 
     // RETNZ - return from function if zero flag is clear
     private static class RETNZ implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
                 cpu.pc.write(cpu.popStack());
+                return 20;
             }
+            return 8;
         }
     }
 
     // RETZ - return from function if zero flag is set
     private static class RETZ implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
                 cpu.pc.write(cpu.popStack());
+                return 20;
             }
+            return 8;
         }
     }
 
     // RETNC - return from function if carry flag is clear
     private static class RETNC implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
                 cpu.pc.write(cpu.popStack());
+                return 20;
             }
+            return 8;
         }
     }
 
     // RETC - return from function if carry flag is set
     private static class RETC implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
                 cpu.pc.write(cpu.popStack());
+                return 20;
             }
+            return 8;
         }
     }
 
     // RETI - return from function and enable interrupts
     private static class RETI implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.pc.write(cpu.popStack());
             cpu.interruptsEnabled = true;
+            return 16;
         }
     }
 
     // HALT - stop execution until an interrupt is raised
     private static class HALT implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char raisedInterrupts = cpu.gb.mmu.read8((char) 0xFF0F);
             char enabledInterrupts = cpu.gb.mmu.read8((char) 0xFFFF);
 
@@ -1279,6 +1360,7 @@ public class CPU {
                $14      (INC D) */
             cpu.halted = (cpu.interruptsEnabled || (enabledInterrupts & raisedInterrupts & 0x1F) == 0);
             cpu.haltBugTriggered = !cpu.halted;
+            return 4;
         }
     }
 
@@ -1286,36 +1368,44 @@ public class CPU {
     private static class STOP implements InstructionRoot {
         // TODO: invalid opcode if operand is not 0
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.gb.stopped = true;
+            return 4;
         }
     }
 
     // EI - enable interrupts
     private static class EI implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.interruptsEnabled = true;
+            return 4;
         }
     }
 
     // DI - disable interrupts
     private static class DI implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.interruptsEnabled = false;
+            return 4;
         }
     }
 
+    enum ZeroFlagBehavior {
+        ALWAYS_CLEAR,
+        DEPEND_ON_RESULT
+    };
+
     // RL - rotate left through carry flag
     private static class RL implements InstructionRoot {
-        boolean clearZeroFlag;
-        public RL(boolean clearZeroFlag) {
-            this.clearZeroFlag = clearZeroFlag;
+        ZeroFlagBehavior zeroFlagBehavior;
+        public RL(ZeroFlagBehavior behavior) {
+            this.zeroFlagBehavior = behavior;
         }
 
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int shifted = operands[0].read() << 1;
             if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
                 shifted ^= 1;
@@ -1323,42 +1413,44 @@ public class CPU {
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & 0x100) > 0);
             operands[0].write((char) shifted);
-            if (!clearZeroFlag)
+            if (zeroFlagBehavior == ZeroFlagBehavior.DEPEND_ON_RESULT)
                 cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
+            return 8;
         }
     }
 
     // RLC - rotate left
     private static class RLC implements InstructionRoot {
-        boolean clearZeroFlag;
-        public RLC(boolean clearZeroFlag) {
-            this.clearZeroFlag = clearZeroFlag;
+        ZeroFlagBehavior zeroFlagBehavior;
+        public RLC(ZeroFlagBehavior behavior) {
+            this.zeroFlagBehavior = behavior;
         }
 
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             cpu.f.write((char) 0);
             int shifted = operands[0].read() << 1;
             if ((shifted & 0x100) > 0) {
                 shifted ^= 1;
                 cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
             }
-            if (!clearZeroFlag)
+            if (zeroFlagBehavior == ZeroFlagBehavior.DEPEND_ON_RESULT)
                 cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
 
             operands[0].write((char) shifted);
+            return 8;
         }
     }
 
     // RR - rotate right through carry flag
     private static class RR implements InstructionRoot {
-        boolean clearZeroFlag;
-        public RR(boolean clearZeroFlag) {
-            this.clearZeroFlag = clearZeroFlag;
+        ZeroFlagBehavior zeroFlagBehavior;
+        public RR(ZeroFlagBehavior behavior) {
+            this.zeroFlagBehavior = behavior;
         }
 
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int val = operands[0].read();
             final boolean zerothBitWasSet = (val & 1) > 0;
             int shifted = val >>> 1;
@@ -1367,21 +1459,22 @@ public class CPU {
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
-            if (!clearZeroFlag)
+            if (zeroFlagBehavior == ZeroFlagBehavior.DEPEND_ON_RESULT)
                 cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
             operands[0].write((char) shifted);
+            return 8;
         }
     }
 
     // RRC - rotate right
     private static class RRC implements InstructionRoot {
-        boolean clearZeroFlag;
-        public RRC(boolean clearZeroFlag) {
-            this.clearZeroFlag = clearZeroFlag;
+        ZeroFlagBehavior zeroFlagBehavior;
+        public RRC(ZeroFlagBehavior behavior) {
+            this.zeroFlagBehavior = behavior;
         }
 
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int val = operands[0].read();
             final boolean zerothBitWasSet = (val & 1) > 0;
             int shifted = val >>> 1;
@@ -1390,41 +1483,44 @@ public class CPU {
             }
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, zerothBitWasSet);
-            if (!clearZeroFlag)
+            if (zeroFlagBehavior == ZeroFlagBehavior.DEPEND_ON_RESULT)
                 cpu.f.updateFlag(FlagRegister.Flag.ZERO, shifted == 0);
             operands[0].write((char) shifted);
+            return 8;
         }
     }
 
     // SLA - arithmetic shift left
     private static class SLA implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             int shifted = operands[0].read() << 1;
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (shifted & 0x100) != 0);
             operands[0].write((char) shifted);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
+            return 8;
         }
     }
 
     // SRA - arithmetic right shift
     private static class SRA implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char original = operands[0].read();
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (original & 1) > 0);
             int shifted = ((byte) original) >> 1;
             operands[0].write((char) shifted);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
+            return 8;
         }
     }
 
     // SRL - logical right shift
     private static class SRL implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char original = operands[0].read();
             cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (original & 1) > 0);
@@ -1432,13 +1528,14 @@ public class CPU {
             int shifted = original >> 1;
             operands[0].write((char) shifted);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, operands[0].read() == 0);
+            return 8;
         }
     }
 
     // DAA - decimal adjust A register
     private static class DAA implements InstructionRoot {
         @Override
-        public void execute(CPU cpu, Cursor[] operands) {
+        public int execute(CPU cpu, Cursor[] operands) {
             char val = cpu.a.read();
 
             // Apply BCD correction depending on the last operation performed
@@ -1457,6 +1554,7 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, (val & 0xFF) == 0);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (val & 0x100) != 0);
+            return 4;
         }
     }
 }

@@ -4,6 +4,7 @@ public class InstructionForm {
     protected InstructionRoot root;
     protected Cursor[] operandTemplate;
 
+
     public InstructionForm(InstructionRoot root, Cursor[] operandTemplate) {
         this.root = root;
         this.operandTemplate = operandTemplate;
@@ -47,7 +48,7 @@ public class InstructionForm {
         return operands;
     }
 
-    public void execute(CPU cpu) {
+    public int execute(CPU cpu) {
         /* BUG: If interrupt master enable is unset but some interrupts are enabled and raised,
            halt mode is not entered and PC will not be incremented after fetching the next
            opcode. E.g.,
@@ -61,6 +62,6 @@ public class InstructionForm {
         else
             cpu.haltBugTriggered = false;
         Cursor[] operands = readOperands(operandTemplate, cpu);
-        root.execute(cpu, operands);
+        return root.execute(cpu, operands);
     }
 }
