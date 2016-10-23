@@ -1,0 +1,9 @@
+1 hour reading about test rom, setting up running them
+2 hour running test rom, fixing flag register bug
+4 hour more cpu bug hunting using test suite. Pass suite 07
+2 hour pass suite 09
+7 hour timer interrupt. Passing suite 02
+
+---
+16 hours total
+
