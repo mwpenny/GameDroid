@@ -36,23 +36,35 @@ public class GameBoy {
     public final LCD lcd;
     public final Controller gamepad;
     public boolean stopped;
+    public Timer timer;
+    public Divider divider;
 
     public GameBoy() {
         cartridge = null;  // For now
-        mmu = new MMU(this);
         cpu = new CPU(this);
         lcd = new LCD(this);
+        timer = new Timer();
+        divider = new Divider();
         gamepad = new Controller(this);
+        mmu = new MMU(this);
         stopped = false;
     }
 
     public void run() {
-        /* TODO: load cartridge and start emulation loop
-           e.g.,
-
-           while (true) {
-               if (!stopped)
-                   cpu.execInstruction();
-           } */
+        /* TODO: load cartridge */
+        while (true) {
+            if (!stopped) {
+                int cyclesUsed = cpu.execInstruction();
+                if (cyclesUsed == 0) {  // cpu in halt mode
+                    cyclesUsed += this.timer.advanceUntilInterrupt();
+                    cpu.raiseInterrupt(CPU.Interrupt.TIMER);
+                } else {
+                    boolean raiseInterrupt = this.timer.notifyCyclesPassed(cyclesUsed);
+                    if (raiseInterrupt)
+                        cpu.raiseInterrupt(CPU.Interrupt.TIMER);
+                }
+                this.divider.notifyCyclesPassed(cyclesUsed);
+            }
+        }
     }
 }

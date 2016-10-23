@@ -32,6 +32,10 @@ public class MMU {
             return gb.gamepad;
         else if (addr == 0xFF0F)
             return raisedInterrupts;
+        else if (addr == 0xFF04)
+            return gb.divider;
+        else if (addr >= 0xFF05 && addr <= 0xFF07)
+            return gb.timer;
         else if ((addr >= 0x8000 && addr <= 0x9FFF) ||
                  (addr >= 0xFE00 & addr <= 0xFE9F) ||
                  (addr >= 0xFF40 && addr <= 0xFF4B))

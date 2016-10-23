@@ -555,8 +555,8 @@ public class CPU {
         sp.write((char) 0xFFFE);
     }
 
-    public void execInstruction() {
-        if (halted) return;
+    public int execInstruction() {
+        if (halted) return 0;
 
         char raisedInterrupts = gb.mmu.read8((char) 0xFF0F);
         char enabledInterrupts = gb.mmu.read8((char) 0xFFFF);
@@ -594,9 +594,9 @@ public class CPU {
         // $CB prefix -> instruction is two bytes
         if (optByte == 0xCB) {
             pc.increment();
-            twoByteInstructions.get(gb.mmu.read8(pc.read())).execute(this);
+            return twoByteInstructions.get(gb.mmu.read8(pc.read())).execute(this);
         } else {
-            oneByteInstructions.get(optByte).execute(this);
+            return oneByteInstructions.get(optByte).execute(this);
         }
     }
 
@@ -886,6 +886,7 @@ public class CPU {
             return 4;
         }
     }
+
     private static class ADD16 implements InstructionRoot {
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
@@ -895,21 +896,22 @@ public class CPU {
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xFFF) + (y & 0xFFF) > 0xFFF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, result > 0xFFFF);
-            operands[0].write((char)result);
+            operands[0].write((char) result);
             return 8;
         }
     }
+
     private static class ADDSP extends ADD16 {
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
             int x = cpu.sp.read();
-            byte y = (byte)operands[1].read();  // Treat as signed
+            byte y = (byte) operands[1].read();  // Treat as signed
             int result = x + y;
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, false);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, false);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) + (y & 0xF) > 0xF);
             cpu.f.updateFlag(FlagRegister.Flag.CARRY, (x & 0xFF) + (y & 0xFF) > 0xFF);
-            operands[0].write((char)result);
+            operands[0].write((char) result);
             return 16;
         }
     }
@@ -1032,7 +1034,7 @@ public class CPU {
             char val = operands[0].read();
             val = (char) (((val << 4) | (val >>> 4)) & 0xFF);
             operands[0].write(val);
-            cpu.f.write((char)0);
+            cpu.f.write((char) 0);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, val == 0);
             return 8;
         }
@@ -1087,6 +1089,7 @@ public class CPU {
             this.flagToCheck = flagToCheck;
             this.expectedFlagValue = expectedFlagValue;
         }
+
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
             if (cpu.f.isFlagSet(flagToCheck) == expectedFlagValue) {
@@ -1099,7 +1102,9 @@ public class CPU {
 
     private static interface JumpConfig {
         char jumpDestination(char currentPc, char jumpArgument);
+
         int cyclesWhenTaken();
+
         int cyclesWhenNotTaken();
     }
 
@@ -1395,11 +1400,14 @@ public class CPU {
     enum ZeroFlagBehavior {
         ALWAYS_CLEAR,
         DEPEND_ON_RESULT
-    };
+    }
+
+    ;
 
     // RL - rotate left through carry flag
     private static class RL implements InstructionRoot {
         ZeroFlagBehavior zeroFlagBehavior;
+
         public RL(ZeroFlagBehavior behavior) {
             this.zeroFlagBehavior = behavior;
         }
@@ -1422,6 +1430,7 @@ public class CPU {
     // RLC - rotate left
     private static class RLC implements InstructionRoot {
         ZeroFlagBehavior zeroFlagBehavior;
+
         public RLC(ZeroFlagBehavior behavior) {
             this.zeroFlagBehavior = behavior;
         }
@@ -1445,6 +1454,7 @@ public class CPU {
     // RR - rotate right through carry flag
     private static class RR implements InstructionRoot {
         ZeroFlagBehavior zeroFlagBehavior;
+
         public RR(ZeroFlagBehavior behavior) {
             this.zeroFlagBehavior = behavior;
         }
@@ -1469,6 +1479,7 @@ public class CPU {
     // RRC - rotate right
     private static class RRC implements InstructionRoot {
         ZeroFlagBehavior zeroFlagBehavior;
+
         public RRC(ZeroFlagBehavior behavior) {
             this.zeroFlagBehavior = behavior;
         }
