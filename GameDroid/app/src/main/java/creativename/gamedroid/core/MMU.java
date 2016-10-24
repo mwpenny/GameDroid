@@ -99,7 +99,7 @@ public class MMU {
         write8((char) 0xFFFF, (char) 0x00);
     }
 
-    public class MemoryCursor16 implements Cursor {
+    private class MemoryCursor16 implements Cursor {
         protected char address;
 
         public MemoryCursor16(char address) {
@@ -117,7 +117,7 @@ public class MMU {
         }
     }
 
-    public class MemoryCursor8 extends MemoryCursor16 implements Cursor {
+    private class MemoryCursor8 extends MemoryCursor16 implements Cursor {
         public MemoryCursor8(char address) {
             super(address);
         }
