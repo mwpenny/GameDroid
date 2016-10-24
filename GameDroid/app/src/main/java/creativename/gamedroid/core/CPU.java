@@ -1079,15 +1079,24 @@ public class CPU {
         }
     }
 
-    private static class ConditionalJump implements InstructionRoot {
-        protected JumpConfig config;
+    private abstract static class ConditionalInstruction implements InstructionRoot {
         FlagRegister.Flag flagToCheck;
         boolean expectedFlagValue;
 
-        public ConditionalJump(JumpConfig config, FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
-            this.config = config;
+        public ConditionalInstruction(FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
             this.flagToCheck = flagToCheck;
             this.expectedFlagValue = expectedFlagValue;
+        }
+
+        public abstract int execute(CPU cpu, Cursor[] operands);
+    }
+
+    private static class ConditionalJump extends ConditionalInstruction {
+        protected JumpConfig config;
+
+        public ConditionalJump(JumpConfig config, FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
+            super(flagToCheck, expectedFlagValue);
+            this.config = config;
         }
 
         @Override
@@ -1100,7 +1109,7 @@ public class CPU {
         }
     }
 
-    private static interface JumpConfig {
+    private interface JumpConfig {
         char jumpDestination(char currentPc, char jumpArgument);
 
         int cyclesWhenTaken();
@@ -1219,55 +1228,47 @@ public class CPU {
         }
     }
 
-    // CALLNZ - if zero flag is clear, push address of next op onto stack and jump
-    private static class CALLNZ implements InstructionRoot {
+    private static class ConditionalCall extends ConditionalInstruction {
+        public ConditionalCall(FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
+            super(flagToCheck, expectedFlagValue);
+        }
+
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
-            if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
+            if (cpu.f.isFlagSet(flagToCheck) == expectedFlagValue) {
                 cpu.pushStack(cpu.pc.read());
                 cpu.pc.write(operands[0].read());
                 return 24;
             }
             return 12;
+        }
+    }
+
+    // CALLNZ - if zero flag is clear, push address of next op onto stack and jump
+    private static class CALLNZ extends ConditionalCall {
+        public CALLNZ() {
+            super(FlagRegister.Flag.ZERO, false);
         }
     }
 
     // CALLZ - if zero flag is set, push address of next op onto stack and jump
-    private static class CALLZ implements InstructionRoot {
-        @Override
-        public int execute(CPU cpu, Cursor[] operands) {
-            if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
-                cpu.pushStack(cpu.pc.read());
-                cpu.pc.write(operands[0].read());
-                return 24;
-            }
-            return 12;
+    private static class CALLZ extends ConditionalCall {
+        public CALLZ() {
+            super(FlagRegister.Flag.ZERO, true);
         }
     }
 
     // CALLNC - if carry flag is clear, push address of next op onto stack and jump
-    private static class CALLNC implements InstructionRoot {
-        @Override
-        public int execute(CPU cpu, Cursor[] operands) {
-            if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
-                cpu.pushStack(cpu.pc.read());
-                cpu.pc.write(operands[0].read());
-                return 24;
-            }
-            return 12;
+    private static class CALLNC extends ConditionalCall {
+        public CALLNC() {
+            super(FlagRegister.Flag.CARRY, false);
         }
     }
 
     // CALLC - if carry flag is set, push address of next op onto stack and jump
-    private static class CALLC implements InstructionRoot {
-        @Override
-        public int execute(CPU cpu, Cursor[] operands) {
-            if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
-                cpu.pushStack(cpu.pc.read());
-                cpu.pc.write(operands[0].read());
-                return 24;
-            }
-            return 12;
+    private static class CALLC extends ConditionalCall {
+        public CALLC() {
+            super(FlagRegister.Flag.CARRY, true);
         }
     }
 
@@ -1290,51 +1291,46 @@ public class CPU {
         }
     }
 
-    // RETNZ - return from function if zero flag is clear
-    private static class RETNZ implements InstructionRoot {
+    private static class ConditionalRet extends ConditionalInstruction {
+        public ConditionalRet(FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
+            super(flagToCheck, expectedFlagValue);
+        }
+
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
-            if (!cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
+            if (cpu.f.isFlagSet(flagToCheck) == expectedFlagValue) {
                 cpu.pc.write(cpu.popStack());
                 return 20;
             }
             return 8;
+        }
+    }
+
+    // RETNZ - return from function if zero flag is clear
+    private static class RETNZ extends ConditionalRet {
+        public RETNZ() {
+            super(FlagRegister.Flag.ZERO, false);
         }
     }
 
     // RETZ - return from function if zero flag is set
-    private static class RETZ implements InstructionRoot {
-        @Override
-        public int execute(CPU cpu, Cursor[] operands) {
-            if (cpu.f.isFlagSet(FlagRegister.Flag.ZERO)) {
-                cpu.pc.write(cpu.popStack());
-                return 20;
-            }
-            return 8;
+    private static class RETZ extends ConditionalRet {
+        public RETZ() {
+            super(FlagRegister.Flag.ZERO, true);
         }
     }
 
     // RETNC - return from function if carry flag is clear
-    private static class RETNC implements InstructionRoot {
-        @Override
-        public int execute(CPU cpu, Cursor[] operands) {
-            if (!cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
-                cpu.pc.write(cpu.popStack());
-                return 20;
-            }
-            return 8;
+    private static class RETNC extends ConditionalRet {
+        public RETNC() {
+            super(FlagRegister.Flag.CARRY, false);
         }
     }
 
     // RETC - return from function if carry flag is set
-    private static class RETC implements InstructionRoot {
-        @Override
-        public int execute(CPU cpu, Cursor[] operands) {
-            if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY)) {
-                cpu.pc.write(cpu.popStack());
-                return 20;
-            }
-            return 8;
+    private static class RETC extends ConditionalRet {
+        public RETC() {
+            super(FlagRegister.Flag.ZERO, true);
         }
     }
 

@@ -1140,7 +1140,7 @@ public class CPUTest {
         gb.cpu.execInstruction();
         // A == $0F
         gb.cpu.execInstruction();
-        assertEquals(0x09, gb.cpu.a.read());
+        assertEquals(0xA9, gb.cpu.a.read());
     }
 
     @Test
