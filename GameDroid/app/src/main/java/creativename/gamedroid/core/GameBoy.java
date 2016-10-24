@@ -65,6 +65,8 @@ public class GameBoy {
                         cpu.raiseInterrupt(CPU.Interrupt.TIMER);
                 }
                 this.divider.notifyCyclesPassed(cyclesUsed);
+                for (int i = 0; i < cyclesUsed; ++i)
+                    lcd.tick();
             }
         }
     }
