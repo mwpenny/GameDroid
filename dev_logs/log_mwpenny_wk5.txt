@@ -1,0 +1,10 @@
+1hr, 30mins	Researching GameBoy graphics states
+1hr		Implementing registers and states for graphics rendering
+1hr, 30mins	Researching GameBoy rendering implementation
+1hr, 20mins	Implementing background tile rendering
+1hr, 30mins	Researching and familiarizing self with Android APIs that will be required for front-end implementation
+3hrs		Debugging CPU and fixing instructions to pass the cpu_instrs test ROMs
+
+
+---
+9hrs, 50mins	Total
