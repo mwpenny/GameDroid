@@ -1550,7 +1550,7 @@ public class CPU {
             // Apply BCD correction depending on the last operation performed
             if (cpu.f.isFlagSet(FlagRegister.Flag.SUBTRACTION)) {
                 if (cpu.f.isFlagSet(FlagRegister.Flag.HALF_CARRY))
-                    val -= 6;
+                    val = (char)((val - 6) & 0xFF);
                 if (cpu.f.isFlagSet(FlagRegister.Flag.CARRY))
                     val -= 0x60;
             } else {
@@ -1559,10 +1559,12 @@ public class CPU {
                 if (val > 0x9F || cpu.f.isFlagSet(FlagRegister.Flag.CARRY))
                     val += 0x60;
             }
+
             cpu.a.write(val);
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, (val & 0xFF) == 0);
             cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, false);
-            cpu.f.updateFlag(FlagRegister.Flag.CARRY, (val & 0x100) != 0);
+            if ((val & 0x100) != 0)
+                cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
             return 4;
         }
     }
