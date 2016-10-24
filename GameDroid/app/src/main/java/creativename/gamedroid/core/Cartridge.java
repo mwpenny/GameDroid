@@ -201,6 +201,7 @@ public class Cartridge {
     }
 
     public Cartridge(String path) throws IOException {
+        // TODO: parse header in another function (for displaying info in menus)?
         byte[] buf = new byte[0x4000];
         File f = new File(path);
         FileInputStream in = new FileInputStream(f);

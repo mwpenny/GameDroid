@@ -1,5 +1,6 @@
 package creativename.gamedroid.core;
 
+/* Used to override the cycle value returned for an instruction */
 public class ConstantCycleInstruction extends InstructionForm {
     private int cycles;
     public ConstantCycleInstruction(InstructionRoot root, Cursor[] operandTemplate, int cycles) {

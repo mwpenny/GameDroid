@@ -1,15 +1,16 @@
 package creativename.gamedroid.core;
 
+/* CPU instruction wrapper. Performs operand translation */
 public class InstructionForm {
     protected InstructionRoot root;
     protected Cursor[] operandTemplate;
-
 
     public InstructionForm(InstructionRoot root, Cursor[] operandTemplate) {
         this.root = root;
         this.operandTemplate = operandTemplate;
     }
 
+    /* Translates operands and fetches data as necessary */
     protected Cursor[] readOperands(Cursor[] operandTemplate, CPU cpu) {
         Cursor[] operands = new Cursor[operandTemplate.length];
         for (int i = 0; i < operandTemplate.length; i++) {
@@ -42,6 +43,7 @@ public class InstructionForm {
                 cpu.pc.increment();
                 cpu.pc.increment();
             } else {
+                // No translation required
                 operands[i] = operandTemplate[i];
             }
         }

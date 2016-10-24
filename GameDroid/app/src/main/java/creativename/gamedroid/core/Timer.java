@@ -1,6 +1,6 @@
 package creativename.gamedroid.core;
 
-// Keep track of states for the GameBoy's internal timer
+/* GameBoy CPU timer */
 public class Timer implements MemoryMappable {
     private char tima; // Timer counter
     private char tma;  // Timer Modulo
@@ -26,8 +26,8 @@ public class Timer implements MemoryMappable {
         return ceiling;
     }
 
-    // tell the timer that some number of cycles have passed
-    // returns whether an interrupt has happened
+    /* Tell the timer that some number of cycles have passed.
+       returns whether an interrupt has happened */
     public boolean notifyCyclesPassed(int cycles) {
         if ((tac & 0b100) == 0) return false;  // timer stopped
         cycleReservoir += cycles;
@@ -40,7 +40,7 @@ public class Timer implements MemoryMappable {
         return overflowed;
     }
 
-    // return the number of cycles until next interrupt then reset the counting
+    // Returns the number of cycles until next interrupt, then resets the counting
     public int advanceUntilInterrupt() {
         int countUntilOverflow = 0x100 - tima;
         int reservoirCeiling = currentReservoirCeiling();
@@ -62,8 +62,8 @@ public class Timer implements MemoryMappable {
         } else if (address == 0xFF07) {
             return (byte) tac;
         } else {
-            System.err.println("Read dispatched to timer with invalid address");
-            return 0;
+            System.err.format("Warning: read dispatched to timer with invalid address $%04X\n", (int) address);
+            return (byte)0xFF;
         }
     }
 

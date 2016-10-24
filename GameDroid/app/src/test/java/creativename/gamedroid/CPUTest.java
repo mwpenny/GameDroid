@@ -3,7 +3,6 @@ package creativename.gamedroid;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import creativename.gamedroid.core.Cartridge;
 import creativename.gamedroid.core.GameBoy;
 import creativename.gamedroid.core.CPU;
 import creativename.gamedroid.core.MMU;

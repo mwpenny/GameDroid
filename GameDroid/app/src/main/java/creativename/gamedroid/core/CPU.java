@@ -13,11 +13,11 @@ public class CPU {
 
     /* These are not actual cursors to read or write from, but special singleton values used as
        signals for interpreting instruction operands. */
-    public static ConstantCursor8 immediate8 = new ConstantCursor8((char) 0);
-    public static ConstantCursor16 immediate16 = new ConstantCursor16((char) 0);
-    public static ConstantCursor8 oneByteIndirect8 = new ConstantCursor8((char) 0);
-    public static ConstantCursor8 twoByteIndirect8 = new ConstantCursor8((char) 0);
-    public static ConstantCursor16 indirect16 = new ConstantCursor16((char) 0);
+    public static final ConstantCursor8 immediate8 = new ConstantCursor8((char) 0);
+    public static final ConstantCursor16 immediate16 = new ConstantCursor16((char) 0);
+    public static final ConstantCursor8 oneByteIndirect8 = new ConstantCursor8((char) 0);
+    public static final ConstantCursor8 twoByteIndirect8 = new ConstantCursor8((char) 0);
+    public static final ConstantCursor16 indirect16 = new ConstantCursor16((char) 0);
 
     private HashMap<Character, InstructionForm> oneByteInstructions;
     private HashMap<Character, InstructionForm> twoByteInstructions;
@@ -600,27 +600,6 @@ public class CPU {
         }
     }
 
-    /* 8-bit CPU register */
-    private static class Register8 implements Register {
-        protected char value;
-
-        public char read() {
-            return value;
-        }
-
-        public void write(char value) {
-            this.value = (char) (value & 255);
-        }
-
-        public void increment() {
-            value = (char) ((value + 1) & 0xFF);
-        }
-
-        public void decrement() {
-            value = (char) ((value - 1) & 0xFF);
-        }
-    }
-
     /* Register for CPU flags */
     public static class FlagRegister extends Register8 {
         public enum Flag {
@@ -658,60 +637,11 @@ public class CPU {
         }
     }
 
-    /* 16-bit CPU register */
-    private static class Register16 implements Register {
-        private char value;
-
-        public char read() {
-            return value;
-        }
-
-        public void write(char value) {
-            this.value = value;
-        }
-
-        public void increment() {
-            ++value;
-        }
-
-        public void decrement() {
-            --value;
-        }
-    }
-
-    /* Used to represent the concatenation of two 8 bit registers.
-       No additional data is stored in the class */
-    private static class ConcatRegister implements Register {
-        Register8 high;
-        Register8 low;
-
-        public ConcatRegister(Register8 high, Register8 low) {
-            this.high = high;
-            this.low = low;
-        }
-
-        public void write(char value) {
-            high.write((char) (value >>> 8));
-            low.write(value);
-        }
-
-        public char read() {
-            return (char) ((high.read() << 8) | low.read());
-        }
-
-        public void increment() {
-            write((char) (read() + 1));
-        }
-
-        public void decrement() {
-            write((char) (read() - 1));
-        }
-    }
-
+    /* These cursors use the value of their initializing register as a pointer to data */
     private class IndirectRegister8Cursor implements Cursor {
         private Register reg;
 
-        public IndirectRegister8Cursor(Register r) {
+        IndirectRegister8Cursor(Register r) {
             reg = r;
         }
 
@@ -725,11 +655,10 @@ public class CPU {
             gb.mmu.write8((char) (0xFF00 | reg.read()), value);
         }
     }
-
     private class IndirectRegister16Cursor implements Cursor {
         private Register reg;
 
-        public IndirectRegister16Cursor(Register r) {
+        IndirectRegister16Cursor(Register r) {
             reg = r;
         }
 
@@ -840,7 +769,6 @@ public class CPU {
             return 4;
         }
     }
-
     private static class INC16 implements InstructionRoot {
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
@@ -861,7 +789,6 @@ public class CPU {
             return 4;
         }
     }
-
     private static class DEC16 implements InstructionRoot {
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
@@ -886,7 +813,6 @@ public class CPU {
             return 4;
         }
     }
-
     private static class ADD16 implements InstructionRoot {
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
@@ -901,6 +827,7 @@ public class CPU {
         }
     }
 
+    // Add a signed operand to the stack pointer and store the result (used by ADD SP,# and LDHL)
     private static class ADDSP extends ADD16 {
         @Override
         public int execute(CPU cpu, Cursor[] operands) {
@@ -939,12 +866,12 @@ public class CPU {
         public int execute(CPU cpu, Cursor[] operands) {
             int x = cpu.a.read();
             int y = operands[0].read();
-            char result = (char) (cpu.a.read() - operands[0].read());
+            char result = (char) (x - y);
 
             cpu.f.updateFlag(FlagRegister.Flag.ZERO, result == 0);
             cpu.f.updateFlag(FlagRegister.Flag.SUBTRACTION, true);
-            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (cpu.a.read() & 0xF) < (operands[0].read() & 0xF));
-            cpu.f.updateFlag(FlagRegister.Flag.CARRY, cpu.a.read() < operands[0].read());
+            cpu.f.updateFlag(FlagRegister.Flag.HALF_CARRY, (x & 0xF) < (y & 0xF));
+            cpu.f.updateFlag(FlagRegister.Flag.CARRY, x < y);
             cpu.a.write(result);
             return 4;
         }
@@ -1079,22 +1006,11 @@ public class CPU {
         }
     }
 
-    private abstract static class ConditionalInstruction implements InstructionRoot {
-        FlagRegister.Flag flagToCheck;
-        boolean expectedFlagValue;
-
-        public ConditionalInstruction(FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
-            this.flagToCheck = flagToCheck;
-            this.expectedFlagValue = expectedFlagValue;
-        }
-
-        public abstract int execute(CPU cpu, Cursor[] operands);
-    }
-
+    /* A jump instruction whose behavior depends on the state of a processor flag */
     private static class ConditionalJump extends ConditionalInstruction {
-        protected JumpConfig config;
+        JumpConfig config;
 
-        public ConditionalJump(JumpConfig config, FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
+        ConditionalJump(JumpConfig config, FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
             super(flagToCheck, expectedFlagValue);
             this.config = config;
         }
@@ -1136,28 +1052,28 @@ public class CPU {
 
     // JPNZ - jump to address if zero flag clear
     private static class JPNZ extends ConditionalJump {
-        public JPNZ() {
+        JPNZ() {
             super(absoluteJump, FlagRegister.Flag.ZERO, false);
         }
     }
 
     // JPZ - jump to address if zero flag set
     private static class JPZ extends ConditionalJump {
-        public JPZ() {
+        JPZ() {
             super(absoluteJump, FlagRegister.Flag.ZERO, true);
         }
     }
 
     // JPNC - jump to address if carry flag clear
     private static class JPNC extends ConditionalJump {
-        public JPNC() {
+        JPNC() {
             super(absoluteJump, FlagRegister.Flag.CARRY, false);
         }
     }
 
     // JPC - jump to address if carry flag set
     private static class JPC extends ConditionalJump {
-        public JPC() {
+        JPC() {
             super(absoluteJump, FlagRegister.Flag.CARRY, true);
         }
     }
@@ -1192,28 +1108,28 @@ public class CPU {
 
     // JRNZ - jump relative to current address in PC if zero flag is clear
     private static class JRNZ extends ConditionalJump {
-        public JRNZ() {
+        JRNZ() {
             super(relativeJump, FlagRegister.Flag.ZERO, false);
         }
     }
 
     // JRZ - jump relative to current address in PC if zero flag is set
     private static class JRZ extends ConditionalJump {
-        public JRZ() {
+        JRZ() {
             super(relativeJump, FlagRegister.Flag.ZERO, true);
         }
     }
 
     // JRNC - jump relative to current address in PC if carry flag is clear
     private static class JRNC extends ConditionalJump {
-        public JRNC() {
+        JRNC() {
             super(relativeJump, FlagRegister.Flag.CARRY, false);
         }
     }
 
     // JRC - jump relative to current address in PC if zero flag is clear
     private static class JRC extends ConditionalJump {
-        public JRC() {
+        JRC() {
             super(relativeJump, FlagRegister.Flag.CARRY, true);
         }
     }
@@ -1228,8 +1144,9 @@ public class CPU {
         }
     }
 
+    /* A call instruction whose behavior depends on the state of a processor flag */
     private static class ConditionalCall extends ConditionalInstruction {
-        public ConditionalCall(FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
+        ConditionalCall(FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
             super(flagToCheck, expectedFlagValue);
         }
 
@@ -1246,28 +1163,28 @@ public class CPU {
 
     // CALLNZ - if zero flag is clear, push address of next op onto stack and jump
     private static class CALLNZ extends ConditionalCall {
-        public CALLNZ() {
+        CALLNZ() {
             super(FlagRegister.Flag.ZERO, false);
         }
     }
 
     // CALLZ - if zero flag is set, push address of next op onto stack and jump
     private static class CALLZ extends ConditionalCall {
-        public CALLZ() {
+        CALLZ() {
             super(FlagRegister.Flag.ZERO, true);
         }
     }
 
     // CALLNC - if carry flag is clear, push address of next op onto stack and jump
     private static class CALLNC extends ConditionalCall {
-        public CALLNC() {
+        CALLNC() {
             super(FlagRegister.Flag.CARRY, false);
         }
     }
 
     // CALLC - if carry flag is set, push address of next op onto stack and jump
     private static class CALLC extends ConditionalCall {
-        public CALLC() {
+        CALLC() {
             super(FlagRegister.Flag.CARRY, true);
         }
     }
@@ -1291,8 +1208,9 @@ public class CPU {
         }
     }
 
+    /* A return instruction whose behavior depends on the state of a processor flag */
     private static class ConditionalRet extends ConditionalInstruction {
-        public ConditionalRet(FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
+        ConditionalRet(FlagRegister.Flag flagToCheck, boolean expectedFlagValue) {
             super(flagToCheck, expectedFlagValue);
         }
 
@@ -1308,28 +1226,28 @@ public class CPU {
 
     // RETNZ - return from function if zero flag is clear
     private static class RETNZ extends ConditionalRet {
-        public RETNZ() {
+        RETNZ() {
             super(FlagRegister.Flag.ZERO, false);
         }
     }
 
     // RETZ - return from function if zero flag is set
     private static class RETZ extends ConditionalRet {
-        public RETZ() {
+        RETZ() {
             super(FlagRegister.Flag.ZERO, true);
         }
     }
 
     // RETNC - return from function if carry flag is clear
     private static class RETNC extends ConditionalRet {
-        public RETNC() {
+        RETNC() {
             super(FlagRegister.Flag.CARRY, false);
         }
     }
 
     // RETC - return from function if carry flag is set
     private static class RETC extends ConditionalRet {
-        public RETC() {
+        RETC() {
             super(FlagRegister.Flag.ZERO, true);
         }
     }
@@ -1402,7 +1320,7 @@ public class CPU {
     private static class RL implements InstructionRoot {
         ZeroFlagBehavior zeroFlagBehavior;
 
-        public RL(ZeroFlagBehavior behavior) {
+        RL(ZeroFlagBehavior behavior) {
             this.zeroFlagBehavior = behavior;
         }
 
@@ -1425,7 +1343,7 @@ public class CPU {
     private static class RLC implements InstructionRoot {
         ZeroFlagBehavior zeroFlagBehavior;
 
-        public RLC(ZeroFlagBehavior behavior) {
+        RLC(ZeroFlagBehavior behavior) {
             this.zeroFlagBehavior = behavior;
         }
 
@@ -1449,7 +1367,7 @@ public class CPU {
     private static class RR implements InstructionRoot {
         ZeroFlagBehavior zeroFlagBehavior;
 
-        public RR(ZeroFlagBehavior behavior) {
+        RR(ZeroFlagBehavior behavior) {
             this.zeroFlagBehavior = behavior;
         }
 
@@ -1474,7 +1392,7 @@ public class CPU {
     private static class RRC implements InstructionRoot {
         ZeroFlagBehavior zeroFlagBehavior;
 
-        public RRC(ZeroFlagBehavior behavior) {
+        RRC(ZeroFlagBehavior behavior) {
             this.zeroFlagBehavior = behavior;
         }
 
@@ -1563,34 +1481,5 @@ public class CPU {
                 cpu.f.updateFlag(FlagRegister.Flag.CARRY, true);
             return 4;
         }
-    }
-}
-
-class ConstantCursor8 extends ConstantCursor16 {
-    ConstantCursor8(char value) {
-        super(value);
-    }
-
-    @Override
-    public char read() {
-        return (char) (super.read() & 255);
-    }
-}
-
-class ConstantCursor16 implements Cursor {
-    char value;
-
-    ConstantCursor16(char value) {
-        this.value = value;
-    }
-
-    @Override
-    public char read() {
-        return value;
-    }
-
-    @Override
-    public void write(char value) {
-        System.err.println("Error: write called on a constant value cursor");
     }
 }

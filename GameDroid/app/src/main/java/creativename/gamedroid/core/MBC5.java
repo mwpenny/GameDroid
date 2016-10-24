@@ -3,10 +3,7 @@ package creativename.gamedroid.core;
 /* MBC5:
      * Max 8MB ROM
      * Max 128KB RAM
-     * Optional rumble motor
 */
-
-// TODO: support rumble motor?
 public class MBC5 extends MBC {
     public MBC5(byte[] rom, int extRamSize, boolean hasBattery) {
         super(rom, extRamSize, hasBattery);

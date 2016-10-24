@@ -1,9 +1,11 @@
 package creativename.gamedroid.core;
 
+/* CPU frequency divider */
 public class Divider implements MemoryMappable {
     private int cycleReservoir;
     private char counter;
 
+    // Tell the divider that some number of cycles have passed
     public void notifyCyclesPassed(int cycles) {
         cycleReservoir += cycles;
         counter += cycleReservoir / 256;
