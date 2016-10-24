@@ -78,9 +78,6 @@ public class MMU {
 
     // these are effective output of the boot rom
     public void reset() {
-        write8((char) 0xFF05, (char) 0x00);
-        write8((char) 0xFF06, (char) 0x00);
-        write8((char) 0xFF07, (char) 0x00);
         write8((char) 0xFF10, (char) 0x80);
         write8((char) 0xFF11, (char) 0xBF);
         write8((char) 0xFF12, (char) 0xF3);

@@ -56,6 +56,7 @@ public class GameBoy {
             if (!stopped) {
                 int cyclesUsed = cpu.execInstruction();
                 if (cyclesUsed == 0) {  // cpu in halt mode
+                    // TODO: other interrupts may occur before timer (e.g., LCD, joypad)
                     cyclesUsed += this.timer.advanceUntilInterrupt();
                     cpu.raiseInterrupt(CPU.Interrupt.TIMER);
                 } else {

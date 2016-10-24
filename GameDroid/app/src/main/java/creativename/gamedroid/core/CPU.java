@@ -458,7 +458,7 @@ public class CPU {
         twoByteInstructions.put((char) 0x2E, new ConstantCycleInstruction(sra, new Cursor[]{ihl}, 16));
         twoByteInstructions.put((char) 0x2F, new InstructionForm(sra, new Cursor[]{a}));
 
-        // SLA
+        // SRL
         InstructionRoot srl = new SRL();
         twoByteInstructions.put((char) 0x38, new InstructionForm(srl, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x39, new InstructionForm(srl, new Cursor[]{c}));
@@ -1397,12 +1397,10 @@ public class CPU {
         }
     }
 
-    enum ZeroFlagBehavior {
+    private enum ZeroFlagBehavior {
         ALWAYS_CLEAR,
         DEPEND_ON_RESULT
     }
-
-    ;
 
     // RL - rotate left through carry flag
     private static class RL implements InstructionRoot {
