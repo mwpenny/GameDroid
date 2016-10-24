@@ -98,6 +98,9 @@ public class CPU {
         InstructionRoot rlca = new RLC(ZeroFlagBehavior.ALWAYS_CLEAR);
         InstructionRoot rra = new RR(ZeroFlagBehavior.ALWAYS_CLEAR);
         InstructionRoot rrca = new RRC(ZeroFlagBehavior.ALWAYS_CLEAR);
+        InstructionRoot sla = new SLA();
+        InstructionRoot sra = new SRA();
+        InstructionRoot srl = new SRL();
 
         /* Build the one-byte instruction lookup table */
         oneByteInstructions = new HashMap<>();
@@ -437,7 +440,6 @@ public class CPU {
         twoByteInstructions.put((char) 0x1F, new InstructionForm(rr, new Cursor[]{a}));
 
         // SLA
-        InstructionRoot sla = new SLA();
         twoByteInstructions.put((char) 0x20, new InstructionForm(sla, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x21, new InstructionForm(sla, new Cursor[]{c}));
         twoByteInstructions.put((char) 0x22, new InstructionForm(sla, new Cursor[]{d}));
@@ -448,7 +450,6 @@ public class CPU {
         twoByteInstructions.put((char) 0x27, new InstructionForm(sla, new Cursor[]{a}));
 
         // SRA
-        InstructionRoot sra = new SRA();
         twoByteInstructions.put((char) 0x28, new InstructionForm(sra, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x29, new InstructionForm(sra, new Cursor[]{c}));
         twoByteInstructions.put((char) 0x2A, new InstructionForm(sra, new Cursor[]{d}));
@@ -459,7 +460,6 @@ public class CPU {
         twoByteInstructions.put((char) 0x2F, new InstructionForm(sra, new Cursor[]{a}));
 
         // SRL
-        InstructionRoot srl = new SRL();
         twoByteInstructions.put((char) 0x38, new InstructionForm(srl, new Cursor[]{b}));
         twoByteInstructions.put((char) 0x39, new InstructionForm(srl, new Cursor[]{c}));
         twoByteInstructions.put((char) 0x3A, new InstructionForm(srl, new Cursor[]{d}));

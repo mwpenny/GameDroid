@@ -393,7 +393,7 @@ public class LCD implements MemoryMappable {
     private static class WriteOnlyRegister extends MappableByte {
         @Override
         public byte read(char address) {
-            System.err.format("Read made to write-only location ($%04X)", (int)address);
+            System.err.format("Read made to write-only location ($%04X)\n", (int)address);
             return (byte)0xFF;
         }
     }

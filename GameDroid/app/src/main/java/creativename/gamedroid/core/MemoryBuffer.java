@@ -16,7 +16,7 @@ public class MemoryBuffer implements MemoryMappable {
     public byte read(char address) {
         if (enabled)
             return data[(address - offset) & mask];
-        System.err.format("Warning: read from disabled memory buffer ($%04X)", (int) address);
+        System.err.format("Warning: read from disabled memory buffer ($%04X)\n", (int) address);
         return (byte)0xFF;
     }
 
@@ -25,7 +25,7 @@ public class MemoryBuffer implements MemoryMappable {
         if (enabled)
             data[(address - offset) & mask] = value;
         else
-            System.err.format("Warning: write to disabled memory buffer ($%04X)", (int) address);
+            System.err.format("Warning: write to disabled memory buffer ($%04X)\n", (int) address);
     }
 
     public void setEnabled(boolean enabled) {
