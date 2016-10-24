@@ -1248,7 +1248,7 @@ public class CPU {
     // RETC - return from function if carry flag is set
     private static class RETC extends ConditionalRet {
         RETC() {
-            super(FlagRegister.Flag.ZERO, true);
+            super(FlagRegister.Flag.CARRY, true);
         }
     }
 
