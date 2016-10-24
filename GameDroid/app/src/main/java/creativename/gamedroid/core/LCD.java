@@ -23,14 +23,14 @@ public class LCD implements MemoryMappable {
 
     // GameBoy monochrome palette
     private static final int[] palette = {
-            0xFFFFFF,  // 0% black
-            0xC0C0C0,  // 33% black
-            0x606060,  // 66% black
-            0x000000   // 100% black
+            0xFFFFFFFF,  // 0% black
+            0xFFC0C0C0,  // 33% black
+            0xFF606060,  // 66% black
+            0xFF000000   // 100% black
     };
 
     private GameBoy gb;
-    private int[][] framebuffer;
+    public int[] framebuffer;
     private ScreenState screenState;
     private MappableByte scanline, cmpScanline;
     private char cycle;
@@ -113,7 +113,7 @@ public class LCD implements MemoryMappable {
         bgTileMaps = new MemoryBuffer(0x800, 0x9800, ~0);
         oamdma = new OAMDMARegister();
         oam = new MemoryBuffer(0xA0, 0xFE00, ~0);
-        framebuffer = new int[144][160];
+        framebuffer = new int[144*160];
         lcdControl = new LCDControlRegister();
         lcdStatus = new LCDStatusRegister();
         scanline = new MappableByte();
@@ -263,13 +263,13 @@ public class LCD implements MemoryMappable {
                  for this project, as its focus is primarily software design. */
         // TODO: Sprite and window rendering
         // TODO: respect flags (i.e., sprite enable/disable, sprite size, window enable/disable, window tilemap)
-        int y = scanline.data + scrollY.data;
+        int y = (scanline.data + scrollY.data) & 0xFF;
         for (int px = 0; px < 160; ++px) {
             if (bgEnabled) {
                 /* Which tile needs to be drawn? Tile indices are treated as signed
                    if using the second tile set */
-                int x = (px + scrollX.data) % 8;
-                int tileNum = bgTileMaps.data[bgTileMapOfs + ((px + scrollX.data) / 8) + (y * 4)];
+                int x = (px + (scrollX.data & 0xFF)) % 8;
+                int tileNum = bgTileMaps.data[bgTileMapOfs + ((px + (scrollX.data & 0xFF)) / 8) + (y / 8 * 32)] & 0xFF;
                 if (bgTilesetOfs == 0x800)
                     tileNum = (byte)tileNum + 128;
 
@@ -278,9 +278,9 @@ public class LCD implements MemoryMappable {
                 int bitmapIdx = bgTilesetOfs + (tileNum * 16) + (2 * (y % 8));
                 int pIdx = ((tileBitmaps.data[bitmapIdx] >>> (7 - x)) & 1) |
                             ((tileBitmaps.data[bitmapIdx + 1] >>> (6 - x)) & 2);
-                framebuffer[scanline.data][px] = palette[bgPalette.data >>> (pIdx * 2)];
+                framebuffer[(scanline.data & 0xFF) * 160 + px] = palette[(bgPalette.data >>> (pIdx * 2)) & 3];
             } else {
-                framebuffer[scanline.data][px] = palette[0];
+                framebuffer[(scanline.data & 0xFF) * 160 + px] = palette[3];
             }
         }
     }
