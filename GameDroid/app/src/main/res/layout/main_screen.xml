@@ -17,7 +17,7 @@
         android:id="@+id/title_logo"
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:src="@mipmap/test"
+        android:src="@mipmap/logo"
     />
 
     <!-- List for menu buttons (Start, Settings, Help) -->

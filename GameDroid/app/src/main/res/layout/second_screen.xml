@@ -17,7 +17,7 @@
         android:id="@+id/second_logo"
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:src="@mipmap/test"
+        android:src="@mipmap/logo"
     />
 
     <!-- Scrollable List -->
