@@ -1,13 +1,15 @@
 package creativename.gamedroid.ui;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.content.Context;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import creativename.gamedroid.R;
 
@@ -15,27 +17,27 @@ import creativename.gamedroid.R;
 
 public class RomListAdapter extends ArrayAdapter<RomEntry> {
 
-    public RomListAdapter(Context context, ArrayList<RomEntry> curr_list) {
-        super(context, 0, curr_list);
+    public RomListAdapter(Context context, ArrayList<RomEntry> roms) {
+        super(context, 0, roms);
     }
 
     @Override
-    public View getView(int pos, View curr_view, ViewGroup parent) {
-        RomEntry curr_rom = getItem(pos);
+    public View getView(int pos, View v, ViewGroup parent) {
+        // Use ROM metadata for list entry
+        RomEntry rom = getItem(pos);
 
-        if (curr_view == null) {
-            curr_view = LayoutInflater.from(getContext()).inflate(R.layout.rom_layout, parent, false);
-        }
+        // Recycle view
+        if (v == null)
+            v = LayoutInflater.from(getContext()).inflate(R.layout.entry_rom, parent, false);
 
-        // Assign data to fields [@+id/rom_title && @+id/last_played]
-        TextView curr_title = (TextView) curr_view.findViewById(R.id.rom_title);
-        TextView curr_play_date = (TextView) curr_view.findViewById(R.id.last_played);
+        TextView title = (TextView) v.findViewById(R.id.rom_title);
+        TextView date = (TextView) v.findViewById(R.id.last_played);
+        title.setText(rom.getTitle());
+        date.setText(
+            String.format(getContext().getString(R.string.rom_date_format),
+                    new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US).format(rom.getLastPlayed()))
+        );
 
-        // Send data to ViewObject from Object
-        curr_title.setText(curr_rom.get_title());
-        curr_play_date.setText(curr_rom.get_last_play_date());
-
-        return curr_view;
-
+        return v;
     }
 }

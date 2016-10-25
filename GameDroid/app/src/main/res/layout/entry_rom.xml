@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!-- List entry for ROM files -->
 <LinearLayout
 
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -6,17 +8,10 @@
     android:layout_height="match_parent"
     android:orientation="horizontal">
 
-    <RadioButton
-        android:id="@+id/most_recent_radio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="recent_radio"
-        android:layout_gravity="center"/>
-
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/most_recent_image"
+        android:id="@+id/screenshot"
         android:src="@mipmap/ic_launcher"
         android:layout_gravity="center"/>
 
@@ -32,13 +27,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/rom_title"
-            android:text="Sample Title"/>
+            android:textSize="18sp"
+            android:textStyle="normal|bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/last_played"
-            android:text="The last played date of a ROM file."/>
+            android:id="@+id/last_played" />
 
     </LinearLayout>
 

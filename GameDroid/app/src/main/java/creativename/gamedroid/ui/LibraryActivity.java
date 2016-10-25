@@ -2,15 +2,13 @@ package creativename.gamedroid.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 
 import android.app.AlertDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
@@ -21,32 +19,18 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import creativename.gamedroid.R;
-import creativename.gamedroid.core.Cartridge;
 
+/* Main game ROM library view */
 public class LibraryActivity extends AppCompatActivity {
-
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    private ViewPager mViewPager;
-
     ArrayList<RomEntry> roms;
 
     private void createAppDirs() {
@@ -75,28 +59,29 @@ public class LibraryActivity extends AppCompatActivity {
         }
     }
 
-    /* Converts a string to title case (e.g., "pokemon gold" => "Pokemon Gold") */
-    private static String toTitleCase(String input) {
-        StringBuilder title = new StringBuilder();
-        boolean nextWord = true;
-        input = input.replace('_', ' ');
+    /* Removes ROM metadata from the cache for files that are no longer present */
+    private static void cleanCache(File[] files, SQLiteDatabase cache) {
+        cache.beginTransaction();
+        cache.execSQL("CREATE TEMP TABLE IF NOT EXISTS foundFiles (fileName TEXT PRIMARY KEY NOT NULL)");
 
-        for (char c : input.toCharArray()) {
-            if (nextWord) {
-                c = Character.toUpperCase(c);
-                nextWord = false;
-            } else if (Character.isSpaceChar(c)) {
-                nextWord = true;
-            } else {
-                c = Character.toLowerCase(c);
+        ContentValues row = new ContentValues();
+        for (File f : files) {
+            row.put("fileName", f.getName());
+            if (cache.insert("foundFiles", null, row) == -1) {
+                // Don't compromise ROM cache if construction of foundFiles table fails
+                cache.endTransaction();
+                return;
             }
-            title.append(c);
         }
-        return title.toString();
+
+        cache.rawQuery("DELETE FROM roms WHERE fileName NOT IN (SELECT fileName from foundFiles)", null);
+        cache.rawQuery("DROP TABLE IF EXISTS foundFiles", null);
+        cache.setTransactionSuccessful();
+        cache.endTransaction();
     }
 
     /* Loads game ROM metadata from the cache (database; if available) or the ROM files themselves */
-    private void loadROMData() {
+    private void loadRomData() {
         File romDir = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
         SQLiteDatabase romCache = new SQLiteOpenHelper(this, "romcache.db", null, 1) {
             @Override
@@ -107,57 +92,23 @@ public class LibraryActivity extends AppCompatActivity {
             @Override
             public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
         }.getWritableDatabase();
-
         romCache.beginTransaction();
-        romCache.execSQL(getString(R.string.cache_schema));
 
-        // Search ROM directory
+        // Search ROM directory for GameBoy and GameBoy color games
         for (File f : romDir.listFiles()) {
             String ext = f.getName().substring(f.getName().lastIndexOf('.')).toLowerCase();
             if (f.isFile() && (ext.equals(".gb") || ext.equals(".gbc"))) {
-                // Search cache for metadata (use filename as key)
-                Cursor c = romCache.query("roms", null, "fileName=?", new String[]{f.getName()},
-                                          null, null, null);
-                String title, manufacturer, licensee, locale;
-                int version;
-
                 try {
-                    if (c.getCount() == 0) {
-                        // ROM metadata is not in the cache: parse file for it
-                        Cartridge game = new Cartridge(f.getAbsolutePath(), Cartridge.LoadMode.PARSE_ONLY);
-                        title = toTitleCase(game.getTitle());
-                        manufacturer = game.getManufacturer();
-                        licensee = game.getLicensee();
-                        locale = game.getLocale() == Cartridge.GameLocale.JAPAN ? "Japan" : "World";
-                        version = game.getGameVersion();
-
-                        // Cache parsed data for next time
-                        ContentValues row = new ContentValues();
-                        row.put("fileName", f.getName());
-                        row.put("title", title);
-                        row.put("manufacturer", manufacturer);
-                        row.put("licensee", licensee);
-                        row.put("locale", locale);
-                        row.put("version", version);
-                        romCache.insert("roms", null, row);
-                    } else {
-                        // Load ROM metadata from cache
-                        c.moveToFirst();
-                        title = c.getString(c.getColumnIndex("title"));
-                        manufacturer = c.getString(c.getColumnIndex("manufacturer"));
-                        licensee = c.getString(c.getColumnIndex("licensee"));
-                        locale = c.getString(c.getColumnIndex("locale"));
-                        version = c.getInt(c.getColumnIndex("version"));
-                    }
-                    roms.add(new RomEntry(f.getAbsolutePath(), title, manufacturer, licensee, locale, version));
+                    roms.add(new RomEntry(f, romCache));
                 } catch (IOException e) {
                     // Likely due to an invalid ROM file
                     System.err.format("Could not load metadata for '%s': %s.\n", f.getName(), e.getMessage());
                 }
-                c.close();
             }
         }
 
+        // Remove old cache entries
+        cleanCache(romDir.listFiles(), romCache);
         romCache.setTransactionSuccessful();
         romCache.endTransaction();
         romCache.close();
@@ -167,19 +118,16 @@ public class LibraryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
-        //setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager)findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        SectionsPagerAdapter spa = new SectionsPagerAdapter(getSupportFragmentManager());
+        ViewPager vp = (ViewPager)findViewById(R.id.container);
+        vp.setAdapter(spa);
 
-        ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(mViewPager);
+        ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(vp);
         roms = new ArrayList<>();
         createAppDirs();
-        loadROMData();
+        loadRomData();
     }
 
     @Override
@@ -207,27 +155,58 @@ public class LibraryActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        public PlaceholderFragment() {
+    /* A list of ROMs with a given sorting */
+    public static class RomListFragment extends Fragment {
+        public enum SortingMode {
+            RECENT,
+            ALPHABETICAL,
+            FAVORITE
         }
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
+        public RomListFragment() {
+        }
+
+        public static RomListFragment newInstance(ArrayList<RomEntry> romList, SortingMode mode) {
+            RomListFragment fragment = new RomListFragment();
             Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            switch (mode) {
+                case RECENT: {
+                    // Sort by last played date
+                    ArrayList<RomEntry> copy = new ArrayList<>(romList);
+                    Collections.sort(copy, new Comparator<RomEntry>() {
+                        @Override
+                        public int compare(RomEntry o1, RomEntry o2) {
+                            return o1.getLastPlayed().compareTo(o2.getLastPlayed());
+                        }
+                    });
+                    romList = copy;
+                    break;
+                }
+                case ALPHABETICAL: {
+                    // Sort by game title
+                    ArrayList<RomEntry> copy = new ArrayList<>(romList);
+                    Collections.sort(copy, new Comparator<RomEntry>() {
+                        @Override
+                        public int compare(RomEntry o1, RomEntry o2) {
+                            return o1.getTitle().compareToIgnoreCase(o2.getTitle());
+                        }
+                    });
+                    romList = copy;
+                    break;
+                }
+
+                case FAVORITE: {
+                    // Filter favorites
+                    ArrayList<RomEntry> tmp = new ArrayList<>();
+                    for (RomEntry r : romList) {
+                        if (r.isFavorite())
+                            tmp.add(r);
+                    }
+                    romList = tmp;
+                    break;
+                }
+            }
+            args.putParcelableArrayList("roms", romList);
             fragment.setArguments(args);
             return fragment;
         }
@@ -235,9 +214,21 @@ public class LibraryActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+            // Populate list with ROM entries
             View rootView = inflater.inflate(R.layout.fragment_library, container, false);
-            //TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            //textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            ArrayList<RomEntry> romList = getArguments().getParcelableArrayList("roms");
+            ListView listView = (ListView) rootView.findViewById(R.id.library_list);
+            listView.setAdapter(new RomListAdapter(getContext(), romList));
+            /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Intent i = new Intent(inflater.getContext(), ControllerScreen.class);
+                    Bundle b = new Bundle();
+                    b.putString("ROM_PATH", romList.get(position).getPath());
+                    i.putExtras(b);
+                    startActivity(i);
+                }
+            });*/
             return rootView;
         }
     }
@@ -255,9 +246,19 @@ public class LibraryActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            // Instantiate the fragment for the given page
+            RomListFragment.SortingMode sm;
+            switch (position) {
+                case 0:
+                    sm = RomListFragment.SortingMode.RECENT;
+                    break;
+                case 1:
+                    sm = RomListFragment.SortingMode.FAVORITE;
+                    break;
+                default:
+                    sm = RomListFragment.SortingMode.ALPHABETICAL;
+            }
+            return RomListFragment.newInstance(roms, sm);
         }
 
         @Override
@@ -270,11 +271,11 @@ public class LibraryActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "SECTION 1";
+                    return "Recent";
                 case 1:
-                    return "SECTION 2";
+                    return "Favorite";
                 case 2:
-                    return "SECTION 3";
+                    return "All";
             }
             return null;
         }

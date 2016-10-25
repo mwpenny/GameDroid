@@ -1,15 +1,10 @@
 <resources>
 
      <!-- Base Theme -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-    </style>
-
-    <!-- Custom Action Bar Style -->
-    <style name="SecondActionBar" parent="@style/Widget.AppCompat.Light.ActionBar">
-
     </style>
 
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
@@ -18,12 +13,7 @@
 
     <!-- Main Screen Theme -->
     <style name="MainScreen" parent="AppTheme">
-        <item name="actionBarStyle">@style/SecondActionBar</item>
-    </style>
-
-    <!-- Second Screen Theme -->
-    <style name="SecondScreen" parent="AppTheme">
-        <item name="actionBarStyle">@style/SecondActionBar</item>
+        <item name="actionBarStyle">@style/AppTheme.NoActionBar</item>
     </style>
 
     <!-- Controller Screen -->

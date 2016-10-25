@@ -4,11 +4,16 @@
     <string name="action_search">Search</string>
     <string name="section_format">Hello World from section: %1$d</string>
 
-    <!-- UI Strings -->
+    <!-- UI strings -->
     <string name="app_title">GameDroid</string>
     <string name="app_header">GameDroid Emulator</string>
     <string name="start">START</string>
 
+    <string name="rom_date_format">"Last played: %s"</string>
+    <string name="dialog_direrror_title">Error accessing file system</string>
+    <string name="dialog_direrror_message">GameDroid was unable to access your device\'s file system and must exit</string>
+
+    <!-- Internal strings -->
     <string name="path_roms">GameDroid/ROMs</string>
     <string name="cache_schema">
         CREATE TABLE IF NOT EXISTS roms (
@@ -18,9 +23,7 @@
             licensee	    TEXT,
             locale		    TEXT,
             version		    INT
-        );
+        )
     </string>
 
-    <string name="dialog_direrror_title">Error accessing file system</string>
-    <string name="dialog_direrror_message">GameDroid was unable to access your device\'s file system and must exit</string>
 </resources>
