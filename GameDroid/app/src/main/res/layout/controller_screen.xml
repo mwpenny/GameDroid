@@ -12,12 +12,22 @@
     android:orientation="vertical"
     android:background="@color/background_color">
 
+    <!-- Old Placeholder
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/game_screen"
         android:text="This is where the screen will be...."
         android:gravity="center"
+        android:layout_weight="1"/>
+    -->
+
+    <!-- OpenGL Display Area -->
+    <creativename.gamedroid.ui.GLHandler
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:id="@+id/gl_drawing_surface"
+        android:layout_marginBottom="@dimen/fab_margin"
         android:layout_weight="1"/>
 
     <!-- A controller using the controller_layout XML layout is added here -->

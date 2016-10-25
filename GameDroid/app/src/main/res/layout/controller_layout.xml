@@ -5,10 +5,6 @@
     android:id="@+id/controller_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingLeft="@dimen/button_gap"
-    android:paddingRight="@dimen/button_gap"
-    android:paddingBottom="@dimen/button_gap"
-    android:paddingTop="@dimen/button_gap"
     android:orientation="horizontal"
     android:background="@color/background_color">
 
@@ -17,8 +13,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_gravity="center"
-        android:paddingRight="10dp">
+        android:layout_gravity="left"
+        android:gravity="center"
+        android:paddingRight="@dimen/button_gap">
 
     <!-- Left Arrow -->
     <ImageButton
@@ -73,7 +70,9 @@
         android:layout_height="match_parent"
         android:orientation="horizontal"
         android:layout_gravity="center"
-        android:paddingRight="10dp">
+        android:gravity="bottom"
+        android:paddingLeft="@dimen/button_gap"
+        android:paddingRight="@dimen/button_gap">
 
         <!-- Select Button -->
         <ImageButton
@@ -102,7 +101,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_gravity="right"
+        android:paddingRight="@dimen/button_gap">
 
         <!-- A Button -->
         <ImageButton

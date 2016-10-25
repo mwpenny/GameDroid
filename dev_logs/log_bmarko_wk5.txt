@@ -1,0 +1,11 @@
+=======================================
+Time    :   Task
+---------------------------------------
+2 hours :   Researching OpenGL techniques
+3 hours :   Adding OpenGL Java classes and helpers
+1 hour  :   Added OpenGL to layout file
+=======================================
+Total time
+---------------------------------------
+6 hours
+=======================================
