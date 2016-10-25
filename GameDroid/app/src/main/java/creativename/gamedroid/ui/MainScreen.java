@@ -20,8 +20,8 @@ public class MainScreen extends AppCompatActivity
     public void start_button(View currView)
     {
         System.out.println("Inside start_button()");
-        Intent next_page = new Intent(getApplicationContext(), SecondScreen.class);
-        startActivity(next_page);
+        //Intent next_page = new Intent(getApplicationContext(), SecondScreen.class);
+        //startActivity(next_page);
     }
 
     public void settings_button(View currView)
