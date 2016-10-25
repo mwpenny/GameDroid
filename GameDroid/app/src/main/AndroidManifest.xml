@@ -20,33 +20,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.MainScreen" android:theme="@style/AppTheme"></activity>
-        <activity android:name=".ui.LibraryActivity" android:theme="@style/AppTheme"></activity>
-
-        <activity android:name=".ui.ControllerScreen" android:theme="@style/AppTheme"></activity>
-
-    </application>
-
-    <!-- Default Manifest Build
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_header"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-
-        <activity android:name="ui.MainScreen" android:theme="@style/AppTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
-
-        <activity android:name="ui.SecondScreen" android:theme="@style/AppTheme"></activity>
-
-        <activity android:name="ui.ControllerScreen" android:theme="@style/AppTheme"></activity>
+        <activity android:name=".ui.MainScreen"/>
+        <activity android:name=".ui.LibraryActivity"/>
+        <activity android:name=".ui.ControllerScreen"/>
 
     </application>
-     -->
-
 </manifest>

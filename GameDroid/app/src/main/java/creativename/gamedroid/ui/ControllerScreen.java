@@ -1,6 +1,7 @@
 package creativename.gamedroid.ui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.opengl.GLSurfaceView;
@@ -16,6 +17,14 @@ public class ControllerScreen extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.controller_screen);
+        //getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        String romPath = getIntent().getExtras().getString("rom");
+        new AlertDialog.Builder(this)
+                .setTitle("ROM path:")
+                .setMessage(romPath)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     /* Button Handlers for the Controller displayed within the

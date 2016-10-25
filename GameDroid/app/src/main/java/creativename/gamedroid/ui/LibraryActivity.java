@@ -9,6 +9,7 @@ import java.util.Comparator;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import creativename.gamedroid.R;
@@ -212,23 +214,23 @@ public class LibraryActivity extends AppCompatActivity {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+        public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             // Populate list with ROM entries
             View rootView = inflater.inflate(R.layout.fragment_library, container, false);
-            ArrayList<RomEntry> romList = getArguments().getParcelableArrayList("roms");
+            final ArrayList<RomEntry> romList = getArguments().getParcelableArrayList("roms");
             ListView listView = (ListView) rootView.findViewById(R.id.library_list);
             listView.setAdapter(new RomListAdapter(getContext(), romList));
-            /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     Intent i = new Intent(inflater.getContext(), ControllerScreen.class);
                     Bundle b = new Bundle();
-                    b.putString("ROM_PATH", romList.get(position).getPath());
+                    b.putString("rom", romList.get(position).getPath());
                     i.putExtras(b);
                     startActivity(i);
                 }
-            });*/
+            });
             return rootView;
         }
     }
