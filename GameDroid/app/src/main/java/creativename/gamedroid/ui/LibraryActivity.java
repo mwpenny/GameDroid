@@ -1,9 +1,18 @@
 package creativename.gamedroid.ui;
 
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.TabLayout;
@@ -19,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import creativename.gamedroid.R;
+import creativename.gamedroid.core.Cartridge;
 
 public class LibraryActivity extends AppCompatActivity {
 
@@ -37,10 +47,11 @@ public class LibraryActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    ArrayList<RomEntry> roms;
+
     private void createAppDirs() {
         // Check filesystem access and presence of GameDroid's directories
-        String path = getString(R.string.dir_base) + '/' + getString(R.string.dir_roms);
-        File f = new File(Environment.getExternalStorageDirectory(), path);
+        File f = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || (!f.exists() && !f.mkdirs())) {
             // Could not create application directories! Can't continue!
             new AlertDialog.Builder(this)
@@ -64,6 +75,94 @@ public class LibraryActivity extends AppCompatActivity {
         }
     }
 
+    /* Converts a string to title case (e.g., "pokemon gold" => "Pokemon Gold") */
+    private static String toTitleCase(String input) {
+        StringBuilder title = new StringBuilder();
+        boolean nextWord = true;
+        input = input.replace('_', ' ');
+
+        for (char c : input.toCharArray()) {
+            if (nextWord) {
+                c = Character.toUpperCase(c);
+                nextWord = false;
+            } else if (Character.isSpaceChar(c)) {
+                nextWord = true;
+            } else {
+                c = Character.toLowerCase(c);
+            }
+            title.append(c);
+        }
+        return title.toString();
+    }
+
+    /* Loads game ROM metadata from the cache (database; if available) or the ROM files themselves */
+    private void loadROMData() {
+        File romDir = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
+        SQLiteDatabase romCache = new SQLiteOpenHelper(this, "romcache.db", null, 1) {
+            @Override
+            public void onCreate(SQLiteDatabase db) {
+                db.execSQL(getString(R.string.cache_schema));
+            }
+
+            @Override
+            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
+        }.getWritableDatabase();
+
+        romCache.beginTransaction();
+        romCache.execSQL(getString(R.string.cache_schema));
+
+        // Search ROM directory
+        for (File f : romDir.listFiles()) {
+            String ext = f.getName().substring(f.getName().lastIndexOf('.')).toLowerCase();
+            if (f.isFile() && (ext.equals(".gb") || ext.equals(".gbc"))) {
+                // Search cache for metadata (use filename as key)
+                Cursor c = romCache.query("roms", null, "fileName=?", new String[]{f.getName()},
+                                          null, null, null);
+                String title, manufacturer, licensee, locale;
+                int version;
+
+                try {
+                    if (c.getCount() == 0) {
+                        // ROM metadata is not in the cache: parse file for it
+                        Cartridge game = new Cartridge(f.getAbsolutePath(), Cartridge.LoadMode.PARSE_ONLY);
+                        title = toTitleCase(game.getTitle());
+                        manufacturer = game.getManufacturer();
+                        licensee = game.getLicensee();
+                        locale = game.getLocale() == Cartridge.GameLocale.JAPAN ? "Japan" : "World";
+                        version = game.getGameVersion();
+
+                        // Cache parsed data for next time
+                        ContentValues row = new ContentValues();
+                        row.put("fileName", f.getName());
+                        row.put("title", title);
+                        row.put("manufacturer", manufacturer);
+                        row.put("licensee", licensee);
+                        row.put("locale", locale);
+                        row.put("version", version);
+                        romCache.insert("roms", null, row);
+                    } else {
+                        // Load ROM metadata from cache
+                        c.moveToFirst();
+                        title = c.getString(c.getColumnIndex("title"));
+                        manufacturer = c.getString(c.getColumnIndex("manufacturer"));
+                        licensee = c.getString(c.getColumnIndex("licensee"));
+                        locale = c.getString(c.getColumnIndex("locale"));
+                        version = c.getInt(c.getColumnIndex("version"));
+                    }
+                    roms.add(new RomEntry(f.getAbsolutePath(), title, manufacturer, licensee, locale, version));
+                } catch (IOException e) {
+                    // Likely due to an invalid ROM file
+                    System.err.format("Could not load metadata for '%s': %s.\n", f.getName(), e.getMessage());
+                }
+                c.close();
+            }
+        }
+
+        romCache.setTransactionSuccessful();
+        romCache.endTransaction();
+        romCache.close();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,7 +177,9 @@ public class LibraryActivity extends AppCompatActivity {
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(mViewPager);
+        roms = new ArrayList<>();
         createAppDirs();
+        loadROMData();
     }
 
     @Override

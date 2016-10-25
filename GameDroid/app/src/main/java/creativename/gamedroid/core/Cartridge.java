@@ -21,6 +21,11 @@ public class Cartridge {
         WORLD
     }
 
+    public enum LoadMode {
+        PARSE_ONLY,
+        LOAD_ROM
+    }
+
     // Nintendo logo bitmap (verified by boot procedure)
     // (and why doesn't Java have unsigned types!?!)
     private static final byte[] LOGO_BITMAP = {
@@ -125,7 +130,7 @@ public class Cartridge {
     private int ramSize;
     private GameLocale locale;
     private byte gameVersion;
-    public final MBC mbc;
+    public MBC mbc;
 
     // Getters for public data
     public String getTitle() { return title; }
@@ -178,6 +183,8 @@ public class Cartridge {
             }
         }
 
+        title = title.replace("\0", "");
+
         // $014B - Old Licensee Code (Value of "33" -> use new licensee code at $0144-$0145)
         if (bank0[0x14B] == 0x33)
             licensee = LICENSEES_NEW.get(new String(Arrays.copyOfRange(bank0, 0x144, 0x146), "ASCII"));
@@ -185,7 +192,7 @@ public class Cartridge {
             licensee = LICENSEES_OLD.get(bank0[0x14B]);
 
         supportsSGB = (bank0[0x146] == 3);
-        cartType = bank0[0x147];  // TODO: make this field more granular (i.e., hasBattery, hasTimer, MBCType)
+        cartType = bank0[0x147];
 
         // $0149 - ROM size
         romSize = (32 << bank0[0x148]) * 1024;
@@ -200,8 +207,7 @@ public class Cartridge {
         gameVersion = bank0[0x14C];
     }
 
-    public Cartridge(String path) throws IOException {
-        // TODO: parse header in another function (for displaying info in menus)?
+    public Cartridge(String path, LoadMode mode) throws IOException {
         byte[] buf = new byte[0x4000];
         File f = new File(path);
         FileInputStream in = new FileInputStream(f);
@@ -223,8 +229,8 @@ public class Cartridge {
             if (f.length() != romSize)
                 throw new IOException("ROM size mismatch (expected: " + romSize +
                                       ", actual: " + f.length() + ")");
-            else {
-                // Good to go! Load ROM
+            else if (mode == LoadMode.LOAD_ROM) {
+                // Good to go! Continue and load ROM
                 byte rom[] = new byte[romSize];
                 boolean hasBattery = (cartType == 0x03 || cartType == 0x06 || cartType == 0x09 ||
                                       cartType == 0x0D || cartType == 0x0F || cartType == 0x10 ||

@@ -9,8 +9,17 @@
     <string name="app_header">GameDroid Emulator</string>
     <string name="start">START</string>
 
-    <string name="dir_base">GameDroid</string>
-    <string name="dir_roms">ROMs</string>
+    <string name="path_roms">GameDroid/ROMs</string>
+    <string name="cache_schema">
+        CREATE TABLE IF NOT EXISTS roms (
+            fileName	    TEXT PRIMARY KEY NOT NULL,
+            title		    TEXT,
+            manufacturer	TEXT,
+            licensee	    TEXT,
+            locale		    TEXT,
+            version		    INT
+        );
+    </string>
 
     <string name="dialog_direrror_title">Error accessing file system</string>
     <string name="dialog_direrror_message">GameDroid was unable to access your device\'s file system and must exit</string>
