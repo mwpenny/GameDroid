@@ -50,6 +50,10 @@ public class GameBoy {
         gamepad = new Controller(this);
         mmu = new MMU(this);
         stopped = false;
+        this.renderTarget = new RenderTarget() {
+            @Override
+            public void frameReady(int[] frameBuffer) {}
+        };
         this.runAtLoopEnd = new Runnable() {
             @Override
             public void run() {}

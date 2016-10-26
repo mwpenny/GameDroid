@@ -555,14 +555,10 @@ public class CPU {
         sp.write((char) 0xFFFE);
     }
 
-    public char getRaisedInterrupt() {
-        return gb.mmu.read8((char) 0xFF0F);
-    }
-
     public int execInstruction() {
         if (halted) return 0;
 
-        char raisedInterrupts = getRaisedInterrupt();
+        char raisedInterrupts = gb.mmu.read8((char) 0xFF0F);
         char enabledInterrupts = gb.mmu.read8((char) 0xFFFF);
         byte raisedEnabledInterrupts = (byte) (enabledInterrupts & raisedInterrupts);
 

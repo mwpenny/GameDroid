@@ -138,7 +138,7 @@ public class MMU {
         @Override
         public byte read(char address) {
             System.err.format("Warning: invalid memory read at $%04X\n", (int) address);
-            return (byte) 0x00;  // mimic actual hardware
+            return (byte) 0xFF;  // mimic actual hardware
         }
 
         @Override

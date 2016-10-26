@@ -1,5 +1,6 @@
 package creativename.gamedroid.core;
 
+/* Implementors support graphics output */
 public interface RenderTarget {
-    public void frameReady(int[] frameBuffer);
+    void frameReady(int[] frameBuffer);
 }

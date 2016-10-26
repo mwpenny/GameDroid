@@ -28,20 +28,19 @@ public class ControllerScreen extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.controller_screen);
-        //getActionBar().setDisplayHomeAsUpEnabled(true);
 
         String romPath = getIntent().getExtras().getString("rom");
         SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
         final GameboyScreen cb = new GameboyScreen();
         final GameBoy gb = new GameBoy(cb);
-        AssetFileDescriptor testRom = getResources().openRawResourceFd(R.raw.tet);
         try {
             gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
         } catch (IOException e) {
+            // TODO: handle exception
             e.printStackTrace();
         }
         screen.getHolder().addCallback(cb);
-        // start simulating once surface is created
+        // Start simulating once surface is created
         screen.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {

@@ -1,22 +1,11 @@
 package creativename.gamedroid.ui;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -38,41 +27,20 @@ import creativename.gamedroid.R;
 public class LibraryActivity extends AppCompatActivity {
     ArrayList<RomEntry> romList;
 
-    private void createAppDirs() {
-        // Check filesystem access and presence of GameDroid's directories
-        File f = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || (!f.exists() && !f.mkdirs())) {
-            // Could not create application directories! Can't continue!
-            new AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.dialog_direrror_title))
-                    .setMessage(getString(R.string.dialog_direrror_message))
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(final DialogInterface dialog, final int which) {
-                            finish();
-                            dialog.dismiss();
-                        }
-                    })
-                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            finish();
-                        }
-                    })
-                    .setIconAttribute(android.R.attr.alertDialogIcon)
-                    .show();
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Use splash screen image while the ROM list is loaded
-        //getWindow().setBackgroundDrawableResource(R.drawable.background_splash);
+        setContentView(R.layout.activity_library);
+        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
-        createAppDirs();
-        new FindRomsTask(this).execute();
+        romList = getIntent().getExtras().getParcelableArrayList("roms");
+
+        LibraryActivity.SectionsPagerAdapter spa = new LibraryActivity.SectionsPagerAdapter(getSupportFragmentManager());
+        ViewPager vp = (ViewPager)findViewById(R.id.container);
+        vp.setAdapter(spa);
+
+        ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(vp);
     }
 
     @Override
@@ -97,109 +65,6 @@ public class LibraryActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    /* Async task for loading ROM metadata from cache or disk */
-    private class FindRomsTask extends AsyncTask<Void, Void, ArrayList<RomEntry>> {
-        private Context context;
-        private ProgressDialog pd;
-
-        public FindRomsTask(Context context) {
-            this.context = context;
-        }
-
-        /* Removes ROM metadata from the cache for files that are no longer present */
-        private void cleanCache(File[] files, SQLiteDatabase cache) {
-            cache.beginTransaction();
-            cache.execSQL("CREATE TEMP TABLE IF NOT EXISTS foundFiles (fileName TEXT PRIMARY KEY NOT NULL)");
-
-            ContentValues row = new ContentValues();
-            if (files.length == 0) {
-                cache.execSQL("DELETE FROM roms");
-            } else {
-                for (File f : files) {
-                    row.put("fileName", f.getName());
-                    if (cache.insert("foundFiles", null, row) == -1) {
-                        // Don't compromise ROM cache if construction of foundFiles table fails
-                        cache.endTransaction();
-                        return;
-                    }
-                }
-                cache.execSQL("DELETE FROM roms WHERE fileName NOT IN (SELECT fileName from foundFiles)");
-            }
-
-            cache.execSQL("DROP TABLE IF EXISTS foundFiles");
-            cache.setTransactionSuccessful();
-            cache.endTransaction();
-        }
-
-        @Override
-        /* Loads game ROM metadata from the cache (database; if available) or the ROM files themselves */
-        protected ArrayList<RomEntry> doInBackground(Void... params) {
-            ArrayList<RomEntry> romList = new ArrayList<>();
-
-            File romDir = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
-            SQLiteDatabase romCache = new SQLiteOpenHelper(context, "romcache.db", null, 1) {
-                @Override
-                public void onCreate(SQLiteDatabase db) {
-                    db.execSQL(getString(R.string.cache_schema));
-                }
-
-                @Override
-                public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
-            }.getWritableDatabase();
-            romCache.beginTransaction();
-
-            // Search ROM directory for GameBoy and GameBoy color games
-            for (File f : romDir.listFiles()) {
-                String ext = f.getName().substring(f.getName().lastIndexOf('.')).toLowerCase();
-                if (f.isFile() && (ext.equals(".gb") || ext.equals(".gbc"))) {
-                    try {
-                        romList.add(new RomEntry(f, romCache));
-                    } catch (IOException e) {
-                        // Likely due to an invalid ROM file
-                        System.err.format("Could not load metadata for '%s': %s.\n", f.getName(), e.getMessage());
-                    }
-                }
-            }
-
-            // Remove old cache entries
-            cleanCache(romDir.listFiles(), romCache);
-            romCache.setTransactionSuccessful();
-            romCache.endTransaction();
-            romCache.close();
-            return romList;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            pd = ProgressDialog.show(context, null, getString(R.string.dialog_romcache_message), true);
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<RomEntry> roms) {
-            pd.dismiss();
-            romList = roms;
-            setContentView(R.layout.activity_library);
-            setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
-
-            SectionsPagerAdapter spa = new SectionsPagerAdapter(getSupportFragmentManager());
-            ViewPager vp = (ViewPager)findViewById(R.id.container);
-            vp.setAdapter(spa);
-
-            ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(vp);
-
-            // No ROMs were found
-            if (romList.size() == 0) {
-                String path = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms)).getAbsolutePath();
-                new AlertDialog.Builder(context)
-                        .setTitle(getString(R.string.dialog_noroms_title))
-                        .setMessage(String.format(getString(R.string.dialog_noroms_message), path))
-                        .setPositiveButton(android.R.string.ok, null)
-                        .setIconAttribute(android.R.attr.alertDialogIcon)
-                        .show();
-            }
-        }
     }
 
 
