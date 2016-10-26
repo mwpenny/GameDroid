@@ -114,17 +114,21 @@ public class LibraryActivity extends AppCompatActivity {
             cache.execSQL("CREATE TEMP TABLE IF NOT EXISTS foundFiles (fileName TEXT PRIMARY KEY NOT NULL)");
 
             ContentValues row = new ContentValues();
-            for (File f : files) {
-                row.put("fileName", f.getName());
-                if (cache.insert("foundFiles", null, row) == -1) {
-                    // Don't compromise ROM cache if construction of foundFiles table fails
-                    cache.endTransaction();
-                    return;
+            if (files.length == 0) {
+                cache.execSQL("DELETE FROM roms");
+            } else {
+                for (File f : files) {
+                    row.put("fileName", f.getName());
+                    if (cache.insert("foundFiles", null, row) == -1) {
+                        // Don't compromise ROM cache if construction of foundFiles table fails
+                        cache.endTransaction();
+                        return;
+                    }
                 }
+                cache.execSQL("DELETE FROM roms WHERE fileName NOT IN (SELECT fileName from foundFiles)");
             }
 
-            cache.rawQuery("DELETE FROM roms WHERE fileName NOT IN (SELECT fileName from foundFiles)", null);
-            cache.rawQuery("DROP TABLE IF EXISTS foundFiles", null);
+            cache.execSQL("DROP TABLE IF EXISTS foundFiles");
             cache.setTransactionSuccessful();
             cache.endTransaction();
         }
