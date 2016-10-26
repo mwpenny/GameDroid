@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,13 +20,29 @@ import creativename.gamedroid.R;
 
 /* Splash screen for performing app initialization and loading ROM metadata */
 public class SplashActivity extends AppCompatActivity {
+    AlertDialog fsWarning;
+    FindRomsTask findRomsTask;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Init
-        if (createAppDirs())
-            new FindRomsTask(this).execute();
+        if (createAppDirs()) {
+            findRomsTask = new FindRomsTask();
+            findRomsTask.execute();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (findRomsTask != null) {
+            findRomsTask.cancel(true);
+            findRomsTask.destroyProgressDialog();
+        }
+        if (fsWarning != null && fsWarning.isShowing())
+            fsWarning.dismiss();
     }
 
     private boolean createAppDirs() {
@@ -35,36 +50,37 @@ public class SplashActivity extends AppCompatActivity {
         File f = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || (!f.exists() && !f.mkdirs())) {
             // Could not create application directories! Can't continue!
-            new AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.dialog_direrror_title))
-                    .setMessage(getString(R.string.dialog_direrror_message))
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(final DialogInterface dialog, final int which) {
-                            finish();
-                            dialog.dismiss();
-                        }
-                    })
-                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            finish();
-                        }
-                    })
-                    .setIconAttribute(android.R.attr.alertDialogIcon)
-                    .show();
+            fsWarning = new AlertDialog.Builder(this)
+                            .setTitle(getString(R.string.dialog_direrror_title))
+                            .setMessage(getString(R.string.dialog_direrror_message))
+                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog, final int which) {
+                                    finish();
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialog) {
+                                    finish();
+                                }
+                            })
+                            .setIconAttribute(android.R.attr.alertDialogIcon)
+                            .show();
             return false;
         }
         return true;
     }
 
     /* Async task for loading ROM metadata from cache or disk */
-    private static class FindRomsTask extends AsyncTask<Void, Void, ArrayList<RomEntry>> {
-        private Context context;
+    private class FindRomsTask extends AsyncTask<Void, Void, ArrayList<RomEntry>> {
         private ProgressDialog pd;
 
-        FindRomsTask(Context context) {
-            this.context = context;
+        public void destroyProgressDialog() {
+            if (pd != null && pd.isShowing())
+                pd.dismiss();
+            pd = null;
         }
 
         /* Removes ROM metadata from the cache for files that are no longer present */
@@ -97,11 +113,11 @@ public class SplashActivity extends AppCompatActivity {
         protected ArrayList<RomEntry> doInBackground(Void... params) {
             ArrayList<RomEntry> romList = new ArrayList<>();
 
-            File romDir = new File(Environment.getExternalStorageDirectory(), context.getString(R.string.path_roms));
-            SQLiteDatabase romCache = new SQLiteOpenHelper(context, "romcache.db", null, 1) {
+            File romDir = new File(Environment.getExternalStorageDirectory(), getApplicationContext().getString(R.string.path_roms));
+            SQLiteDatabase romCache = new SQLiteOpenHelper(getApplicationContext(), "romcache.db", null, 1) {
                 @Override
                 public void onCreate(SQLiteDatabase db) {
-                    db.execSQL(context.getString(R.string.cache_schema));
+                    db.execSQL(getApplicationContext().getString(R.string.cache_schema));
                 }
 
                 @Override
@@ -132,19 +148,18 @@ public class SplashActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            pd = ProgressDialog.show(context, null, context.getString(R.string.dialog_romcache_message), true);
+            pd = ProgressDialog.show(SplashActivity.this, null, getApplicationContext().getString(R.string.dialog_romcache_message), true);
         }
 
         @Override
         protected void onPostExecute(ArrayList<RomEntry> roms) {
-            pd.dismiss();
-
-            Intent intent = new Intent(context, LibraryActivity.class);
+            destroyProgressDialog();
+            Intent intent = new Intent(SplashActivity.this, LibraryActivity.class);
             Bundle b = new Bundle();
             b.putParcelableArrayList("roms", roms);
             intent.putExtras(b);
-            context.startActivity(intent);
-            ((AppCompatActivity)context).finish();  // So user can't return to splash screen
+            SplashActivity.this.startActivity(intent);
+            SplashActivity.this.finish();  // So user can't return to splash screen
         }
     }
 }

@@ -29,6 +29,7 @@ import creativename.gamedroid.R;
 /* Main game ROM library view */
 public class LibraryActivity extends AppCompatActivity {
     ArrayList<RomEntry> romList;
+    AlertDialog romWarning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,13 +49,20 @@ public class LibraryActivity extends AppCompatActivity {
         // No ROMs were found. Instruct user on how to add them
         if (romList.size() == 0) {
             String path = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms)).getAbsolutePath();
-            new AlertDialog.Builder(this)
+            romWarning = new AlertDialog.Builder(this)
                     .setTitle(getString(R.string.dialog_noroms_title))
                     .setMessage(String.format(getString(R.string.dialog_noroms_message), path))
                     .setPositiveButton(android.R.string.ok, null)
                     .setIconAttribute(android.R.attr.alertDialogIcon)
                     .show();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (romWarning != null && romWarning.isShowing())
+            romWarning.dismiss();
     }
 
     @Override
