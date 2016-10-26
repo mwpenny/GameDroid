@@ -12,6 +12,8 @@
     <string name="dialog_direrror_title">Error accessing file system</string>
     <string name="dialog_direrror_message">GameDroid was unable to access your device\'s file system and must exit</string>
     <string name="dialog_romcache_message">Searching for ROMs...</string>
+    <string name="dialog_noroms_title">No game ROM files found</string>
+    <string name="dialog_noroms_message">GameDroid was unable to locate any ROM (.gb/.gbc) files. Move your ROMs to %s</string>
 
     <string name="rom_date_format">"Last played: %s"</string>
 

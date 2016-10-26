@@ -184,6 +184,17 @@ public class LibraryActivity extends AppCompatActivity {
             vp.setAdapter(spa);
 
             ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(vp);
+
+            // No ROMs were found
+            if (romList.size() == 0) {
+                String path = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms)).getAbsolutePath();
+                new AlertDialog.Builder(context)
+                        .setTitle(getString(R.string.dialog_noroms_title))
+                        .setMessage(String.format(getString(R.string.dialog_noroms_message), path))
+                        .setPositiveButton(android.R.string.ok, null)
+                        .setIconAttribute(android.R.attr.alertDialogIcon)
+                        .show();
+            }
         }
     }
 
