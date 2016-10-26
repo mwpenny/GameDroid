@@ -10,7 +10,8 @@
     android:paddingBottom="16dp"
     android:paddingTop="16dp"
     android:orientation="vertical"
-    android:background="@color/background_color">
+    android:background="@color/background_color"
+    android:weightSum="1">
 
     <!-- Old Placeholder
     <TextView
@@ -22,15 +23,13 @@
         android:layout_weight="1"/>
     -->
 
-    <!-- OpenGL Display Area -->
-    <creativename.gamedroid.ui.GLHandler
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:id="@+id/gl_drawing_surface"
-        android:layout_marginBottom="@dimen/fab_margin"
-        android:layout_weight="1"/>
-
     <!-- A controller using the controller_layout XML layout is added here -->
+    <SurfaceView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/gbscreen"
+        android:layout_weight="0.90" />
+
     <include android:id="@+id/controller_layout" layout="@layout/controller_layout"/>
 
 </LinearLayout>

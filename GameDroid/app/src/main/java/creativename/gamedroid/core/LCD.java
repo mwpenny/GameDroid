@@ -294,8 +294,10 @@ public class LCD implements MemoryMappable {
             scanline.data = (byte)((scanline.data + 1) % 154);
 
             // Did rendering just enter VBlank?
-            if (scanline.data == (byte)144)
+            if (scanline.data == (byte)144) {
                 setScreenState(ScreenState.VBLANK);
+                gb.renderTarget.frameReady(framebuffer);
+            }
 
             if (scanlineCheckEnabled && scanline.data == cmpScanline.data)
                 gb.cpu.raiseInterrupt(CPU.Interrupt.LCD);

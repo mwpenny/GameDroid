@@ -38,6 +38,8 @@ public class GameBoy {
     public boolean stopped;
     public Timer timer;
     public Divider divider;
+    public RenderTarget renderTarget;
+    private Runnable runAtLoopEnd;
 
     public GameBoy() {
         cartridge = null;  // For now
@@ -48,6 +50,20 @@ public class GameBoy {
         gamepad = new Controller(this);
         mmu = new MMU(this);
         stopped = false;
+        this.runAtLoopEnd = new Runnable() {
+            @Override
+            public void run() {}
+        };
+    }
+
+    public GameBoy(RenderTarget target) {
+        this();
+        this.renderTarget = target;
+    }
+
+    public GameBoy(RenderTarget target, Runnable runAtLoopEnd) {
+        this(target);
+        this.runAtLoopEnd = runAtLoopEnd;
     }
 
     public void run() {
@@ -65,8 +81,11 @@ public class GameBoy {
                         cpu.raiseInterrupt(CPU.Interrupt.TIMER);
                 }
                 this.divider.notifyCyclesPassed(cyclesUsed);
+
                 for (int i = 0; i < cyclesUsed; ++i)
                     lcd.tick();
+
+                runAtLoopEnd.run();
             }
         }
     }

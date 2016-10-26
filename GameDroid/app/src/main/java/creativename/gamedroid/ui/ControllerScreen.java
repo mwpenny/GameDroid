@@ -1,13 +1,24 @@
 package creativename.gamedroid.ui;
 
 import android.app.Activity;
+
 import android.app.AlertDialog;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 
+import java.io.IOException;
+
 import creativename.gamedroid.R;
+import creativename.gamedroid.core.Cartridge;
+import creativename.gamedroid.core.GameBoy;
 
 public class ControllerScreen extends Activity
 {
@@ -20,11 +31,34 @@ public class ControllerScreen extends Activity
         //getActionBar().setDisplayHomeAsUpEnabled(true);
 
         String romPath = getIntent().getExtras().getString("rom");
-        new AlertDialog.Builder(this)
-                .setTitle("ROM path:")
-                .setMessage(romPath)
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
+        SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
+        final GameboyScreen cb = new GameboyScreen();
+        final GameBoy gb = new GameBoy(cb);
+        AssetFileDescriptor testRom = getResources().openRawResourceFd(R.raw.tet);
+        try {
+            gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        screen.getHolder().addCallback(cb);
+        // start simulating once surface is created
+        screen.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        gb.run();
+                    }
+                }).start();
+                holder.removeCallback(this);
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {}
+        });
     }
 
     /* Button Handlers for the Controller displayed within the
