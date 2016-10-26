@@ -7,11 +7,14 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.TabLayout;
@@ -33,7 +36,7 @@ import creativename.gamedroid.R;
 
 /* Main game ROM library view */
 public class LibraryActivity extends AppCompatActivity {
-    ArrayList<RomEntry> roms;
+    ArrayList<RomEntry> romList;
 
     private void createAppDirs() {
         // Check filesystem access and presence of GameDroid's directories
@@ -61,75 +64,15 @@ public class LibraryActivity extends AppCompatActivity {
         }
     }
 
-    /* Removes ROM metadata from the cache for files that are no longer present */
-    private static void cleanCache(File[] files, SQLiteDatabase cache) {
-        cache.beginTransaction();
-        cache.execSQL("CREATE TEMP TABLE IF NOT EXISTS foundFiles (fileName TEXT PRIMARY KEY NOT NULL)");
-
-        ContentValues row = new ContentValues();
-        for (File f : files) {
-            row.put("fileName", f.getName());
-            if (cache.insert("foundFiles", null, row) == -1) {
-                // Don't compromise ROM cache if construction of foundFiles table fails
-                cache.endTransaction();
-                return;
-            }
-        }
-
-        cache.rawQuery("DELETE FROM roms WHERE fileName NOT IN (SELECT fileName from foundFiles)", null);
-        cache.rawQuery("DROP TABLE IF EXISTS foundFiles", null);
-        cache.setTransactionSuccessful();
-        cache.endTransaction();
-    }
-
-    /* Loads game ROM metadata from the cache (database; if available) or the ROM files themselves */
-    private void loadRomData() {
-        File romDir = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
-        SQLiteDatabase romCache = new SQLiteOpenHelper(this, "romcache.db", null, 1) {
-            @Override
-            public void onCreate(SQLiteDatabase db) {
-                db.execSQL(getString(R.string.cache_schema));
-            }
-
-            @Override
-            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
-        }.getWritableDatabase();
-        romCache.beginTransaction();
-
-        // Search ROM directory for GameBoy and GameBoy color games
-        for (File f : romDir.listFiles()) {
-            String ext = f.getName().substring(f.getName().lastIndexOf('.')).toLowerCase();
-            if (f.isFile() && (ext.equals(".gb") || ext.equals(".gbc"))) {
-                try {
-                    roms.add(new RomEntry(f, romCache));
-                } catch (IOException e) {
-                    // Likely due to an invalid ROM file
-                    System.err.format("Could not load metadata for '%s': %s.\n", f.getName(), e.getMessage());
-                }
-            }
-        }
-
-        // Remove old cache entries
-        cleanCache(romDir.listFiles(), romCache);
-        romCache.setTransactionSuccessful();
-        romCache.endTransaction();
-        romCache.close();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_library);
-        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
-        SectionsPagerAdapter spa = new SectionsPagerAdapter(getSupportFragmentManager());
-        ViewPager vp = (ViewPager)findViewById(R.id.container);
-        vp.setAdapter(spa);
+        // Use splash screen image while the ROM list is loaded
+        //getWindow().setBackgroundDrawableResource(R.drawable.background_splash);
 
-        ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(vp);
-        roms = new ArrayList<>();
         createAppDirs();
-        loadRomData();
+        new FindRomsTask(this).execute();
     }
 
     @Override
@@ -154,6 +97,94 @@ public class LibraryActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /* Async task for loading ROM metadata from cache or disk */
+    private class FindRomsTask extends AsyncTask<Void, Void, ArrayList<RomEntry>> {
+        private Context context;
+        private ProgressDialog pd;
+
+        public FindRomsTask(Context context) {
+            this.context = context;
+        }
+
+        /* Removes ROM metadata from the cache for files that are no longer present */
+        private void cleanCache(File[] files, SQLiteDatabase cache) {
+            cache.beginTransaction();
+            cache.execSQL("CREATE TEMP TABLE IF NOT EXISTS foundFiles (fileName TEXT PRIMARY KEY NOT NULL)");
+
+            ContentValues row = new ContentValues();
+            for (File f : files) {
+                row.put("fileName", f.getName());
+                if (cache.insert("foundFiles", null, row) == -1) {
+                    // Don't compromise ROM cache if construction of foundFiles table fails
+                    cache.endTransaction();
+                    return;
+                }
+            }
+
+            cache.rawQuery("DELETE FROM roms WHERE fileName NOT IN (SELECT fileName from foundFiles)", null);
+            cache.rawQuery("DROP TABLE IF EXISTS foundFiles", null);
+            cache.setTransactionSuccessful();
+            cache.endTransaction();
+        }
+
+        @Override
+        /* Loads game ROM metadata from the cache (database; if available) or the ROM files themselves */
+        protected ArrayList<RomEntry> doInBackground(Void... params) {
+            ArrayList<RomEntry> romList = new ArrayList<>();
+
+            File romDir = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
+            SQLiteDatabase romCache = new SQLiteOpenHelper(context, "romcache.db", null, 1) {
+                @Override
+                public void onCreate(SQLiteDatabase db) {
+                    db.execSQL(getString(R.string.cache_schema));
+                }
+
+                @Override
+                public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
+            }.getWritableDatabase();
+            romCache.beginTransaction();
+
+            // Search ROM directory for GameBoy and GameBoy color games
+            for (File f : romDir.listFiles()) {
+                String ext = f.getName().substring(f.getName().lastIndexOf('.')).toLowerCase();
+                if (f.isFile() && (ext.equals(".gb") || ext.equals(".gbc"))) {
+                    try {
+                        romList.add(new RomEntry(f, romCache));
+                    } catch (IOException e) {
+                        // Likely due to an invalid ROM file
+                        System.err.format("Could not load metadata for '%s': %s.\n", f.getName(), e.getMessage());
+                    }
+                }
+            }
+
+            // Remove old cache entries
+            cleanCache(romDir.listFiles(), romCache);
+            romCache.setTransactionSuccessful();
+            romCache.endTransaction();
+            romCache.close();
+            return romList;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            pd = ProgressDialog.show(context, null, getString(R.string.dialog_romcache_message), true);
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<RomEntry> roms) {
+            pd.dismiss();
+            romList = roms;
+            setContentView(R.layout.activity_library);
+            setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
+
+            SectionsPagerAdapter spa = new SectionsPagerAdapter(getSupportFragmentManager());
+            ViewPager vp = (ViewPager)findViewById(R.id.container);
+            vp.setAdapter(spa);
+
+            ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(vp);
+        }
     }
 
 
@@ -235,13 +266,11 @@ public class LibraryActivity extends AppCompatActivity {
         }
     }
 
-
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -260,7 +289,7 @@ public class LibraryActivity extends AppCompatActivity {
                 default:
                     sm = RomListFragment.SortingMode.ALPHABETICAL;
             }
-            return RomListFragment.newInstance(roms, sm);
+            return RomListFragment.newInstance(romList, sm);
         }
 
         @Override
