@@ -1,6 +1,7 @@
 package creativename.gamedroid.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /* Provides GameBoy graphics data manipulation, processing, and output */
 public class LCD implements MemoryMappable {
@@ -40,6 +41,7 @@ public class LCD implements MemoryMappable {
 
     private LCDControlRegister lcdControl;
     private boolean lcdEnabled;
+    private int delayCycles;             // Counter for when the screen is enabled
     private char windowTileMapOfs;       // i.e., second tile map starts $400 bytes into buffer
     private boolean windowEnabled;
     private char bgTilesetOfs;           // i.e., second tileset starts $800 bytes into buffer
@@ -132,6 +134,7 @@ public class LCD implements MemoryMappable {
     public void reset() {
         // Effective bootrom output
         lcdEnabled = true;
+        delayCycles = 0;
         windowTileMapOfs = 0;
         windowEnabled = false;
         bgTilesetOfs = 0;
@@ -270,8 +273,9 @@ public class LCD implements MemoryMappable {
                    if using the second tile set */
                 int x = (px + (scrollX.data & 0xFF)) % 8;
                 int tileNum = bgTileMaps.data[bgTileMapOfs + ((px + (scrollX.data & 0xFF)) / 8) + (y / 8 * 32)] & 0xFF;
-                if (bgTilesetOfs == 0x800)
+                if (bgTilesetOfs == 0x800) {
                     tileNum = (byte)tileNum + 128;
+                }
 
                 /* Fetch 2-bit palette index from bitplanes for current row of current tile (tiles
                    are 8x8, one row = 2 bytes). Use this value to render the appropriate color */
@@ -280,44 +284,53 @@ public class LCD implements MemoryMappable {
                             ((tileBitmaps.data[bitmapIdx + 1] >>> (6 - x)) & 2);
                 framebuffer[(scanline.data & 0xFF) * 160 + px] = palette[(bgPalette.data >>> (pIdx * 2)) & 3];
             } else {
-                framebuffer[(scanline.data & 0xFF) * 160 + px] = palette[3];
+                framebuffer[(scanline.data & 0xFF) * 160 + px] = palette[0];
             }
         }
     }
 
     public void tick() {
-        // 456 cycles/scanline, 154 scanlines/frame
-        cycle = (char)((cycle + 1) % 456);
-
-        if (cycle == 0) {
-            // Just finished the line. Move to the next one
-            scanline.data = (byte)((scanline.data + 1) % 154);
-
-            // Did rendering just enter VBlank?
-            if (scanline.data == (byte)144) {
-                setScreenState(ScreenState.VBLANK);
-                gb.renderTarget.frameReady(framebuffer);
+        if (lcdEnabled) {
+            // Cycle delay before screen is ready after enabling LCD
+            if (delayCycles == 0) {
+                --delayCycles;
+                return;
             }
 
-            if (scanlineCheckEnabled && scanline.data == cmpScanline.data)
-                gb.cpu.raiseInterrupt(CPU.Interrupt.LCD);
-        }
+            // 456 cycles/scanline, 154 scanlines/frame
+            cycle = (char)((cycle + 1) % 456);
 
-        if ((scanline.data & 0xFF) < 144) {
-            // Rendering is on the visible scanlines (not in VBlank). Transition screen states
-            switch (cycle) {
-                case 0:
-                    setScreenState(ScreenState.OAM_SEARCH);
-                    foundSprites.clear();
-                    discoverSprites();
-                    break;
-                case 80:
-                    setScreenState(ScreenState.DATA_TRANSFER);
-                    renderLine();
-                    break;
-                case 252:
-                    setScreenState(ScreenState.HBLANK);
-                    break;
+            if (cycle == 0) {
+                // Just finished the line. Move to the next one
+                scanline.data = (byte)((scanline.data + 1) % 154);
+
+                // Did rendering just enter VBlank?
+                if (scanline.data == (byte)144) {
+                    setScreenState(ScreenState.VBLANK);
+                    gb.renderTarget.frameReady(framebuffer);
+                }
+
+                if (scanlineCheckEnabled && scanline.data == cmpScanline.data)
+                    gb.cpu.raiseInterrupt(CPU.Interrupt.LCD);
+            }
+
+            if ((scanline.data & 0xFF) < 144) {
+                // Rendering is on the visible scanlines (not in VBlank). Transition screen states
+                switch (cycle) {
+                    case 0:
+                        setScreenState(ScreenState.OAM_SEARCH);
+                        foundSprites.clear();
+                        discoverSprites();
+                        break;
+                    case 80:
+                        setScreenState(ScreenState.DATA_TRANSFER);
+                        renderLine();
+                        //rn();
+                        break;
+                    case 252:
+                        setScreenState(ScreenState.HBLANK);
+                        break;
+                }
             }
         }
     }
@@ -357,6 +370,20 @@ public class LCD implements MemoryMappable {
             tallSpritesEnabled = ((value & 4) != 0);
             spritesEnabled = ((value & 2) != 0);
             bgEnabled = ((value & 1) != 0);
+
+            if (!lcdEnabled) {
+                cycle = 455;
+                scanline.data = (byte)153;
+                screenState = ScreenState.HBLANK;
+                delayCycles = 244;
+                oam.setEnabled(true);
+                tileBitmaps.setEnabled(true);
+                bgTileMaps.setEnabled(true);
+
+                // Blank screen when disabled
+                Arrays.fill(framebuffer, palette[0]);
+                gb.renderTarget.frameReady(framebuffer);
+            }
         }
     }
 
