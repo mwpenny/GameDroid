@@ -27,7 +27,11 @@ public class RomEntry implements Parcelable {
 
     /* Getters */
     public String getPath() { return path; }
-    public String getTitle() { return title; }
+    public String getTitle() {
+        if (!title.isEmpty())
+            return title;
+        return new File(path).getName();
+    }
     public String getManufacturer() { return manufacturer; }
     public String getLicensee() { return licensee; }
     public String getLocale() { return locale; }

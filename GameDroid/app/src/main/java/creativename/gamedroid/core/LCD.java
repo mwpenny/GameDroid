@@ -273,9 +273,8 @@ public class LCD implements MemoryMappable {
                    if using the second tile set */
                 int x = (px + (scrollX.data & 0xFF)) % 8;
                 int tileNum = bgTileMaps.data[bgTileMapOfs + ((px + (scrollX.data & 0xFF)) / 8) + (y / 8 * 32)] & 0xFF;
-                if (bgTilesetOfs == 0x800) {
+                if (bgTilesetOfs == 0x800)
                     tileNum = (byte)tileNum + 128;
-                }
 
                 /* Fetch 2-bit palette index from bitplanes for current row of current tile (tiles
                    are 8x8, one row = 2 bytes). Use this value to render the appropriate color */
@@ -325,7 +324,6 @@ public class LCD implements MemoryMappable {
                     case 80:
                         setScreenState(ScreenState.DATA_TRANSFER);
                         renderLine();
-                        //rn();
                         break;
                     case 252:
                         setScreenState(ScreenState.HBLANK);
