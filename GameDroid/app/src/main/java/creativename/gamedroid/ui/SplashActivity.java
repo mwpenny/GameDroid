@@ -26,11 +26,11 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Init
-        createAppDirs();
-        new FindRomsTask(this).execute();
+        if (createAppDirs())
+            new FindRomsTask(this).execute();
     }
 
-    private void createAppDirs() {
+    private boolean createAppDirs() {
         // Check filesystem access and presence of GameDroid's directories
         File f = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || (!f.exists() && !f.mkdirs())) {
@@ -53,7 +53,9 @@ public class SplashActivity extends AppCompatActivity {
                     })
                     .setIconAttribute(android.R.attr.alertDialogIcon)
                     .show();
+            return false;
         }
+        return true;
     }
 
     /* Async task for loading ROM metadata from cache or disk */
@@ -136,17 +138,6 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(ArrayList<RomEntry> roms) {
             pd.dismiss();
-
-            // No ROMs were found. Instruct user on how to add them
-            if (roms.size() == 0) {
-                String path = new File(Environment.getExternalStorageDirectory(), context.getString(R.string.path_roms)).getAbsolutePath();
-                new AlertDialog.Builder(context)
-                        .setTitle(context.getString(R.string.dialog_noroms_title))
-                        .setMessage(String.format(context.getString(R.string.dialog_noroms_message), path))
-                        .setPositiveButton(android.R.string.ok, null)
-                        .setIconAttribute(android.R.attr.alertDialogIcon)
-                        .show();
-            }
 
             Intent intent = new Intent(context, LibraryActivity.class);
             Bundle b = new Bundle();

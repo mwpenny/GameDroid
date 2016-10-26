@@ -1,11 +1,14 @@
 package creativename.gamedroid.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -41,6 +44,17 @@ public class LibraryActivity extends AppCompatActivity {
         vp.setAdapter(spa);
 
         ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(vp);
+
+        // No ROMs were found. Instruct user on how to add them
+        if (romList.size() == 0) {
+            String path = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms)).getAbsolutePath();
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.dialog_noroms_title))
+                    .setMessage(String.format(getString(R.string.dialog_noroms_message), path))
+                    .setPositiveButton(android.R.string.ok, null)
+                    .setIconAttribute(android.R.attr.alertDialogIcon)
+                    .show();
+        }
     }
 
     @Override
