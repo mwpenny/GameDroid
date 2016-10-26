@@ -292,7 +292,7 @@ public class LCD implements MemoryMappable {
     public void tick() {
         if (lcdEnabled) {
             // Cycle delay before screen is ready after enabling LCD
-            if (delayCycles == 0) {
+            if (delayCycles > 0) {
                 --delayCycles;
                 return;
             }
