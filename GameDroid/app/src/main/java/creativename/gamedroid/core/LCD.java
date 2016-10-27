@@ -34,14 +34,13 @@ public class LCD implements MemoryMappable {
     public int[] framebuffer;
     private ScreenState screenState;
     private MappableByte scanline, cmpScanline;
-    private char cycle;
+    private char remainingStateCycles;
     private MappableByte scrollX, scrollY;
     private MappableByte windowX, windowY;  // Window = BG layer that can overlay normal BG
     private ArrayList<Sprite> foundSprites;
 
     private LCDControlRegister lcdControl;
     private boolean lcdEnabled;
-    private int delayCycles;             // Counter for when the screen is enabled
     private char windowTileMapOfs;       // i.e., second tile map starts $400 bytes into buffer
     private boolean windowEnabled;
     private char bgTilesetOfs;           // i.e., second tileset starts $800 bytes into buffer
@@ -134,7 +133,6 @@ public class LCD implements MemoryMappable {
     public void reset() {
         // Effective bootrom output
         lcdEnabled = true;
-        delayCycles = 0;
         windowTileMapOfs = 0;
         windowEnabled = false;
         bgTilesetOfs = 0;
@@ -160,8 +158,8 @@ public class LCD implements MemoryMappable {
         sprPalette2.data = (byte)0xFF;
 
         // Start rendering from the top left of the frame
-        cycle = 0;
         screenState = ScreenState.OAM_SEARCH;
+        remainingStateCycles = 80;
     }
 
     private MemoryMappable dispatchAddress(char address) {
@@ -290,43 +288,41 @@ public class LCD implements MemoryMappable {
 
     public void tick() {
         if (lcdEnabled) {
-            // Cycle delay before screen is ready after enabling LCD
-            if (delayCycles > 0) {
-                --delayCycles;
-                return;
-            }
-
-            // 456 cycles/scanline, 154 scanlines/frame
-            cycle = (char)((cycle + 1) % 456);
-
-            if (cycle == 0) {
-                // Just finished the line. Move to the next one
-                scanline.data = (byte)((scanline.data + 1) % 154);
-
-                // Did rendering just enter VBlank?
-                if (scanline.data == (byte)144) {
-                    setScreenState(ScreenState.VBLANK);
-                    gb.renderTarget.frameReady(framebuffer);
-                }
-
-                if (scanlineCheckEnabled && scanline.data == cmpScanline.data)
-                    gb.cpu.raiseInterrupt(CPU.Interrupt.LCD);
-            }
-
-            if ((scanline.data & 0xFF) < 144) {
-                // Rendering is on the visible scanlines (not in VBlank). Transition screen states
-                switch (cycle) {
-                    case 0:
-                        setScreenState(ScreenState.OAM_SEARCH);
+            if (--remainingStateCycles == 0) {
+                // Current screen state ending: time to transition
+                switch (screenState) {
+                    case OAM_SEARCH:
                         foundSprites.clear();
                         discoverSprites();
-                        break;
-                    case 80:
                         setScreenState(ScreenState.DATA_TRANSFER);
-                        renderLine();
+                        remainingStateCycles = 172;
                         break;
-                    case 252:
+                    case DATA_TRANSFER:
+                        renderLine();
                         setScreenState(ScreenState.HBLANK);
+                        remainingStateCycles = 204;
+                        break;
+                    case HBLANK:
+                    case VBLANK:
+                        // End of line
+                        scanline.data = (byte)(((scanline.data & 0xFF) + 1) % 154);
+
+                        if (scanlineCheckEnabled && scanline.data == cmpScanline.data)
+                            gb.cpu.raiseInterrupt(CPU.Interrupt.LCD);
+
+                        if ((scanline.data & 0xFF) < 144) {
+                            // Rendering visible frame: move to next visible scanline
+                            setScreenState(ScreenState.OAM_SEARCH);
+                            remainingStateCycles = 80;
+
+                        } else if (scanline.data == (byte) 144) {
+                            // Rendering just entered VBlank
+                            setScreenState(ScreenState.VBLANK);
+                            gb.renderTarget.frameReady(framebuffer);
+                        }
+
+                        if (screenState == ScreenState.VBLANK)
+                            remainingStateCycles = 456;
                         break;
                 }
             }
@@ -360,7 +356,6 @@ public class LCD implements MemoryMappable {
 
         @Override
         public void write(char address, byte value) {
-            lcdEnabled = ((value & 0x80) != 0);
             windowTileMapOfs = (char) ((value & 0x40) * 0x10);
             windowEnabled = ((value & 0x20) != 0);
             bgTilesetOfs = (char) (0x800 - ((value & 0x10) * 0x80));
@@ -369,18 +364,22 @@ public class LCD implements MemoryMappable {
             spritesEnabled = ((value & 2) != 0);
             bgEnabled = ((value & 1) != 0);
 
-            if (!lcdEnabled) {
-                cycle = 455;
-                scanline.data = (byte)153;
-                screenState = ScreenState.HBLANK;
-                delayCycles = 244;
+            if (((value & 0x80) == 0)) {
+                lcdEnabled = false;
                 oam.setEnabled(true);
                 tileBitmaps.setEnabled(true);
                 bgTileMaps.setEnabled(true);
+                screenState = ScreenState.HBLANK;
+                scanline.data = 0;
 
                 // Blank screen when disabled
                 Arrays.fill(framebuffer, palette[0]);
                 gb.renderTarget.frameReady(framebuffer);
+            } else if (!lcdEnabled) {
+                // LCD transitioning from disabled to enabled
+                lcdEnabled = true;
+                setScreenState(ScreenState.OAM_SEARCH);
+                remainingStateCycles = 76;
             }
         }
     }
@@ -405,7 +404,7 @@ public class LCD implements MemoryMappable {
                           ((vblankCheckEnabled ? 1 : 0) << 4) |
                           ((hblankCheckEnabled ? 1 : 0) << 3) |
                           ((scanline == cmpScanline ? 1 : 0) << 2) |
-                          (lcdEnabled ? (screenState.getStateCode() & 3) : 0));
+                           (screenState.getStateCode() & 3));
         }
 
         @Override
