@@ -26,8 +26,8 @@ public class Timer implements MemoryMappable {
         return ceiling;
     }
 
-    /* Tell the timer that some number of cycles have passed.
-       returns whether an interrupt has happened */
+    /* Tell the timer that some number of cycles have passed. Returns whether the
+       timer has overflowed and an interrupt should be raised */
     public boolean notifyCyclesPassed(int cycles) {
         if ((tac & 0b100) == 0) return false;  // timer stopped
         cycleReservoir += cycles;
@@ -35,9 +35,11 @@ public class Timer implements MemoryMappable {
         int reservoirCeiling = currentReservoirCeiling();
         tima += cycleReservoir / reservoirCeiling;
         cycleReservoir %= reservoirCeiling;
-        final boolean overflowed = tima > 0xFF;
-        tima %= 0x100;
-        return overflowed;
+        if (tima > 0xFF) {
+            tima = tma;
+            return true;
+        }
+        return false;
     }
 
     // Returns the number of cycles until next interrupt, then resets the counting
@@ -49,7 +51,7 @@ public class Timer implements MemoryMappable {
         cycleNeeded += countUntilOverflow * reservoirCeiling;
 
         cycleReservoir = 0;
-        tima = 0;
+        tima = tma;
         return cycleNeeded;
     }
 

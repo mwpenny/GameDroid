@@ -20,6 +20,7 @@ public class Divider implements MemoryMappable {
 
     @Override
     public void write(char address, byte value) {
+        cycleReservoir = 0;
         counter = 0;
     }
 }
