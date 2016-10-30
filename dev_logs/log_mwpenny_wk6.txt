@@ -1,0 +1,8 @@
+3hr, 30mins	Debugging graphics emulation
+1hr		Debugging invalid memory accesses (MBCs)
+30mins		Refactoring the project and adding comments
+4hrs		Adding library GUI and ROM metadata caching on startup
+
+
+---
+9hrs		Total
