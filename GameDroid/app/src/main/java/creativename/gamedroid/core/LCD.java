@@ -256,6 +256,13 @@ public class LCD implements MemoryMappable {
         }
     }
 
+    private char getBitmapSliver(int tileNum, int y, int tableOfs) {
+        // Get bitmap for row of tile (tiles are 8x8, and one 8px row is 2 bytes)
+        int bitmapIdx = tableOfs + (tileNum * 16) + (2 * (y % 8));
+        return (char)(((tileBitmaps.data[bitmapIdx] & 0xFF) << 8) |
+                      (tileBitmaps.data[bitmapIdx + 1] & 0xFF));
+    }
+
     private void renderLine() {
         /* Render current scanline to framebuffer
 
@@ -264,25 +271,30 @@ public class LCD implements MemoryMappable {
                  for this project, as its focus is primarily software design. */
         // TODO: Sprite and window rendering
         // TODO: respect flags (i.e., sprite enable/disable, sprite size, window enable/disable, window tilemap)
+
+        char bgTileRow = 0;
         int y = (scanline.data + scrollY.data) & 0xFF;
         for (int px = 0; px < 160; ++px) {
-            if (bgEnabled) {
-                /* Which tile needs to be drawn? Tile indices are treated as signed
-                   if using the second tile set */
-                int x = (px + (scrollX.data & 0xFF)) % 8;
-                int tileNum = bgTileMaps.data[bgTileMapOfs + ((px + (scrollX.data & 0xFF)) / 8) + (y / 8 * 32)] & 0xFF;
-                if (bgTilesetOfs == 0x800)
-                    tileNum = (byte)tileNum + 128;
+            int x = (px + (scrollX.data & 0xFF)) % 8;
+            int color = palette[0];
 
-                /* Fetch 2-bit palette index from bitplanes for current row of current tile (tiles
-                   are 8x8, one row = 2 bytes). Use this value to render the appropriate color */
-                int bitmapIdx = bgTilesetOfs + (tileNum * 16) + (2 * (y % 8));
-                int pIdx = ((tileBitmaps.data[bitmapIdx] >>> (7 - x)) & 1) |
-                            ((tileBitmaps.data[bitmapIdx + 1] >>> (6 - x)) & 2);
-                framebuffer[(scanline.data & 0xFF) * 160 + px] = palette[(bgPalette.data >>> (pIdx * 2)) & 3];
-            } else {
-                framebuffer[(scanline.data & 0xFF) * 160 + px] = palette[0];
+            if (bgEnabled) {
+                // Latch next background tile
+                if (x == 0) {
+                    int tileNum = bgTileMaps.data[bgTileMapOfs +
+                                                  ((px + (scrollX.data & 0xFF)) / 8) +
+                                                  (y / 8 * 32)] & 0xFF;
+                    // Tile indices are treated as signed if using the second tile set
+                    if (bgTilesetOfs == 0x800)
+                        tileNum = (byte) tileNum + 128;
+                    bgTileRow = getBitmapSliver(tileNum, y, bgTilesetOfs);
+                }
+
+                // Fetch 2-bit palette index to render appropriate color
+                int pIdx = ((bgTileRow >>> (15 - x)) & 1) | (((bgTileRow >>> (7 - x)) << 1) & 2);
+                color = palette[(bgPalette.data >>> (pIdx * 2)) & 3];
             }
+            framebuffer[(scanline.data & 0xFF) * 160 + px] = color;
         }
     }
 
