@@ -363,7 +363,7 @@ public class LCD implements MemoryMappable {
                           ((bgTileMapOfs == 0x400 ? 1 : 0) << 3) |
                           ((tallSpritesEnabled ? 1 : 0) << 2) |
                           ((spritesEnabled ? 1 : 0) << 1) |
-                          ((bgEnabled ? 1 : 0) << 1));
+                          ((bgEnabled ? 1 : 0)));
         }
 
         @Override
