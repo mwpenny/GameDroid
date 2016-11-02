@@ -3,6 +3,7 @@ package creativename.gamedroid.ui;
 import android.app.Activity;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -15,6 +16,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 
 import java.io.IOException;
+import java.util.Date;
 
 import creativename.gamedroid.R;
 import creativename.gamedroid.core.Cartridge;
@@ -28,8 +30,9 @@ public class ControllerScreen extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.controller_screen);
+        setResult(RESULT_OK, getIntent());
 
-        String romPath = getIntent().getExtras().getString("rom");
+        String romPath = getIntent().getStringExtra("rom_path");
         SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
         final GameboyScreen cb = new GameboyScreen();
         final GameBoy gb = new GameBoy(cb);

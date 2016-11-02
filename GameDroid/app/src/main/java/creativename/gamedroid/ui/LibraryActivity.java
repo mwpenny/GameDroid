@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import creativename.gamedroid.R;
@@ -111,11 +112,11 @@ public class LibraryActivity extends AppCompatActivity {
                     Collections.sort(copy, new Comparator<RomEntry>() {
                         @Override
                         public int compare(RomEntry o1, RomEntry o2) {
-                            Date d1 = o1.getLastPlayed();
-                            Date d2 = o2.getLastPlayed();
+                            Date d1 = o1.lastPlayed;
+                            Date d2 = o2.lastPlayed;
 
                             if (d1 != null && d2 != null)
-                                return d1.compareTo(d2);
+                                return d2.compareTo(d1);
                             else if (d1 == null && d2 != null)
                                 return 1;
                             else if (d1 != null)
@@ -183,15 +184,35 @@ public class LibraryActivity extends AppCompatActivity {
                             vp.getAdapter().notifyDataSetChanged();
                         } else {
                             Intent i = new Intent(inflater.getContext(), ControllerScreen.class);
-                            Bundle b = new Bundle();
-                            b.putString("rom", rom.getPath());
-                            i.putExtras(b);
-                            startActivity(i);
+                            i.putExtra("rom_path", rom.getPath());
+                            i.putExtra("rom_idx", position);
+                            startActivityForResult(i, 0);
                         }
                     }
                 }
             });
             return rootView;
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+            if (resultCode == RESULT_OK) {
+                View v = getView();
+                if (v != null) {
+                    // Update "last played" date for the ROM that was just played
+                    ListView listView = (ListView) v.findViewById(R.id.library_list);
+                    ViewPager vp = (ViewPager)getActivity().findViewById(R.id.container);
+                    RomEntry rom = (RomEntry)listView.getItemAtPosition(data.getExtras().getInt("rom_idx"));
+
+                    rom.lastPlayed = new Date();
+                    RomCache.getInstance(getContext()).updateRomMetadata(rom);
+
+                    ((RomListAdapter)listView.getAdapter()).notifyDataSetChanged();
+                    vp.getAdapter().notifyDataSetChanged();
+                }
+            }
+
         }
     }
 

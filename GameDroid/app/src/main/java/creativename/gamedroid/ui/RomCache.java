@@ -120,8 +120,7 @@ public class RomCache {
     private static boolean upsertMetadata(RomEntry rom, SQLiteDatabase cache) {
         ContentValues row = new ContentValues();
         boolean success;
-        Date lastPlayed = rom.getLastPlayed();
-        String dateString = (lastPlayed != null) ? iso8601DateFormat.format(lastPlayed) : "";
+        String dateString = (rom.lastPlayed != null) ? iso8601DateFormat.format(rom.lastPlayed) : "";
         String fileName = (new File(rom.getPath())).getName();
 
         row.put("fileName", fileName);

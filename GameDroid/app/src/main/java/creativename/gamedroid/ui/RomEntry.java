@@ -14,7 +14,7 @@ public class RomEntry implements Parcelable {
     private String licensee;
     private String locale;
     private int version;
-    private Date lastPlayed;
+    public Date lastPlayed;
     public boolean isFavorite;
 
     private static final SimpleDateFormat iso8601DateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -25,7 +25,6 @@ public class RomEntry implements Parcelable {
     public String getLicensee() { return licensee; }
     public String getLocale() { return locale; }
     public int getVersion() { return version; }
-    public Date getLastPlayed() { return lastPlayed; }
 
     private static Date dateFromString(String dateString) {
         if (!dateString.isEmpty()) {

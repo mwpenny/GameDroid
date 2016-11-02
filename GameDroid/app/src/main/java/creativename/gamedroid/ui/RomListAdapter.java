@@ -18,7 +18,7 @@ import creativename.gamedroid.R;
 
 /* Handles the translation of data wrt formatting the ListView entries of the ROM list */
 public class RomListAdapter extends ArrayAdapter<RomEntry> {
-    private static final SimpleDateFormat iso8601DateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 
     public RomListAdapter(Context context, ArrayList<RomEntry> roms) {
         super(context, 0, roms);
@@ -50,10 +50,10 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
             TextView date = (TextView) v.findViewById(R.id.last_played);
             title.setText(rom.getTitle());
 
-            if (rom.getLastPlayed() != null) {
+            if (rom.lastPlayed != null) {
                 date.setText(
                         String.format(getContext().getString(R.string.rom_date_format),
-                                iso8601DateFormat.format(rom.getLastPlayed()))
+                                dateFormat.format(rom.lastPlayed))
                 );
             } else {
                 date.setText(
