@@ -2,7 +2,6 @@
 
 <!-- List entry for ROM files -->
 <LinearLayout
-
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -34,7 +33,23 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/last_played" />
-
     </LinearLayout>
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/favorite"
+        android:src="@drawable/ic_favorite"
+        android:tint="@color/favorite_unselected"
+        android:paddingStart="0dp"
+        android:paddingLeft="0dp"
+        android:paddingEnd="15dp"
+        android:paddingRight="15dp"
+        android:layout_gravity="center"/>
 
 </LinearLayout>

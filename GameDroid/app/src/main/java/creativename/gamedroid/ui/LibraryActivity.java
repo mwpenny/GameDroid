@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -12,7 +13,7 @@ import android.os.Environment;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -28,8 +29,8 @@ import creativename.gamedroid.R;
 
 /* Main game ROM library view */
 public class LibraryActivity extends AppCompatActivity {
-    ArrayList<RomEntry> romList;
-    AlertDialog romWarning;
+    private ArrayList<RomEntry> romList;
+    private AlertDialog romWarning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +40,7 @@ public class LibraryActivity extends AppCompatActivity {
         setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
         romList = getIntent().getExtras().getParcelableArrayList("roms");
-
-        LibraryActivity.SectionsPagerAdapter spa = new LibraryActivity.SectionsPagerAdapter(getSupportFragmentManager());
+        SectionsPagerAdapter spa = new LibraryActivity.SectionsPagerAdapter(getSupportFragmentManager());
         ViewPager vp = (ViewPager)findViewById(R.id.container);
         vp.setAdapter(spa);
 
@@ -111,7 +111,17 @@ public class LibraryActivity extends AppCompatActivity {
                     Collections.sort(copy, new Comparator<RomEntry>() {
                         @Override
                         public int compare(RomEntry o1, RomEntry o2) {
-                            return o1.getLastPlayed().compareTo(o2.getLastPlayed());
+                            Date d1 = o1.getLastPlayed();
+                            Date d2 = o2.getLastPlayed();
+
+                            if (d1 != null && d2 != null)
+                                return d1.compareTo(d2);
+                            else if (d1 == null && d2 != null)
+                                return 1;
+                            else if (d1 != null)
+                                return -1;
+                            else
+                                return 0;
                         }
                     });
                     romList = copy;
@@ -134,7 +144,7 @@ public class LibraryActivity extends AppCompatActivity {
                     // Filter favorites
                     ArrayList<RomEntry> tmp = new ArrayList<>();
                     for (RomEntry r : romList) {
-                        if (r.isFavorite())
+                        if (r.isFavorite)
                             tmp.add(r);
                     }
                     romList = tmp;
@@ -147,32 +157,46 @@ public class LibraryActivity extends AppCompatActivity {
         }
 
         @Override
-        public View onCreateView(final LayoutInflater inflater, ViewGroup container,
+        public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                                  Bundle savedInstanceState) {
             // Populate list with ROM entries
             View rootView = inflater.inflate(R.layout.fragment_library, container, false);
             final ArrayList<RomEntry> romList = getArguments().getParcelableArrayList("roms");
+            final RomListAdapter adapter = new RomListAdapter(getContext(), romList);
+
             ListView listView = (ListView) rootView.findViewById(R.id.library_list);
-            listView.setAdapter(new RomListAdapter(getContext(), romList));
+            listView.setAdapter(adapter);
+
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Intent i = new Intent(inflater.getContext(), ControllerScreen.class);
-                    Bundle b = new Bundle();
-                    b.putString("rom", romList.get(position).getPath());
-                    i.putExtras(b);
-                    startActivity(i);
+                    if (romList != null) {
+                        RomEntry rom = romList.get(position);
+                        if (view.getId() == R.id.favorite) {
+                            ViewPager vp = (ViewPager)getActivity().findViewById(R.id.container);
+
+                            rom.isFavorite = !rom.isFavorite;
+                            RomCache.getInstance(getContext()).updateRomMetadata(rom);
+                            adapter.notifyDataSetChanged();
+
+                            // Update fragments
+                            vp.getAdapter().notifyDataSetChanged();
+                        } else {
+                            Intent i = new Intent(inflater.getContext(), ControllerScreen.class);
+                            Bundle b = new Bundle();
+                            b.putString("rom", rom.getPath());
+                            i.putExtras(b);
+                            startActivity(i);
+                        }
+                    }
                 }
             });
             return rootView;
         }
     }
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    /* Returns a fragment corresponding to one of the sections/tabs/pages */
+    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -198,6 +222,11 @@ public class LibraryActivity extends AppCompatActivity {
         public int getCount() {
             // Show 3 total pages.
             return 3;
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            return POSITION_NONE;
         }
 
         @Override

@@ -13,4 +13,7 @@
     <color name="colorAccent">#808080</color>
     <color name="background_color">#C0C0C0</color>
 
+    <color name="favorite_selected">#F44336</color>
+    <color name="favorite_unselected">#9E9E9E</color>
+
 </resources>

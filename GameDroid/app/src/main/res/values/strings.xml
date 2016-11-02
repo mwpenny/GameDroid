@@ -19,15 +19,5 @@
 
     <!-- Internal strings -->
     <string name="path_roms">GameDroid/ROMs</string>
-    <string name="cache_schema">
-        CREATE TABLE IF NOT EXISTS roms (
-            fileName	    TEXT PRIMARY KEY NOT NULL,
-            title		    TEXT,
-            manufacturer	TEXT,
-            licensee	    TEXT,
-            locale		    TEXT,
-            version		    INT
-        )
-    </string>
 
 </resources>

@@ -83,67 +83,11 @@ public class SplashActivity extends AppCompatActivity {
             pd = null;
         }
 
-        /* Removes ROM metadata from the cache for files that are no longer present */
-        private void cleanCache(File[] files, SQLiteDatabase cache) {
-            cache.beginTransaction();
-            cache.execSQL("CREATE TEMP TABLE IF NOT EXISTS foundFiles (fileName TEXT PRIMARY KEY NOT NULL)");
-
-            ContentValues row = new ContentValues();
-            if (files.length == 0) {
-                cache.execSQL("DELETE FROM roms");
-            } else {
-                for (File f : files) {
-                    row.put("fileName", f.getName());
-                    if (cache.insert("foundFiles", null, row) == -1) {
-                        // Don't compromise ROM cache if construction of foundFiles table fails
-                        cache.endTransaction();
-                        return;
-                    }
-                }
-                cache.execSQL("DELETE FROM roms WHERE fileName NOT IN (SELECT fileName from foundFiles)");
-            }
-
-            cache.execSQL("DROP TABLE IF EXISTS foundFiles");
-            cache.setTransactionSuccessful();
-            cache.endTransaction();
-        }
-
         @Override
         /* Loads game ROM metadata from the cache (database; if available) or the ROM files themselves */
         protected ArrayList<RomEntry> doInBackground(Void... params) {
-            ArrayList<RomEntry> romList = new ArrayList<>();
-
             File romDir = new File(Environment.getExternalStorageDirectory(), getApplicationContext().getString(R.string.path_roms));
-            SQLiteDatabase romCache = new SQLiteOpenHelper(getApplicationContext(), "romcache.db", null, 1) {
-                @Override
-                public void onCreate(SQLiteDatabase db) {
-                    db.execSQL(getApplicationContext().getString(R.string.cache_schema));
-                }
-
-                @Override
-                public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
-            }.getWritableDatabase();
-            romCache.beginTransaction();
-
-            // Search ROM directory for GameBoy and GameBoy color games
-            for (File f : romDir.listFiles()) {
-                String ext = f.getName().substring(f.getName().lastIndexOf('.')).toLowerCase();
-                if (f.isFile() && (ext.equals(".gb") || ext.equals(".gbc"))) {
-                    try {
-                        romList.add(new RomEntry(f, romCache));
-                    } catch (IOException e) {
-                        // Likely due to an invalid ROM file
-                        System.err.format("Could not load metadata for '%s': %s.\n", f.getName(), e.getMessage());
-                    }
-                }
-            }
-
-            // Remove old cache entries
-            cleanCache(romDir.listFiles(), romCache);
-            romCache.setTransactionSuccessful();
-            romCache.endTransaction();
-            romCache.close();
-            return romList;
+            return RomCache.getInstance(SplashActivity.this).getRomsMetadata(romDir);
         }
 
         @Override
