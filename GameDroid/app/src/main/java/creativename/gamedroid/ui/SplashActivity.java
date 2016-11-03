@@ -74,7 +74,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     /* Async task for loading ROM metadata from cache or disk */
-    private class FindRomsTask extends AsyncTask<Void, Void, ArrayList<RomEntry>> {
+    private class FindRomsTask extends AsyncTask<Void, Void, Void> {
         private ProgressDialog pd;
 
         public void destroyProgressDialog() {
@@ -85,9 +85,10 @@ public class SplashActivity extends AppCompatActivity {
 
         @Override
         /* Loads game ROM metadata from the cache (database; if available) or the ROM files themselves */
-        protected ArrayList<RomEntry> doInBackground(Void... params) {
+        protected Void doInBackground(Void... params) {
             File romDir = new File(Environment.getExternalStorageDirectory(), getApplicationContext().getString(R.string.path_roms));
-            return RomCache.getInstance(SplashActivity.this).getRomsMetadata(romDir);
+            RomCache.getInstance(SplashActivity.this).populateCache(romDir);
+            return null;
         }
 
         @Override
@@ -96,12 +97,9 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<RomEntry> roms) {
+        protected void onPostExecute(Void v) {
             destroyProgressDialog();
             Intent intent = new Intent(SplashActivity.this, LibraryActivity.class);
-            Bundle b = new Bundle();
-            b.putParcelableArrayList("roms", roms);
-            intent.putExtras(b);
             SplashActivity.this.startActivity(intent);
             SplashActivity.this.finish();  // So user can't return to splash screen
         }

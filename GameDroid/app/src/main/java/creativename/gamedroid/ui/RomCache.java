@@ -24,6 +24,7 @@ public class RomCache {
     private static RomCache instance;
 
     private SQLiteOpenHelper opener;
+    public ArrayList<RomEntry> romList;
 
     /* Converts a string to title case (e.g., "pokemon gold" => "Pokemon Gold") */
     private static String toTitleCase(String input) {
@@ -201,7 +202,7 @@ public class RomCache {
     }
 
     /* Retrieves ROM metadata for every ROM file present in a directory */
-    public ArrayList<RomEntry> getRomsMetadata(File romDir) {
+    public void populateCache(File romDir) {
         ArrayList<RomEntry> romList = new ArrayList<>();
         SQLiteDatabase cache = opener.getWritableDatabase();
         cache.beginTransaction();
@@ -225,6 +226,6 @@ public class RomCache {
         cache.setTransactionSuccessful();
         cache.endTransaction();
         cache.close();
-        return romList;
+        this.romList = romList;
     }
 }

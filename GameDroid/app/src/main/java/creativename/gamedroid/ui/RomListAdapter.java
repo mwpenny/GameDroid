@@ -21,7 +21,8 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 
     public RomListAdapter(Context context, ArrayList<RomEntry> roms) {
-        super(context, 0, roms);
+        // Make shallow copy so sorting has no effect on other instances
+        super(context, 0, new ArrayList<>(roms));
     }
 
     @Override
