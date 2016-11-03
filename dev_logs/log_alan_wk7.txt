@@ -1,0 +1,1 @@
+8hr fix flag register corruption bug. This bug causes roms to break in werid ways
