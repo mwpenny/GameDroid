@@ -547,7 +547,7 @@ public class CPU {
 
     public void reset() {
         // These are the effective output of the boot rom (an internal rom inside every GameBoy)
-        af.write((char) 0x0EB0);
+        af.write((char) 0x01B0);
         bc.write((char) 0x0013);
         de.write((char) 0x00D8);
         hl.write((char) 0x014D);
