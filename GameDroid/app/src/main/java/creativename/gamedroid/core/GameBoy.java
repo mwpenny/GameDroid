@@ -28,6 +28,8 @@ package creativename.gamedroid.core;
       * Brendan Marko
  */
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /* Entry point to the emulator core */
 public class GameBoy {
     public Cartridge cartridge;
@@ -39,6 +41,7 @@ public class GameBoy {
     public Timer timer;
     public Divider divider;
     public RenderTarget renderTarget;
+    private AtomicBoolean terminated;
     private Runnable runAtLoopEnd;
 
     public GameBoy() {
@@ -50,6 +53,8 @@ public class GameBoy {
         gamepad = new Controller(this);
         mmu = new MMU(this);
         stopped = false;
+        terminated = new AtomicBoolean(false);
+
         this.renderTarget = new RenderTarget() {
             @Override
             public void frameReady(int[] frameBuffer) {}
@@ -68,6 +73,10 @@ public class GameBoy {
     public GameBoy(RenderTarget target, Runnable runAtLoopEnd) {
         this(target);
         this.runAtLoopEnd = runAtLoopEnd;
+    }
+
+    public void terminate() {
+        terminated.set(true);
     }
 
     public void run() {
@@ -91,6 +100,7 @@ public class GameBoy {
 
                 runAtLoopEnd.run();
             }
+            if (terminated.get()) return;
         }
     }
 }

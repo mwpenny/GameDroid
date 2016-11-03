@@ -24,7 +24,7 @@ import creativename.gamedroid.core.GameBoy;
 
 public class ControllerScreen extends Activity
 {
-
+    GameBoy gb;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -36,6 +36,7 @@ public class ControllerScreen extends Activity
         SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
         final GameboyScreen cb = new GameboyScreen();
         final GameBoy gb = new GameBoy(cb);
+        this.gb = gb;
         try {
             gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
         } catch (IOException e) {
@@ -47,13 +48,13 @@ public class ControllerScreen extends Activity
         screen.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                new Thread(new Runnable() {
+                Thread emulator = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         gb.run();
                     }
-                }).start();
-                holder.removeCallback(this);
+                }, "Emulation: " + gb.cartridge.getTitle());
+                emulator.start();
             }
 
             @Override
@@ -63,8 +64,14 @@ public class ControllerScreen extends Activity
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        this.gb.terminate();
+    }
+
     /* Button Handlers for the Controller displayed within the
-       ControllerScreen class [using controller_layout] */
+               ControllerScreen class [using controller_layout] */
     public void up_arrow_handler(View currView)
     {
 
