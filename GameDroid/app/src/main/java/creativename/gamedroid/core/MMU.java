@@ -135,6 +135,8 @@ public class MMU {
 
     // null object for MemoryMappable
     private static class InvalidRegion implements MemoryMappable {
+        byte lastTransferByte;
+
         @Override
         public byte read(char address) {
             System.err.format("Warning: invalid memory read at $%04X\n", (int) address);
@@ -143,6 +145,14 @@ public class MMU {
 
         @Override
         public void write(char address, byte value) {
+            if (address == 0xFF01) {
+                lastTransferByte = value;
+                return;
+            }
+            if (address == 0xFF02 && value == -127) {
+                System.out.print((char) (lastTransferByte % 255));
+                return;
+            }
             System.err.format("Warning: invalid memory write at $%04X\n", (int) address);
         }
     }
