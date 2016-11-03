@@ -608,13 +608,13 @@ public class CPU {
             SUBTRACTION(0x40),
             ZERO(0x80);
 
-            private final byte bitmask;
+            private final int bitmask;
 
             Flag(int mask) {
-                bitmask = (byte) mask;
+                bitmask = mask;
             }
 
-            public byte getBitmask() {
+            public int getBitmask() {
                 return bitmask;
             }
         }
