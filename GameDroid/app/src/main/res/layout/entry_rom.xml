@@ -44,7 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/favorite"
-        android:src="@drawable/ic_favorite"
+        android:src="@mipmap/ic_favorite_border"
         android:tint="@color/favorite_unselected"
         android:paddingStart="0dp"
         android:paddingLeft="0dp"
