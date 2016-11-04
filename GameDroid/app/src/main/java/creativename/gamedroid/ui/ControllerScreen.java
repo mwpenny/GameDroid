@@ -20,6 +20,7 @@ import java.util.Date;
 
 import creativename.gamedroid.R;
 import creativename.gamedroid.core.Cartridge;
+import creativename.gamedroid.core.Controller;
 import creativename.gamedroid.core.GameBoy;
 
 public class ControllerScreen extends Activity
@@ -70,59 +71,34 @@ public class ControllerScreen extends Activity
         this.gb.terminate();
     }
 
-    /* Button Handlers for the Controller displayed within the
-               ControllerScreen class [using controller_layout] */
-    public void up_arrow_handler(View currView)
+    private Controller.Button getButtonCode(View btn) {
+        switch (btn.getId()) {
+            case R.id.controller_up_arrow:
+                return Controller.Button.UP;
+            case R.id.controller_down_arrow:
+                return Controller.Button.DOWN;
+            case R.id.controller_left_arrow:
+                return Controller.Button.LEFT;
+            case R.id.controller_right_arrow:
+                return Controller.Button.RIGHT;
+            case R.id.controller_select:
+                return Controller.Button.SELECT;
+            case R.id.controller_start:
+                return Controller.Button.START;
+            case R.id.controller_a_button:
+                return Controller.Button.A;
+            case R.id.controller_b_button:
+                return Controller.Button.B;
+            default:
+                return null;
+        }
+    }
+
+    public void buttonPress(View btn)
     {
-
-        System.out.println("Inside up_arrow_handler");
-
-    }
-
-    public void down_arrow_handler(View currView)
-    {
-
-        System.out.println("Inside down_arrow_handler");
-
-    }
-
-    public void right_arrow_handler(View currView)
-    {
-
-        System.out.println("Inside right_arrow_handler");
-
-    }
-
-    public void left_arrow_handler(View currView)
-    {
-
-        System.out.println("Inside left_arrow_handler");
-
-    }
-
-    public void select_button_handler(View currView)
-    {
-
-        System.out.println("Inside select_button_handler");
-
-    }
-
-    public void start_button_handler(View currView) {
-
-        System.out.println("Inside start_button_handler");
-
-    }
-
-    public void a_button_handler(View currView) {
-
-        System.out.println("Inside a_button_handler");
-
-    }
-
-    public void b_button_handler(View currView)
-    {
-
-        System.out.println("Inside b_button_handler");
-
+        // TODO: use onTouch events so we can detect pressing/releasing
+        Controller.Button b = getButtonCode(btn);
+        if (b != null)
+            gb.gamepad.updateButton(b, true);
     }
 }

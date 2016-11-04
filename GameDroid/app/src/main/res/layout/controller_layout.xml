@@ -23,7 +23,7 @@
         android:src="@mipmap/left_arrow"
         android:id="@+id/controller_left_arrow"
         android:layout_gravity="center"
-        android:onClick="left_arrow_handler"
+        android:onClick="buttonPress"
         android:gravity="left"/>
 
     <!-- Up and Down Arrows -->
@@ -40,14 +40,14 @@
             android:layout_height="wrap_content"
             android:id="@+id/controller_up_arrow"
             android:src="@mipmap/up_arrow"
-            android:onClick="up_arrow_handler"/>
+            android:onClick="buttonPress"/>
 
         <ImageButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/controller_down_arrow"
             android:src="@mipmap/down_arrow"
-            android:onClick="down_arrow_handler"/>
+            android:onClick="buttonPress"/>
 
     </LinearLayout>
 
@@ -59,7 +59,7 @@
         android:id="@+id/controller_right_arrow"
         android:layout_gravity="center"
         android:gravity="left"
-        android:onClick="right_arrow_handler"/>
+        android:onClick="buttonPress"/>
 
     </LinearLayout>
 
@@ -81,7 +81,7 @@
             android:id="@+id/controller_select"
             android:layout_gravity="bottom"
             android:layout_marginBottom="@dimen/button_gap"
-            android:onClick="select_button_handler"/>
+            android:onClick="buttonPress"/>
 
         <!-- Start Button -->
         <ImageButton
@@ -91,7 +91,7 @@
             android:id="@+id/controller_start"
             android:layout_gravity="bottom"
             android:layout_marginBottom="@dimen/button_gap"
-            android:onClick="start_button_handler"/>
+            android:onClick="buttonPress"/>
 
     </LinearLayout>
 
@@ -111,7 +111,7 @@
             android:src="@mipmap/a_button"
             android:id="@+id/controller_a_button"
             android:layout_gravity="center"
-            android:onClick="a_button_handler"/>
+            android:onClick="buttonPress"/>
 
         <!-- B Button -->
         <ImageButton
@@ -120,7 +120,7 @@
             android:src="@mipmap/b_button"
             android:id="@+id/controller_b_button"
             android:layout_gravity="center"
-            android:onClick="b_button_handler"/>
+            android:onClick="buttonPress"/>
 
     </LinearLayout>
 
