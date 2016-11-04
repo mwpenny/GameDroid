@@ -1,6 +1,5 @@
 package creativename.gamedroid.core;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 /* Provides GameBoy graphics data manipulation, processing, and output */
@@ -33,11 +32,12 @@ public class LCD implements MemoryMappable {
     private GameBoy gb;
     public int[] framebuffer;
     private ScreenState screenState;
-    private MappableByte scanline, cmpScanline;
+    private ScanlineRegister scanline;
+    private MappableByte cmpScanline;
     private char remainingStateCycles;
     private MappableByte scrollX, scrollY;
     private MappableByte windowX, windowY;  // Window = BG layer that can overlay normal BG
-    private ArrayList<Sprite> foundSprites;
+    private Sprite[] foundSprites;
 
     private LCDControlRegister lcdControl;
     private boolean lcdEnabled;
@@ -117,7 +117,7 @@ public class LCD implements MemoryMappable {
         framebuffer = new int[144*160];
         lcdControl = new LCDControlRegister();
         lcdStatus = new LCDStatusRegister();
-        scanline = new MappableByte();
+        scanline = new ScanlineRegister();
         cmpScanline = new MappableByte();
         scrollX = new MappableByte();
         scrollY = new MappableByte();
@@ -126,7 +126,7 @@ public class LCD implements MemoryMappable {
         bgPalette = new WriteOnlyRegister();
         sprPalette1 = new WriteOnlyRegister();
         sprPalette2 = new WriteOnlyRegister();
-        foundSprites = new ArrayList<>(10);
+        foundSprites = new Sprite[10];
         reset();
     }
 
@@ -156,6 +156,9 @@ public class LCD implements MemoryMappable {
         bgPalette.data = (byte)0xFC;
         sprPalette1.data = (byte)0xFF;
         sprPalette2.data = (byte)0xFF;
+
+        for (int i = 0; i < foundSprites.length; ++i)
+            foundSprites[i] = new Sprite();
 
         // Start rendering from the top left of the frame
         screenState = ScreenState.OAM_SEARCH;
@@ -240,25 +243,32 @@ public class LCD implements MemoryMappable {
     private void discoverSprites() {
         int sprHeight = tallSpritesEnabled ? 16 : 8;
         int oamPos = 0;
+        int spritesFound = 0;
 
         // Find the first 10 sprites in memory on the current scanline
-        while (foundSprites.size() < 10 && oamPos < oam.data.length) {
-            // The first byte of sprite data in OAM is the Y coordinate, use it to check position
-            if (oam.data[oamPos] <= scanline.data && oam.data[oamPos] + sprHeight > scanline.data) {
-                // Sprite is on the current scanline. Copy to sprite buffer
-                // TODO: is this object creation too expensive? Should we reuse objects instead?
-                foundSprites.add(new Sprite(oam.data[oamPos++], oam.data[oamPos++],
-                                 oam.data[oamPos++], oam.data[oamPos++]));
+        while (spritesFound < foundSprites.length) {
+            if (oamPos < oam.data.length) {
+                int sprY = (oam.data[oamPos++] & 0xFF) - 16;
+                int sl = scanline.data & 0xFF;
+                // The first byte of sprite data in OAM is the Y coordinate, use it to check position
+                if (sprY <= sl && sprY + sprHeight > sl) {
+                    // Sprite is on the current scanline. Copy to sprite buffer
+                    foundSprites[spritesFound++].update(sprY, (oam.data[oamPos++] & 0xFF) - 8,
+                            oam.data[oamPos++], oam.data[oamPos++]);
+                } else {
+                    // Move to next sprite in OAM
+                    oamPos += 3;
+                }
             } else {
-                // Move to next sprite in OAM
-                oamPos += 4;
+                // Clear remaining (unused) sprite slots
+                foundSprites[spritesFound++].update(-16, -8, (byte)0, (byte)0);
             }
         }
     }
 
-    private char getBitmapSliver(int tileNum, int y, int tableOfs) {
+    private char getBitmapSliver(int tileNum, int row, int tableOfs) {
         // Get bitmap for row of tile (tiles are 8x8, and one 8px row is 2 bytes)
-        int bitmapIdx = tableOfs + (tileNum * 16) + (2 * (y % 8));
+        int bitmapIdx = tableOfs + (tileNum * 16) + (2 * row);
         return (char)(((tileBitmaps.data[bitmapIdx] & 0xFF) << 8) |
                       (tileBitmaps.data[bitmapIdx + 1] & 0xFF));
     }
@@ -269,16 +279,17 @@ public class LCD implements MemoryMappable {
            Note: A /very/ small subset of games may use mid-scanline effects, which will
                  not be correctly displayed using this approach. We will disregard them
                  for this project, as its focus is primarily software design. */
-        // TODO: Sprite and window rendering
-        // TODO: respect flags (i.e., sprite enable/disable, sprite size, window enable/disable, window tilemap)
+        // TODO: Window rendering
+        // TODO: respect flags (i.e., window enable/disable, window tilemap)
 
         char bgTileRow = 0;
         int y = (scanline.data + scrollY.data) & 0xFF;
         for (int px = 0; px < 160; ++px) {
-            int x = (px + (scrollX.data & 0xFF)) % 8;
             int color = palette[0];
+            int bgPaletteIdx = 0;
 
             if (bgEnabled) {
+                int x = (px + (scrollX.data & 0xFF)) % 8;
                 // Latch next background tile
                 if (x == 0) {
                     int tileNum = bgTileMaps.data[bgTileMapOfs +
@@ -287,12 +298,28 @@ public class LCD implements MemoryMappable {
                     // Tile indices are treated as signed if using the second tile set
                     if (bgTilesetOfs == 0x800)
                         tileNum = (byte) tileNum + 128;
-                    bgTileRow = getBitmapSliver(tileNum, y, bgTilesetOfs);
+                    bgTileRow = getBitmapSliver(tileNum, y % 8, bgTilesetOfs);
                 }
 
                 // Fetch 2-bit palette index to render appropriate color
-                int pIdx = ((bgTileRow >>> (15 - x)) & 1) | (((bgTileRow >>> (7 - x)) << 1) & 2);
-                color = palette[(bgPalette.data >>> (pIdx * 2)) & 3];
+                bgPaletteIdx = ((bgTileRow >>> (15 - x)) & 1) | (((bgTileRow >>> (7 - x)) << 1) & 2);
+                color = palette[(bgPalette.data >>> (bgPaletteIdx * 2)) & 3];
+            }
+
+            if (spritesEnabled) {
+                for (Sprite s : foundSprites) {
+                    if (px >= s.x && px < s.x + 8) {
+                        int x = px - s.x;
+                        int pIdx = ((s.sprTileRow >>> (15 - x)) & 1) |
+                                    (((s.sprTileRow >>> (7 - x)) << 1) & 2);
+
+                        // First sprite with non-transparent pixel gets drawn
+                        if (pIdx != 0 && (bgPaletteIdx == 0 || s.hasFrontPriority)) {
+                            color = palette[(s.palette.data >>> (pIdx * 2)) & 3];
+                            break;
+                        }
+                    }
+                }
             }
             framebuffer[(scanline.data & 0xFF) * 160 + px] = color;
         }
@@ -304,7 +331,6 @@ public class LCD implements MemoryMappable {
                 // Current screen state ending: time to transition
                 switch (screenState) {
                     case OAM_SEARCH:
-                        foundSprites.clear();
                         discoverSprites();
                         setScreenState(ScreenState.DATA_TRANSFER);
                         remainingStateCycles = 172;
@@ -339,6 +365,13 @@ public class LCD implements MemoryMappable {
                 }
             }
         }
+    }
+
+    private static int flip(int b) {
+        // Reverse the bits in an 8-bit integer
+        b = ((b & 0xAA) >> 1) | ((b & 0x55) << 1);
+        b = ((b & 0xCC) >> 2) | ((b & 0x33) << 2);
+        return (b >> 4) | (b << 4);
     }
 
     private class LCDControlRegister implements MemoryMappable {
@@ -428,6 +461,14 @@ public class LCD implements MemoryMappable {
         }
     }
 
+    private class ScanlineRegister extends MappableByte {
+        @Override
+        public void write(char address, byte value) {
+            // Writing resets the scanline
+            data = 0;
+        }
+    }
+
     private static class WriteOnlyRegister extends MappableByte {
         @Override
         public byte read(char address) {
@@ -449,20 +490,37 @@ public class LCD implements MemoryMappable {
     }
 
     private class Sprite {
-        public byte x, y;
-        public byte tileNum;
-        public boolean flippedVert, flippedHoriz;
-        public boolean frontPriority;
+        public int x;
+        public boolean hasFrontPriority;
+        public char sprTileRow;
         public MappableByte palette;
 
-        public Sprite(byte y, byte x, byte tile, byte flags) {
+        public void update(int y, int x, byte tileNum, byte flags) {
             this.x = x;
-            this.y = y;
-            tileNum = tile;
-            frontPriority = ((flags & 0x80) != 0);
-            flippedVert = ((flags & 0x40) != 0);
-            flippedHoriz = ((flags & 0x20) != 0);
-            palette = ((flags & 0x10) != 0) ? sprPalette1 : sprPalette2;
+            hasFrontPriority = ((flags & 0x80) == 0);
+            palette = ((flags & 0x10) == 0) ? sprPalette1 : sprPalette2;
+            sprTileRow = getTileRow(tileNum, y, ((flags & 0x40) != 0), ((flags & 0x20) != 0));
+        }
+
+        private char getTileRow(byte tileNum, int y, boolean yflip, boolean xflip) {
+            int row = (scanline.data & 0xFF) - y;
+            char bmp;
+
+            /* 8x16 mode. Bits 1-7 of the tile number select the top
+               tile. The bottom tile is the next one in the tileset. */
+            if (tallSpritesEnabled) {
+                if (yflip)
+                    row = 15 - row;
+                tileNum = (byte)((tileNum & 0xFE) + row/8);
+                row &= 7;
+            } else if (yflip) {
+                row = 7 - row;
+            }
+            bmp = getBitmapSliver(tileNum & 0xFF, row, 0);
+
+            if (xflip)
+                return (char)((flip((bmp >> 8) & 0xFF) << 8) | flip(bmp & 0xFF));
+            return bmp;
         }
     }
 }
