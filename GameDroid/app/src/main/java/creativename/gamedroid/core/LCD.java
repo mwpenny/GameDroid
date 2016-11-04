@@ -291,7 +291,7 @@ public class LCD implements MemoryMappable {
             if (bgEnabled) {
                 int x = (px + (scrollX.data & 0xFF)) % 8;
                 // Latch next background tile
-                if (x == 0) {
+                if (px == 0 || x == 0) {
                     int tileNum = bgTileMaps.data[bgTileMapOfs +
                                                   ((px + (scrollX.data & 0xFF)) / 8) +
                                                   (y / 8 * 32)] & 0xFF;
