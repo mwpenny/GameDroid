@@ -1,0 +1,9 @@
+1hr		Fixing graphical glitches
+1hr		Refactoring ROM metadata caching
+4hrs, 30mins	Searching for mystery bug breaking most games, debugging crashes
+1hr, 30mins	Adding ROM favoriting and "last played" time, and fixing library view on ROM list changes
+3hrs		Implementing sprite rendering
+
+
+---
+11hrs		Total
