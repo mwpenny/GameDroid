@@ -68,7 +68,8 @@ public class SplashActivity extends AppCompatActivity {
 
         if (perm_r == PackageManager.PERMISSION_DENIED || perm_w == PackageManager.PERMISSION_DENIED)
         {
-            return false;
+            System.out.println("Permissions not granted currently, do...");
+            return true;
         }
 
 
