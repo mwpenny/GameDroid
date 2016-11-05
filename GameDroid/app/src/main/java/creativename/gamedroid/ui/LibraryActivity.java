@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 
+import android.widget.EditText;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.content.DialogInterface;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -69,23 +71,96 @@ public class LibraryActivity extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+   @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // TODO: handle these
-        if (id == R.id.action_settings) {
+        // app_bar settings
+        // When the app_bar settings button is clicked it will display a dialog box with the
+        // settings options for the User regarding preferences, ROM settings, etc...
+        if (id == R.id.action_settings)
+        {
+
+            System.out.println("Clicked action_settings on app_bar");
+
+            AlertDialog.Builder settingsDialog = new AlertDialog.Builder(this);
+            settingsDialog.setTitle("Settings Menu");
+            settingsDialog.setCancelable(true);
+
+            // Inflate settings.XML file
+            LayoutInflater inflater = this.getLayoutInflater();
+            settingsDialog.setView(inflater.inflate(R.layout.settings, null));
+
+            // Handler for Close button
+            settingsDialog.setPositiveButton("Close", new DialogInterface.OnClickListener()
+            {
+                public void onClick(DialogInterface dialog, int id)
+                {
+                    System.out.println("Clicked 'Close' in AlertDialog [Settings]");
+                    dialog.cancel();
+                }
+            });
+
+            // Build the AlertDialog and display it
+            AlertDialog displaySettings = settingsDialog.create();
+            displaySettings.show();
+
             return true;
-        } else if (id == R.id.action_search) {
+
+        } // end : settings
+
+        // app_bar search
+        // When the app_bar search button is clicked it will displays a dialog box that will
+        // prompt the user with a field to search for a specific ROM
+        else if (id == R.id.action_search)
+        {
+            System.out.println("Clicked action_search on app_bar");
+
+            AlertDialog.Builder searchROM = new AlertDialog.Builder(this);
+            searchROM.setTitle("Enter ROM name:");
+            searchROM.setCancelable(false);
+
+            // Sets button values and handlers within app_search
+            final EditText userInput = new EditText(this);
+            searchROM.setView(userInput);
+
+            // Handler for Search button
+            searchROM.setNegativeButton("Search", new DialogInterface.OnClickListener()
+            {
+                public void onClick(DialogInterface dialog, int id)
+                {
+                    System.out.println("Clicked 'Search' in AlertDialog [Search]");
+                    System.out.println("Input text: " + userInput.getText().toString());
+                    // Perform Search functionality here, closes AlertDialog for now
+                    dialog.cancel();
+                }
+            });
+
+            // Handler for Close button
+            searchROM.setPositiveButton("Close", new DialogInterface.OnClickListener()
+            {
+                public void onClick(DialogInterface dialog, int id)
+                {
+                    System.out.println("Clicked 'Close' in AlertDialog [Search]");
+                    dialog.cancel();
+                }
+            });
+
+            // Build the AlertDialog and display it
+            AlertDialog my_search = searchROM.create();
+            my_search.show();
+
             return true;
-        }
+
+        } // end : search
 
         return super.onOptionsItemSelected(item);
-    }
 
+    }
 
     /* A list of ROMs with a given sorting */
     public static class RomListFragment extends Fragment {
