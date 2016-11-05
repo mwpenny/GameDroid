@@ -1,0 +1,10 @@
+=======================================
+Time    :   Task
+---------------------------------------
+2 hours : Got the Settings button on the ActionBar working
+2 hours : Got the Search button on the ActionBar working
+=======================================
+Total time
+---------------------------------------
+4 hours
+=======================================

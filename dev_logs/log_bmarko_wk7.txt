@@ -1,0 +1,10 @@
+=======================================
+Time    :   Task
+---------------------------------------
+3 hours : Implemented a custom layout to be used for ROM searching
+2 hours : Implemented a custom layout for Settings Menu
+=======================================
+Total time
+---------------------------------------
+5 hours
+=======================================
