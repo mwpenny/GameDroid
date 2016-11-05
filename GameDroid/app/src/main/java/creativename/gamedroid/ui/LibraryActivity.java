@@ -29,7 +29,9 @@ import android.widget.ListView;
 import creativename.gamedroid.R;
 
 /* Main game ROM library view */
-public class LibraryActivity extends AppCompatActivity {
+public class LibraryActivity extends AppCompatActivity
+{
+
     private AlertDialog romWarning;
 
     @Override

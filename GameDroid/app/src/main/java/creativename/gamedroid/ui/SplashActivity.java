@@ -13,8 +13,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.Manifest;
 import android.os.Environment;
+import android.content.pm.PackageManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v4.content.ContextCompat;
 
 import creativename.gamedroid.R;
 
@@ -24,14 +27,53 @@ public class SplashActivity extends AppCompatActivity {
     FindRomsTask findRomsTask;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
+
         super.onCreate(savedInstanceState);
 
-        // Init
-        if (createAppDirs()) {
-            findRomsTask = new FindRomsTask();
-            findRomsTask.execute();
+        // Asks the User for permissions to access their file system for ROMs
+        if (userFilePermissions())
+        {
+
+            System.out.println("User has provided proper file access to GameDroid.");
+
+            // Continues with GameDroid initialization since User has given file access
+            if (createAppDirs())
+            {
+                findRomsTask = new FindRomsTask();
+                findRomsTask.execute();
+            }
+
         }
+
+        else
+        {
+            System.out.println("User has NOT provided proper file access to GameDroid");
+            // App should terminate gracefully here since the User will not be able to access ROMS
+            // rather than crashing.
+        }
+
+    }
+
+    // userFilePermissions()
+    // This function performs a check for access privileges to the file system to access ROMs here.
+    // If improper privileges are not given the app cannot access ROM files and will not work.
+    // GameDroid will require access to READ_EXTERNAL_STORAGE && WRITE_EXTERNAL_STORAGE
+    private boolean userFilePermissions()
+    {
+
+        int perm_w = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int perm_r = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        if (perm_r == PackageManager.PERMISSION_DENIED || perm_w == PackageManager.PERMISSION_DENIED)
+        {
+            return false;
+        }
+
+
+        return true;
+
     }
 
     @Override
