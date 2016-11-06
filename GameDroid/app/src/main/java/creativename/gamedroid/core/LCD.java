@@ -293,7 +293,7 @@ public class LCD implements MemoryMappable {
                 // Latch next background tile
                 if (px == 0 || x == 0) {
                     int tileNum = bgTileMaps.data[bgTileMapOfs +
-                                                  ((px + (scrollX.data & 0xFF)) / 8) +
+                                                  (((px + scrollX.data) & 0xFF) / 8) +
                                                   (y / 8 * 32)] & 0xFF;
                     // Tile indices are treated as signed if using the second tile set
                     if (bgTilesetOfs == 0x800)
