@@ -198,7 +198,7 @@ public class Cartridge {
         romSize = (32 << bank0[0x148]) * 1024;
 
         // $0149 - RAM Size (0x00 -> 0KB,  0x01 -> 2KB/16Kb, ...)
-        ramSize = ((int)Math.pow(4, bank0[0x149]+1)/8) * 1024;
+        ramSize = ((int)Math.pow(4, bank0[0x149])/2) * 1024;
 
         // $14A - Game region
         locale = (bank0[0x14A] == 1) ? GameLocale.WORLD : GameLocale.JAPAN;

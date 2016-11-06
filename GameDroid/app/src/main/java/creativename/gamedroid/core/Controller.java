@@ -76,7 +76,7 @@ public class Controller implements MemoryMappable {
             else if (readingButtons)
                 return (byte)(state >>> 4);
             else
-                return 0;
+                return (byte)0xFF;
         }
         throw new IllegalArgumentException(String.format("Invalid controller I/O read address ($%04X)", (int)address));
     }
