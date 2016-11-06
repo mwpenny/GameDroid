@@ -20,8 +20,6 @@ Repository structure:
 | 0x0D   | MMM01+RAM+BATT              |
 | 0x0F   | MBC3+RTC+BATT               |
 | 0x10   | MBC3+RTC+RAM+BATT           |
-| 0x11   | MBC3                        |
-| 0x12   | MBC3+RAM                    |
 | 0x13   | MBC3+RAM+BATT               |
 | 0x15   | MBC4                        |
 | 0x16   | MBC4+RAM                    |
@@ -38,10 +36,19 @@ Repository structure:
 | 0xFF   | HuC1+RAM+BATT               |
 
 Major features:
-* Nothing (yet)
+* GameBoy emulation
+* Easy to use UI for organizing and searching game library
+
+Planned features:
+* SRAM saves
+* Save states
+* Rewind
+* Customizable screen resolution
+* Landscape layout
 
 Supported MBCs:
 * MBC1
+* MBC3
 * MBC5
 
 Minimum Android version: 4.0.3 (Ice Cream Sandwich)
