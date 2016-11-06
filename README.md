@@ -21,9 +21,6 @@ Repository structure:
 | 0x0F   | MBC3+RTC+BATT               |
 | 0x10   | MBC3+RTC+RAM+BATT           |
 | 0x13   | MBC3+RAM+BATT               |
-| 0x15   | MBC4                        |
-| 0x16   | MBC4+RAM                    |
-| 0x17   | MBC4+RAM+BATT               |
 | 0x1B   | MBC5+RAM+BATT               |
 | 0x1C   | MBC5+RUMBLE                 |
 | 0x1D   | MBC5+RUMBLE+RAM             |
