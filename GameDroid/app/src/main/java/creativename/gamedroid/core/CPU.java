@@ -541,8 +541,6 @@ public class CPU {
         gb.mmu.write8((char) 0xFF0F, raisedInterrupts);
         halted = false;
         gb.stopped = false;
-
-        // TODO: wakeup from stop if IME disabled
     }
 
     public void reset() {
@@ -556,7 +554,7 @@ public class CPU {
     }
 
     public int execInstruction() {
-        if (halted) return 0;
+        if (halted) return 4;
 
         char raisedInterrupts = gb.mmu.read8((char) 0xFF0F);
         char enabledInterrupts = gb.mmu.read8((char) 0xFFFF);

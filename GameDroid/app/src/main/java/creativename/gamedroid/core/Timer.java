@@ -7,52 +7,24 @@ public class Timer implements MemoryMappable {
     private char tac;  // Timer control
     private int cycleReservoir;
 
-    private int currentReservoirCeiling() {
-        int ceiling = 0;
-        switch (tac & 0b11) {  // different timer frequencies
-            case 0b00:
-                ceiling = 1024;
-                break;
-            case 0b01:
-                ceiling = 16;
-                break;
-            case 0b10:
-                ceiling = 64;
-                break;
-            case 0b11:
-                ceiling = 256;
-                break;
-        }
-        return ceiling;
-    }
+    // Different timer frequencies
+    private static final int[] reservoirCeilings = {1024, 16, 64, 256};
 
     /* Tell the timer that some number of cycles have passed. Returns whether the
        timer has overflowed and an interrupt should be raised */
     public boolean notifyCyclesPassed(int cycles) {
         if ((tac & 0b100) == 0) return false;  // timer stopped
-        cycleReservoir += cycles;
 
-        int reservoirCeiling = currentReservoirCeiling();
+        int reservoirCeiling = reservoirCeilings[tac & 3];
+        cycleReservoir += cycles;
         tima += cycleReservoir / reservoirCeiling;
         cycleReservoir %= reservoirCeiling;
+
         if (tima > 0xFF) {
             tima = tma;
             return true;
         }
         return false;
-    }
-
-    // Returns the number of cycles until next interrupt, then resets the counting
-    public int advanceUntilInterrupt() {
-        int countUntilOverflow = 0x100 - tima;
-        int reservoirCeiling = currentReservoirCeiling();
-        int cycleNeeded = reservoirCeiling - cycleReservoir;  // complete the current increment in progress
-        countUntilOverflow--;
-        cycleNeeded += countUntilOverflow * reservoirCeiling;
-
-        cycleReservoir = 0;
-        tima = tma;
-        return cycleNeeded;
     }
 
     @Override
@@ -71,7 +43,7 @@ public class Timer implements MemoryMappable {
 
     @Override
     public void write(char address, byte value) {
-        char val = (char) value;
+        char val = (char) (value & 0xFF);
         if (address == 0xFF05) {
             tima = val;
         } else if (address == 0xFF06) {

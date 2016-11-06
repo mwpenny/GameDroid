@@ -45,7 +45,7 @@ public class GameBoy {
     private Runnable runAtLoopEnd;
 
     public GameBoy() {
-        cartridge = null;  // For now
+        cartridge = null;
         cpu = new CPU(this);
         lcd = new LCD(this);
         timer = new Timer();
@@ -70,35 +70,22 @@ public class GameBoy {
         this.renderTarget = target;
     }
 
-    public GameBoy(RenderTarget target, Runnable runAtLoopEnd) {
-        this(target);
-        this.runAtLoopEnd = runAtLoopEnd;
-    }
-
     public void terminate() {
         terminated.set(true);
     }
 
     public void run() {
-        /* TODO: load cartridge */
         while (true) {
             if (!stopped) {
                 int cyclesUsed = cpu.execInstruction();
-                if (cyclesUsed == 0) {  // cpu in halt mode
-                    // TODO: other interrupts may occur before timer (e.g., LCD, joypad)
-                    cyclesUsed += this.timer.advanceUntilInterrupt();
+                if (timer.notifyCyclesPassed(cyclesUsed)) {
+                    // Timer overflowed: raise interrupt
                     cpu.raiseInterrupt(CPU.Interrupt.TIMER);
-                } else {
-                    boolean raiseInterrupt = this.timer.notifyCyclesPassed(cyclesUsed);
-                    if (raiseInterrupt)
-                        cpu.raiseInterrupt(CPU.Interrupt.TIMER);
                 }
-                this.divider.notifyCyclesPassed(cyclesUsed);
+                divider.notifyCyclesPassed(cyclesUsed);
 
-                for (int i = 0; i < cyclesUsed; ++i)
+                while (cyclesUsed-- > 0)
                     lcd.tick();
-
-                runAtLoopEnd.run();
             }
             if (terminated.get()) return;
         }
