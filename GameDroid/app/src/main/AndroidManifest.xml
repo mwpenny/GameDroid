@@ -23,6 +23,7 @@
         </activity>
 
         <activity android:name=".ui.MainScreen"/>
+        <activity android:name=".ui.SearchROM"/>
         <activity android:name=".ui.LibraryActivity"/>
         <activity android:name=".ui.ControllerScreen"/>
 
