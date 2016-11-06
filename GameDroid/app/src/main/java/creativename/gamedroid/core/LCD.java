@@ -279,30 +279,52 @@ public class LCD implements MemoryMappable {
            Note: A /very/ small subset of games may use mid-scanline effects, which will
                  not be correctly displayed using this approach. We will disregard them
                  for this project, as its focus is primarily software design. */
-        // TODO: Window rendering
-        // TODO: respect flags (i.e., window enable/disable, window tilemap)
 
         char bgTileRow = 0;
-        int y = (scanline.data + scrollY.data) & 0xFF;
+        int bgY = (scanline.data + scrollY.data) & 0xFF;
+        int winY = (scanline.data - windowY.data) & 0xFF;
+
         for (int px = 0; px < 160; ++px) {
             int color = palette[0];
             int bgPaletteIdx = 0;
+            int bgX = 0;
+            int y = 0;
+            char tileMapOfs = 0;
+            boolean bgVisible;
 
-            if (bgEnabled) {
-                int x = (px + (scrollX.data & 0xFF)) % 8;
-                // Latch next background tile
-                if (px == 0 || x == 0) {
-                    int tileNum = bgTileMaps.data[bgTileMapOfs +
-                                                  ((px + (scrollX.data & 0xFF)) / 8) +
-                                                  (y / 8 * 32)] & 0xFF;
+            if (windowEnabled && (scanline.data & 0xFF) >= (windowY.data & 0xFF) && px >= ((windowX.data - 7) & 0xFF)) {
+                // Show window
+                bgX = (px - windowX.data + 7) & 0xFF;
+                y = winY;
+                tileMapOfs = windowTileMapOfs;
+                bgVisible = true;
+            } else if (bgEnabled) {
+                // Show regular background
+                bgX = (px + scrollX.data) & 0xFF;
+                y = bgY;
+                tileMapOfs = bgTileMapOfs;
+                bgVisible = true;
+            } else {
+                color = palette[0];
+                bgPaletteIdx = 0;
+                bgVisible = false;
+            }
+
+            if (bgVisible) {
+                // Latch next background/window tile
+                int tileX = bgX % 8;
+                if (px == 0 || tileX == 0) {
+                    int tileNum = bgTileMaps.data[tileMapOfs + (bgX / 8) + (y / 8 * 32)] & 0xFF;
+
                     // Tile indices are treated as signed if using the second tile set
                     if (bgTilesetOfs == 0x800)
                         tileNum = (byte) tileNum + 128;
+
                     bgTileRow = getBitmapSliver(tileNum, y % 8, bgTilesetOfs);
                 }
 
                 // Fetch 2-bit palette index to render appropriate color
-                bgPaletteIdx = ((bgTileRow >>> (15 - x)) & 1) | (((bgTileRow >>> (7 - x)) << 1) & 2);
+                bgPaletteIdx = ((bgTileRow >>> (15 - tileX)) & 1) | (((bgTileRow >>> (7 - tileX)) << 1) & 2);
                 color = palette[(bgPalette.data >>> (bgPaletteIdx * 2)) & 3];
             }
 
@@ -352,7 +374,6 @@ public class LCD implements MemoryMappable {
                             // Rendering visible frame: move to next visible scanline
                             setScreenState(ScreenState.OAM_SEARCH);
                             remainingStateCycles = 80;
-
                         } else if (scanline.data == (byte) 144) {
                             // Rendering just entered VBlank
                             setScreenState(ScreenState.VBLANK);
@@ -498,6 +519,10 @@ public class LCD implements MemoryMappable {
         public void update(int y, int x, byte tileNum, byte flags) {
             this.x = x;
             hasFrontPriority = ((flags & 0x80) == 0);
+
+            // TODO: this is broken (updating palette during animation?)
+            // - Pokemon gold intro jigglypuff
+            // - Pokemon red walk animation
             palette = ((flags & 0x10) == 0) ? sprPalette1 : sprPalette2;
             sprTileRow = getTileRow(tileNum, y, ((flags & 0x40) != 0), ((flags & 0x20) != 0));
         }

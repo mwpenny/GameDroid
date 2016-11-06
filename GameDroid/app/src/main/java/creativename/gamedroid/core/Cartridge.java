@@ -253,6 +253,14 @@ public class Cartridge {
                         mbc = new MBC1(rom, ramSize, hasBattery);
                         break;
 
+                    case 0x0F:
+                    case 0x10:
+                    case 0x11:
+                    case 0x12:
+                    case 0x13:
+                        mbc = new MBC3(rom, ramSize, hasBattery);
+                        break;
+
                     // TODO: other MBCs...
 
                     case 0x19:  // MBC5

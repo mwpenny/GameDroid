@@ -12,7 +12,10 @@ public class MBC5 extends MBC {
     protected void writeMBC(char address, byte value) {
         if (address < 0x2000) {
             // Value enables/disables RAM
-            ramEnabled = ((value & 0x0A) == 0x0A);
+            if (((value & 0x0A) == 0x0A))
+                ramEnabled = true;
+            else if (value == 0)
+                ramEnabled = false;
         } else if (address < 0x3000) {
             // Value sets lower 8 bits of ROM bank number
             romBankNum = (romBankNum & 0x100) | (value & 0xFF);

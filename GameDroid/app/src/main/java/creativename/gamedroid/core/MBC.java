@@ -22,39 +22,49 @@ public abstract class MBC implements MemoryMappable {
     // Handles custom MBC logic (i.e., bank switching, enabling/disabling RAM, etc.)
     protected abstract void writeMBC(char address, byte value);
 
+    private int getRamBankIndex(char addr) {
+        if (extRam.length == 0)
+            return -1;
+        return (((addr - 0xA000) + (ramBankNum * 0x2000)) % extRam.length);
+    }
+
+    private boolean ramLocationAccessible(int idx) {
+        return ramEnabled && extRam.length > 0 && idx < extRam.length;
+    }
+
     // TODO: RTC registers
     @Override
-    public byte read(char address) {
+    public final byte read(char address) {
         // ROM bank 0 is fixed, 1 is switchable
         if (address < 0x4000)
             return rom[address];
         else if (address < 0x8000)
-            return rom[(address - 0x4000) + (romBankNum * 0x4000)];
+            return rom[((address - 0x4000) + (romBankNum * 0x4000)) % rom.length];
 
         else if (address > 0x9FFF && address < 0xC000) {
+            int i = getRamBankIndex(address);
             // $FF is returned if RAM is disabled or not present at the address specified
-            if (ramEnabled && extRam.length > 0 && (address - 0xA000) < extRam.length)
-                return extRam[(address - 0xA000) + (ramBankNum * 0x2000)];
+            if (i > -1 && ramLocationAccessible(i))
+                return extRam[i];
             else
                 return (byte)0xFF;
         }
         else
-            throw new IllegalArgumentException(String.format("Invalid ROM read address ($%04X)", (int)address));
+            throw new IllegalArgumentException(String.format("Invalid cartridge read address ($%04X)", (int)address));
     }
 
     @Override
-    public void write(char address, byte value) {
+    public final void write(char address, byte value) {
         if (address < 0x8000)
             writeMBC(address, value);
-        else if (ramEnabled && address > 0x9FFF && address < 0xC000 &&
-                 extRam.length > 0 && (address - 0xA000) < extRam.length) {
-            // Write to cartridge RAM if present
-            extRam[(address - 0xA000) + (ramBankNum * 0x2000)] = value;
-            if (hasBattery) {
-                // TODO: save cartridge RAM to disk (game save file)
+        else if (address > 0x9FFF && address < 0xC000) {
+            int i = getRamBankIndex(address);
+            if (i > -1 && ramLocationAccessible(i)) {
+                // Write to cartridge RAM if present
+                extRam[i] = value;
             }
         }
         else if (address > 0x7FFF)
-            throw new IllegalArgumentException(String.format("Invalid ROM write address ($%04X)", (int)address));
+            throw new IllegalArgumentException(String.format("Invalid cartridge write address ($%04X)", (int)address));
     }
 }
