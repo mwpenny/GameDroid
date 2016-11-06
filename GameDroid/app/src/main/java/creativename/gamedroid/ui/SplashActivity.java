@@ -1,28 +1,29 @@
 package creativename.gamedroid.ui;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import creativename.gamedroid.R;
 
+import android.Manifest;
+import android.os.Bundle;
+import android.os.AsyncTask;
+import android.widget.Toast;
+import android.content.Intent;
+import android.os.Environment;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.Manifest;
-import android.os.Environment;
 import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.content.ContextCompat;
 
-import creativename.gamedroid.R;
+// Splash screen for performing app initialization and loading ROM metadata
+public class SplashActivity extends AppCompatActivity
+{
 
-/* Splash screen for performing app initialization and loading ROM metadata */
-public class SplashActivity extends AppCompatActivity {
+    // Request Code for Callback
+    private int EXT_STORAGE_REQUEST = 100;
+
     AlertDialog fsWarning;
     FindRomsTask findRomsTask;
 
@@ -33,12 +34,32 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Asks the User for permissions to access their file system for ROMs
-        if (userFilePermissions())
+        userFilePermissions();
+
+    }
+
+    // userFilePermissions()
+    // This function performs a check for access privileges to the file system to access ROMs here.
+    // If improper privileges are not given the app cannot access ROM files and will not function on Android 6.0 and above!
+    private void userFilePermissions()
+    {
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED)
         {
 
-            System.out.println("User has provided proper file access to GameDroid.");
+            // If User previously rejected the request this block executes...
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE))
+            {
+                System.out.println("User previously rejected request and this block is running...");
+            }
 
-            // Continues with GameDroid initialization since User has given file access
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, EXT_STORAGE_REQUEST);
+
+        }
+
+        else
+        {
+
             if (createAppDirs())
             {
                 findRomsTask = new FindRomsTask();
@@ -47,35 +68,35 @@ public class SplashActivity extends AppCompatActivity {
 
         }
 
-        else
-        {
-            System.out.println("User has NOT provided proper file access to GameDroid");
-            // App should terminate gracefully here since the User will not be able to access ROMS
-            // rather than crashing.
-        }
+    } // end : userFilePermissions
 
-    }
-
-    // userFilePermissions()
-    // This function performs a check for access privileges to the file system to access ROMs here.
-    // If improper privileges are not given the app cannot access ROM files and will not work.
-    // GameDroid will require access to READ_EXTERNAL_STORAGE && WRITE_EXTERNAL_STORAGE
-    private boolean userFilePermissions()
+    @Override
+    public void onRequestPermissionsResult(int request, String[] permissions, int[] results)
     {
 
-        int perm_w = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        int perm_r = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-
-        if (perm_r == PackageManager.PERMISSION_DENIED || perm_w == PackageManager.PERMISSION_DENIED)
+        if (request == EXT_STORAGE_REQUEST)
         {
-            System.out.println("Permissions not granted currently, do...");
-            return true;
+
+            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                // Toast.makeText(this, "Enjoy your GameDroid experience!", Toast.LENGTH_LONG).show();
+
+                if (createAppDirs())
+                {
+                    findRomsTask = new FindRomsTask();
+                    findRomsTask.execute();
+                }
+            }
+
+            else
+            {
+                Toast.makeText(this, "Please accept the Storage Request to allow GameDroid to access ROM files!", Toast.LENGTH_LONG).show();
+                this.finish();
+            }
+
         }
 
-
-        return true;
-
-    }
+    } // end : onRequestPermissionsResult
 
     @Override
     protected void onDestroy() {
