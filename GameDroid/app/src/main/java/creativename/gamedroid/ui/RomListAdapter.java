@@ -100,22 +100,17 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
         protected FilterResults performFiltering(CharSequence query) {
             FilterResults results = new FilterResults();
 
-            if (query == null || query.length() == 0) {
-                // No query: return all ROMs
-                results.count = romList.size();
-                results.values = romList;
-            } else {
-                // Filter ROM list by query string
-                ArrayList<RomEntry> matched = new ArrayList<>();
-                for (int i = 0; i < romList.size(); ++i)
-                {
+            // Filter ROM list by query string
+            ArrayList<RomEntry> matched = new ArrayList<>();
+            if (query != null && !query.toString().trim().isEmpty() && query.length() > 0) {
+                for (int i = 0; i < romList.size(); ++i) {
                     RomEntry rom = romList.get(i);
                     if (rom.getTitle().toLowerCase().contains(query.toString().toLowerCase()))
                         matched.add(rom);
                 }
-                results.count = matched.size();
-                results.values = matched;
             }
+            results.count = matched.size();
+            results.values = matched;
             return results;
         }
 
