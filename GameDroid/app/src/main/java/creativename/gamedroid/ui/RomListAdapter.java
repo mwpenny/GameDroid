@@ -77,7 +77,7 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
                 favColor = R.color.favorite_selected;
                 favImage = R.mipmap.ic_favorite;
             } else {
-                favColor = R.color.unselected;
+                favColor = R.color.favorite_unselected;
                 favImage = R.mipmap.ic_favorite_border;
             }
             favBtn.setImageResource(favImage);

@@ -43,7 +43,7 @@
     <ImageView
         android:id="@+id/favorite"
         android:src="@mipmap/ic_favorite_border"
-        android:tint="@color/unselected"
+        android:tint="@color/favorite_unselected"
         android:paddingStart="0dp"
         android:paddingLeft="0dp"
         android:paddingEnd="15dp"
