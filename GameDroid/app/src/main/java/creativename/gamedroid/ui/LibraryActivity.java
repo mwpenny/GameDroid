@@ -30,8 +30,8 @@ import creativename.gamedroid.R;
 /* Main game ROM library view */
 public class LibraryActivity extends AppCompatActivity
 {
-
     private AlertDialog romWarning;
+    private ViewPager vp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +41,7 @@ public class LibraryActivity extends AppCompatActivity
         setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
         SectionsPagerAdapter spa = new LibraryActivity.SectionsPagerAdapter(getSupportFragmentManager());
-        ViewPager vp = (ViewPager)findViewById(R.id.container);
+        vp = (ViewPager)findViewById(R.id.container);
         vp.setAdapter(spa);
 
         ((TabLayout)findViewById(R.id.tabs)).setupWithViewPager(vp);
@@ -75,9 +75,6 @@ public class LibraryActivity extends AppCompatActivity
    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         // app_bar settings
@@ -114,146 +111,22 @@ public class LibraryActivity extends AppCompatActivity
 
         } // end : settings
 
-        // app_bar search
-        // When the app_bar search button is clicked it will displays a dialog box that will
-        // prompt the user with a field to search for a specific ROM
+        // Search: display dialog for field to search ROMs
         else if (id == R.id.action_search)
         {
-            Intent next_page = new Intent(getApplicationContext(), SearchROM.class);
-            startActivity(next_page);
+            Intent i = new Intent(getApplicationContext(), SearchActivity.class);
+            startActivityForResult(i, 0);
             return true;
-        } // end : search
+        }
 
         return super.onOptionsItemSelected(item);
-
     }
 
-    /* A list of ROMs with a given sorting */
-    public static class RomListFragment extends Fragment {
-        public enum SortingMode {
-            RECENT,
-            ALPHABETICAL,
-            FAVORITE
-        }
-
-        private SortingMode sortMode;
-
-        public RomListFragment() {
-        }
-
-        public static RomListFragment newInstance(SortingMode mode) {
-            RomListFragment fragment = new RomListFragment();
-            Bundle args = new Bundle();
-            args.putSerializable("sort_mode", mode);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        private void sortRomList() {
-            View v = getView();
-            if (v != null) {
-                RomListAdapter adapter = (RomListAdapter) ((ListView) (getView().findViewById(R.id.library_list))).getAdapter();
-                // Sorts the ROM list according to sorting mode (library tab)
-                switch (sortMode) {
-                    case RECENT: {
-                        // Sort by last played date
-                        adapter.sort(new Comparator<RomEntry>() {
-                            @Override
-                            public int compare(RomEntry o1, RomEntry o2) {
-                                Date d1 = o1.lastPlayed;
-                                Date d2 = o2.lastPlayed;
-
-                                if (d1 != null && d2 != null)
-                                    return d2.compareTo(d1);
-                                else if (d1 == null && d2 != null)
-                                    return 1;
-                                else if (d1 != null)
-                                    return -1;
-                                else
-                                    return 0;
-                            }
-                        });
-                        break;
-                    }
-                    case ALPHABETICAL: {
-                        // Sort by game title
-                        adapter.sort(new Comparator<RomEntry>() {
-                            @Override
-                            public int compare(RomEntry o1, RomEntry o2) {
-                                return o1.getTitle().compareToIgnoreCase(o2.getTitle());
-                            }
-                        });
-                        break;
-                    }
-                    case FAVORITE: {
-                        // Filter favorites
-                        ArrayList<RomEntry> tmp = new ArrayList<>();
-                        for (int i = 0; i < adapter.getCount(); ++i) {
-                            RomEntry r = adapter.getItem(i);
-                            if (r != null && r.isFavorite)
-                                tmp.add(r);
-                        }
-                        adapter.clear();
-                        adapter.addAll(tmp);
-                        break;
-                    }
-                }
-            }
-        }
-
-        @Override
-        public View onCreateView(final LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            // Populate list with ROM entries from cache
-            View rootView = inflater.inflate(R.layout.fragment_library, container, false);
-            sortMode = (SortingMode)getArguments().getSerializable("sort_mode");
-            ArrayList<RomEntry> romList = RomCache.getInstance(getContext()).romList;
-
-            final ListView listView = (ListView) rootView.findViewById(R.id.library_list);
-            listView.setAdapter(new RomListAdapter(getContext(), romList));
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    RomEntry rom = (RomEntry)listView.getItemAtPosition(position);
-                    if (view.getId() == R.id.favorite) {
-                        ViewPager vp = (ViewPager)getActivity().findViewById(R.id.container);
-
-                        rom.isFavorite = !rom.isFavorite;
-                        RomCache.getInstance(getContext()).updateRomMetadata(rom);
-                        vp.getAdapter().notifyDataSetChanged();
-                    } else {
-                        Intent i = new Intent(inflater.getContext(), ControllerScreen.class);
-                        i.putExtra("rom_path", rom.getPath());
-                        i.putExtra("rom_idx", position);
-                        startActivityForResult(i, 0);
-                    }
-                }
-            });
-            return rootView;
-        }
-
-        @Override
-        public void onResume() {
-            super.onResume();
-            sortRomList();
-        }
-
-        @Override
-        public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            super.onActivityResult(requestCode, resultCode, data);
-            if (resultCode == RESULT_OK) {
-                View v = getView();
-                if (v != null) {
-                    // Update "last played" date for the ROM that was just played
-                    ListView listView = (ListView) v.findViewById(R.id.library_list);
-                    RomEntry rom = (RomEntry)listView.getItemAtPosition(data.getExtras().getInt("rom_idx"));
-
-                    rom.lastPlayed = new Date();
-                    RomCache.getInstance(getContext()).updateRomMetadata(rom);
-                }
-            }
-
-        }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        /* Update ViewPager in case the ROM list has changed (e.g., favoriting a
+           ROM from the search view) */
+        vp.getAdapter().notifyDataSetChanged();
     }
 
     /* Returns a fragment corresponding to one of the sections/tabs/pages */

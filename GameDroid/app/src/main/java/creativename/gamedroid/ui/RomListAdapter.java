@@ -2,31 +2,39 @@ package creativename.gamedroid.ui;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import creativename.gamedroid.R;
 
 /* Handles the translation of data wrt formatting the ListView entries of the ROM list */
 public class RomListAdapter extends ArrayAdapter<RomEntry> {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+    private Filter filter;
+    private ArrayList<RomEntry> romList;
 
     public RomListAdapter(Context context, ArrayList<RomEntry> roms) {
         // Make shallow copy so sorting has no effect on other instances
         super(context, 0, new ArrayList<>(roms));
+        filter = new RomEntryFilter();
+        romList = new ArrayList<>(roms);
     }
 
+    @NonNull
     @Override
-    public View getView(final int pos, View v, final ViewGroup parent) {
+    public View getView(final int pos, View v, @NonNull final ViewGroup parent) {
         // Use ROM metadata for list entry
         final RomEntry rom = getItem(pos);
 
@@ -69,7 +77,7 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
                 favColor = R.color.favorite_selected;
                 favImage = R.mipmap.ic_favorite;
             } else {
-                favColor = R.color.favorite_unselected;
+                favColor = R.color.unselected;
                 favImage = R.mipmap.ic_favorite_border;
             }
             favBtn.setImageResource(favImage);
@@ -77,5 +85,52 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
         }
 
         return v;
+    }
+
+    @NonNull
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+
+    /* For searching through ROMs. Will search ALL ROMs (does not work with
+       favorite view, but should never have to) */
+    private class RomEntryFilter extends Filter {
+        @Override
+        protected FilterResults performFiltering(CharSequence query) {
+            FilterResults results = new FilterResults();
+
+            if (query == null || query.length() == 0) {
+                // No query: return all ROMs
+                results.count = romList.size();
+                results.values = romList;
+            } else {
+                // Filter ROM list by query string
+                ArrayList<RomEntry> matched = new ArrayList<>();
+                for (int i = 0; i < romList.size(); ++i)
+                {
+                    RomEntry rom = romList.get(i);
+                    if (rom.getTitle().toLowerCase().contains(query.toString().toLowerCase()))
+                        matched.add(rom);
+                }
+                results.count = matched.size();
+                results.values = matched;
+            }
+            return results;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            clear();
+            addAll((ArrayList<RomEntry>)results.values);
+            sort(new Comparator<RomEntry>() {
+                @Override
+                public int compare(RomEntry o1, RomEntry o2) {
+                    return o1.getTitle().compareToIgnoreCase(o2.getTitle());
+                }
+            });
+            notifyDataSetChanged();
+        }
     }
 }
