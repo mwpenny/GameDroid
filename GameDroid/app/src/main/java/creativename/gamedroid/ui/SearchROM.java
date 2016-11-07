@@ -26,6 +26,14 @@ public class SearchROM extends Activity
     private ArrayList<RomEntry> search_list = RomCache.getInstance(this).romList;
 
     @Override
+    protected void onDestroy()
+    {
+
+        super.onDestroy();
+
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState)
     {
 
