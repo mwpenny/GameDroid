@@ -1,1 +1,5 @@
 8hr fix flag register corruption bug. This bug causes roms to break in werid ways
+2hr debugging instruction timing
+
+---
+10 hours total
