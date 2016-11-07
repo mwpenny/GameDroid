@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.content.Intent;
 import android.view.ViewGroup;
 import android.os.Environment;
-import android.widget.EditText;
 import android.app.AlertDialog;
 import android.widget.ListView;
 import android.widget.AdapterView;
@@ -120,44 +119,9 @@ public class LibraryActivity extends AppCompatActivity
         // prompt the user with a field to search for a specific ROM
         else if (id == R.id.action_search)
         {
-            System.out.println("Clicked action_search on app_bar");
-
-            AlertDialog.Builder searchROM = new AlertDialog.Builder(this);
-            searchROM.setTitle("Enter ROM name:");
-            searchROM.setCancelable(false);
-
-            // Sets button values and handlers within app_search
-            final EditText userInput = new EditText(this);
-            searchROM.setView(userInput);
-
-            // Handler for Search button
-            searchROM.setNegativeButton("Search", new DialogInterface.OnClickListener()
-            {
-                public void onClick(DialogInterface dialog, int id)
-                {
-                    System.out.println("Clicked 'Search' in AlertDialog [Search]");
-                    System.out.println("Input text: " + userInput.getText().toString());
-                    // Perform Search functionality here, closes AlertDialog for now
-                    dialog.cancel();
-                }
-            });
-
-            // Handler for Close button
-            searchROM.setPositiveButton("Close", new DialogInterface.OnClickListener()
-            {
-                public void onClick(DialogInterface dialog, int id)
-                {
-                    System.out.println("Clicked 'Close' in AlertDialog [Search]");
-                    dialog.cancel();
-                }
-            });
-
-            // Build the AlertDialog and display it
-            AlertDialog my_search = searchROM.create();
-            my_search.show();
-
+            Intent next_page = new Intent(getApplicationContext(), SearchROM.class);
+            startActivity(next_page);
             return true;
-
         } // end : search
 
         return super.onOptionsItemSelected(item);
