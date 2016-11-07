@@ -52,6 +52,14 @@ public class LibraryActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        /* Update ViewPager in case the ROM list has changed (e.g., favoriting a
+           ROM from the search view) */
+        super.onResume();
+        vp.getAdapter().notifyDataSetChanged();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (romWarning != null && romWarning.isShowing())
@@ -108,18 +116,11 @@ public class LibraryActivity extends AppCompatActivity
         else if (id == R.id.action_search)
         {
             Intent i = new Intent(getApplicationContext(), SearchActivity.class);
-            startActivityForResult(i, 0);
+            startActivity(i);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        /* Update ViewPager in case the ROM list has changed (e.g., favoriting a
-           ROM from the search view) */
-        vp.getAdapter().notifyDataSetChanged();
     }
 
     /* Returns a fragment corresponding to one of the sections/tabs/pages */
