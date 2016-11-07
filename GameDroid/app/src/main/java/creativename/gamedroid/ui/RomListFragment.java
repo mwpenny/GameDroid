@@ -128,7 +128,7 @@ public class RomListFragment extends Fragment {
                 } else {
                     Intent i = new Intent(inflater.getContext(), ControllerScreen.class);
                     i.putExtra("rom_path", rom.getPath());
-                    i.putExtra("rom_idx", position);
+                    i.putExtra("rom_title", rom.getTitle());
                     startActivityForResult(i, 0);
                 }
             }
@@ -148,12 +148,18 @@ public class RomListFragment extends Fragment {
         if (resultCode == RESULT_OK) {
             View v = getView();
             if (v != null) {
-                // Update "last played" date for the ROM that was just played
+                /* Update "last played" date for the game that was just played.
+                   Applies to all RomEntries with the same title (i.e., in the case that
+                   the user has two software revisions of the same game in their library) */
+                String title = data.getStringExtra("rom_title");
                 ListView listView = (ListView) v.findViewById(R.id.library_list);
-                RomEntry rom = (RomEntry) listView.getItemAtPosition(data.getExtras().getInt("rom_idx"));
-
-                rom.lastPlayed = new Date();
-                RomCache.getInstance(getContext()).updateRomMetadata(rom);
+                for (int i = 0; i < listView.getCount(); ++i) {
+                    RomEntry rom = (RomEntry)listView.getItemAtPosition(i);
+                    if (rom.getTitle().equals(title)) {
+                        rom.lastPlayed = new Date();
+                        RomCache.getInstance(getContext()).updateRomMetadata(rom);
+                    }
+                }
             }
         }
     }
