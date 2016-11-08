@@ -340,7 +340,7 @@ public class CPU {
         oneByteInstructions.put((char) 0x7C, new InstructionForm(ld, new Cursor[]{a, h}));
         oneByteInstructions.put((char) 0x7D, new InstructionForm(ld, new Cursor[]{a, l}));
         oneByteInstructions.put((char) 0x7F, new InstructionForm(ld, new Cursor[]{a, a}));
-        oneByteInstructions.put((char) 0xF9, new InstructionForm(ld, new Cursor[]{sp, hl}));
+        oneByteInstructions.put((char) 0xF9, new ConstantCycleInstruction(ld, new Cursor[]{sp, hl}, 8));
 
         oneByteInstructions.put((char) 0x22, new InstructionForm(ldi, new Cursor[]{ihl, a}));
         oneByteInstructions.put((char) 0x2A, new InstructionForm(ldi, new Cursor[]{a, ihl}));
