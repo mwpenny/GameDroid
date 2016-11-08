@@ -61,7 +61,7 @@ public class LCD implements MemoryMappable {
        each one plane of a bitplane).
 
        The two planes combine to form a 2-bit index into the
-       background palette (first byte = low bits, second
+       background/sprite palette (first byte = low bits, second
        byte = high bits). e.g.:
 
        .33333..                .33333.. -> 01111100 -> $7C
@@ -100,10 +100,10 @@ public class LCD implements MemoryMappable {
            Byte 2: Tile number (in bitmap buffer)
            Byte 3: flags: PPPPxxxx
                           ||||
-                          |||+------ Palette number (1: use sprPalette1, 0: use sprPalette2)
+                          |||+------ Palette number (1: use sprPalette2, 0: use sprPalette1)
                           ||+------- X flip enable
                           |+-------- Y flip enable
-                          +--------- Sprite priority (1: in front of window, 0: between bg and window) */
+                          +--------- Sprite priority (1: in front of bg/window, 0: behind bg/window) */
     private MemoryBuffer oam;
     private OAMDMARegister oamdma;
 
@@ -390,9 +390,9 @@ public class LCD implements MemoryMappable {
 
     private static int flip(int b) {
         // Reverse the bits in an 8-bit integer
-        b = ((b & 0xAA) >> 1) | ((b & 0x55) << 1);
-        b = ((b & 0xCC) >> 2) | ((b & 0x33) << 2);
-        return (b >> 4) | (b << 4);
+        b = ((b & 0xAA) >>> 1) | ((b & 0x55) << 1);
+        b = ((b & 0xCC) >>> 2) | ((b & 0x33) << 2);
+        return ((b >>> 4) | (b << 4)) & 0xFF;
     }
 
     private class LCDControlRegister implements MemoryMappable {
@@ -519,10 +519,6 @@ public class LCD implements MemoryMappable {
         public void update(int y, int x, byte tileNum, byte flags) {
             this.x = x;
             hasFrontPriority = ((flags & 0x80) == 0);
-
-            // TODO: this is broken (updating palette during animation?)
-            // - Pokemon gold intro jigglypuff
-            // - Pokemon red walk animation
             palette = ((flags & 0x10) == 0) ? sprPalette1 : sprPalette2;
             sprTileRow = getTileRow(tileNum, y, ((flags & 0x40) != 0), ((flags & 0x20) != 0));
         }
@@ -544,7 +540,7 @@ public class LCD implements MemoryMappable {
             bmp = getBitmapSliver(tileNum & 0xFF, row, 0);
 
             if (xflip)
-                return (char)((flip((bmp >> 8) & 0xFF) << 8) | flip(bmp & 0xFF));
+                return (char)((flip((bmp >>> 8) & 0xFF) << 8) | flip(bmp & 0xFF));
             return bmp;
         }
     }
