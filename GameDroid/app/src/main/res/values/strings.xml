@@ -20,4 +20,12 @@
     <!-- Internal strings -->
     <string name="path_roms">GameDroid/ROMs</string>
 
+    <!-- Screen Size Options -->
+    <string-array name="screen_sizes">
+        <item>1x</item>
+        <item>2x</item>
+        <item>4x</item>
+        <item>Full Screen</item>
+    </string-array>
+
 </resources>
