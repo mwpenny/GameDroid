@@ -1,5 +1,10 @@
 package creativename.gamedroid.core;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /* Memory bank controller base class
    Subclasses should implement cartridge ROM/RAM bank switching in writeMBC() */
 public abstract class MBC implements MemoryMappable {
@@ -8,15 +13,40 @@ public abstract class MBC implements MemoryMappable {
     private byte[] extRam;         // Not always allocated (depends on cartridge type)
     protected int ramBankNum;      // Which RAM bank is mapped to $A000-$BFFF?
     protected boolean ramEnabled;
-    private boolean hasBattery;
 
-    protected MBC(byte[] rom, int extRamSize, boolean hasBattery) {
+    protected MBC(byte[] rom, int extRamSize) {
         this.rom = rom;
         this.extRam = new byte[extRamSize];
         romBankNum = 1;
         ramBankNum = 0;
         ramEnabled = true;
-        this.hasBattery = hasBattery;
+    }
+
+    public void saveRamToFile(File f) throws IOException {
+        FileOutputStream fos = new FileOutputStream(f);
+        try {
+            fos.write(extRam);
+            fos.close();
+        } catch (IOException e){
+            fos.close();
+            throw e;
+        }
+    }
+
+    public void loadRamFromFile(File f) throws IOException {
+        FileInputStream fis = new FileInputStream(f);
+        try {
+            byte[] buf = new byte[extRam.length];
+            if (fis.read(buf) == buf.length) {
+                extRam = buf;
+            } else {
+                throw new IOException("Could read all bytes");
+            }
+            fis.close();
+        } catch (IOException e) {
+            fis.close();
+            throw e;
+        }
     }
 
     // Handles custom MBC logic (i.e., bank switching, enabling/disabling RAM, etc.)

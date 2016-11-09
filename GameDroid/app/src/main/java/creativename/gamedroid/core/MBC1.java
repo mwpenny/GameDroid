@@ -7,8 +7,8 @@ package creativename.gamedroid.core;
 public class MBC1 extends MBC {
     private boolean settingRamBank;
 
-    public MBC1(byte[] rom, int extRamSize, boolean hasBattery) {
-        super(rom, extRamSize, hasBattery);
+    public MBC1(byte[] rom, int extRamSize) {
+        super(rom, extRamSize);
         settingRamBank = false;
     }
 

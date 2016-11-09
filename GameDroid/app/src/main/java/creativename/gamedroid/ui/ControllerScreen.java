@@ -6,15 +6,18 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
@@ -40,6 +43,8 @@ public class ControllerScreen extends Activity
         this.gb = gb;
         try {
             gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
+            if (gb.cartridge.hasBattery())
+                loadGame();
         } catch (IOException e) {
             // TODO: handle exception
             e.printStackTrace();
@@ -65,10 +70,49 @@ public class ControllerScreen extends Activity
         });
     }
 
+    private File getSaveFile() {
+        File path = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_saves));
+        return new File(path, getIntent().getStringExtra("rom_title") + ".sav");
+    }
+
+    private void saveGame() {
+        // Save game
+        File f = getSaveFile();
+        try {
+            gb.cartridge.mbc.saveRamToFile(f);
+        } catch (IOException e) {
+            System.err.format("Could not save game: %s\n", e.getMessage());
+        }
+    }
+
+    private void loadGame() {
+        // Load game from disk
+        File f = getSaveFile();
+        if (f.exists()) {
+            try {
+                gb.cartridge.mbc.loadRamFromFile(f);
+            } catch (IOException e) {
+                System.err.format("Could not load game: %s\n", e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (gb != null && gb.cartridge != null && gb.cartridge.hasBattery()) {
+            saveGame();
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        this.gb.terminate();
+
+        if (gb != null) {
+            gb.terminate();
+        }
     }
 
     private Controller.Button getButtonCode(View btn) {

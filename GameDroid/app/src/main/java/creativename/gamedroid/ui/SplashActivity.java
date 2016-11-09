@@ -41,8 +41,22 @@ public class SplashActivity extends AppCompatActivity {
 
     private boolean createAppDirs() {
         // Check filesystem access and presence of GameDroid's directories
-        File f = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_roms));
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || (!f.exists() && !f.mkdirs())) {
+        String[] paths = {
+                getString(R.string.path_roms),
+                getString(R.string.path_saves),
+                getString(R.string.path_screenshots)
+        };
+        boolean success = true;
+
+        for (String path : paths) {
+            File f = new File(Environment.getExternalStorageDirectory(), path);
+            if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || (!f.exists() && !f.mkdirs())) {
+                success = false;
+                break;
+            }
+        }
+
+        if (!success) {
             // Could not create application directories! Can't continue!
             fsWarning = new AlertDialog.Builder(this)
                     .setTitle(getString(R.string.dialog_direrror_title))
@@ -62,9 +76,8 @@ public class SplashActivity extends AppCompatActivity {
                     })
                     .setIconAttribute(android.R.attr.alertDialogIcon)
                     .show();
-            return false;
         }
-        return true;
+        return success;
     }
 
     private void gdinit() {

@@ -5,8 +5,8 @@ package creativename.gamedroid.core;
      * Max 8KB of RAM
 */
 public class MBC0 extends MBC {
-    public MBC0(byte[] rom, int extRamSize, boolean hasBattery) {
-        super(rom, extRamSize, hasBattery);
+    public MBC0(byte[] rom, int extRamSize) {
+        super(rom, extRamSize);
     }
 
     protected void writeMBC(char address, byte value) {

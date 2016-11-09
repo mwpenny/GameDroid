@@ -125,9 +125,10 @@ public class Cartridge {
     private ColorMode colorMode;
     private String licensee;
     private boolean supportsSGB;    // SGB = Super GameBoy
-    private byte cartType;          // i.e., Which MBC, clock, battery, etc. are present
+    private byte cartType;
     private int romSize;
     private int ramSize;
+    private boolean batteryPresent;
     private GameLocale locale;
     private byte gameVersion;
     public MBC mbc;
@@ -141,6 +142,7 @@ public class Cartridge {
     public byte getCartType() { return cartType; }
     public int getRomSize() { return romSize; }
     public int getRamSize() { return ramSize; }
+    public boolean hasBattery() { return batteryPresent; }
     public GameLocale getLocale() { return locale; }
     public byte getGameVersion() { return gameVersion; }
 
@@ -194,6 +196,11 @@ public class Cartridge {
         supportsSGB = (bank0[0x146] == 3);
         cartType = bank0[0x147];
 
+        batteryPresent = (cartType == 0x03 || cartType == 0x06 || cartType == 0x09 ||
+                          cartType == 0x0D || cartType == 0x0F || cartType == 0x10 ||
+                          cartType == 0x13 || cartType == 0x17 || cartType == 0x1B ||
+                          cartType == 0x1E || cartType == 0x22 || cartType == (byte)0xFF);
+
         // $0149 - ROM size
         romSize = (32 << bank0[0x148]) * 1024;
 
@@ -232,10 +239,6 @@ public class Cartridge {
             else if (mode == LoadMode.LOAD_ROM) {
                 // Good to go! Continue and load ROM
                 byte rom[] = new byte[romSize];
-                boolean hasBattery = (cartType == 0x03 || cartType == 0x06 || cartType == 0x09 ||
-                                      cartType == 0x0D || cartType == 0x0F || cartType == 0x10 ||
-                                      cartType == 0x13 || cartType == 0x17 || cartType == 0x1B ||
-                                      cartType == 0x1E || cartType == 0x22 || cartType == (byte)0xFF);
                 System.arraycopy(buf, 0, rom, 0, buf.length);
                 if (in.read(rom, 0x4000, rom.length - 0x4000) != rom.length - 0x4000)
                     throw new IOException("Error reading ROM banks");
@@ -245,12 +248,12 @@ public class Cartridge {
                     case 0x00:  // ROM ONLY
                     case 0x08:  // ROM+RAM
                     case 0x09:  // ROM+RAM+BATTERY
-                        mbc = new MBC0(rom, ramSize, hasBattery);
+                        mbc = new MBC0(rom, ramSize);
                         break;
                     case 0x01:  // MBC1
                     case 0x02:  // MBC1+RAM
                     case 0x03:  // MBC1+RAM+BATTERY
-                        mbc = new MBC1(rom, ramSize, hasBattery);
+                        mbc = new MBC1(rom, ramSize);
                         break;
 
                     case 0x0F:
@@ -258,7 +261,7 @@ public class Cartridge {
                     case 0x11:
                     case 0x12:
                     case 0x13:
-                        mbc = new MBC3(rom, ramSize, hasBattery);
+                        mbc = new MBC3(rom, ramSize);
                         break;
 
                     // TODO: other MBCs...
@@ -269,13 +272,14 @@ public class Cartridge {
                     case 0x1C:  // MBC5+RUMBLE
                     case 0x1D:  // MBC5+RUMBLE+RAM
                     case 0x1E:  // MBC5+RUMBLE+RAM+BATTERY
-                        mbc = new MBC5(rom, ramSize, hasBattery);
+                        mbc = new MBC5(rom, ramSize);
                         break;
 
                     default:
                         throw new IllegalArgumentException(String.format("Unsupported cartridge type ($%02X)", cartType));
                 }
             }
+            in.close();
         } catch (IOException ex) {
             in.close();
             throw ex;
