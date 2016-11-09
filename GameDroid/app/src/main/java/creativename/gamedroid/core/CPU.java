@@ -1,12 +1,16 @@
 package creativename.gamedroid.core;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 
 /* Sharp LR35902 interpreter */
-public class CPU {
-    public Register a, b, c, d, e, h, l, af, bc, de, hl, sp, pc;
+public class CPU implements Serializable {
+    public Register a, b, c, d, e, h, l, sp, pc;
+    public transient Register af, bc, de, hl;
     public FlagRegister f;
-    public final GameBoy gb;
+    public transient GameBoy gb;
     private boolean interruptsEnabled;
     private boolean halted;
     public boolean haltBugTriggered;
@@ -19,8 +23,8 @@ public class CPU {
     public static final ConstantCursor8 twoByteIndirect8 = new ConstantCursor8((char) 0);
     public static final ConstantCursor16 indirect16 = new ConstantCursor16((char) 0);
 
-    private HashMap<Character, InstructionForm> oneByteInstructions;
-    private HashMap<Character, InstructionForm> twoByteInstructions;
+    private transient HashMap<Character, InstructionForm> oneByteInstructions;
+    private transient HashMap<Character, InstructionForm> twoByteInstructions;
 
     public enum Interrupt {
         VBLANK(0x01),
@@ -58,7 +62,10 @@ public class CPU {
         sp = new Register16();
         pc = new Register16();
         reset();
+        genLookupTables();
+    }
 
+    private void genLookupTables() {
         IndirectRegister16Cursor ibc = new IndirectRegister16Cursor(bc);
         IndirectRegister16Cursor ide = new IndirectRegister16Cursor(de);
         IndirectRegister16Cursor ihl = new IndirectRegister16Cursor(hl);
@@ -520,6 +527,16 @@ public class CPU {
             twoByteInstructions.put((char) (opcode + 6), new ConstantCycleInstruction(set, new Cursor[]{bitCursors[i], ihl}, 16));
             twoByteInstructions.put((char) (opcode + 7), new InstructionForm(set, new Cursor[]{bitCursors[i], a}));
         }
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        // Reconstruct the instruction lookup tables after deserialization
+        stream.defaultReadObject();
+        af = new ConcatRegister((Register8) a, f);
+        bc = new ConcatRegister((Register8) b, (Register8) c);
+        de = new ConcatRegister((Register8) d, (Register8) e);
+        hl = new ConcatRegister((Register8) h, (Register8) l);
+        genLookupTables();
     }
 
     private void pushStack(char value) {

@@ -1,7 +1,9 @@
 package creativename.gamedroid.core;
 
+import java.io.Serializable;
+
 /* GameBoy CPU timer */
-public class Timer implements MemoryMappable {
+public class Timer implements MemoryMappable, Serializable {
     private char tima; // Timer counter
     private char tma;  // Timer Modulo
     private char tac;  // Timer control

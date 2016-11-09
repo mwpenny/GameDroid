@@ -36,9 +36,9 @@ Major features:
 * Accurate GameBoy emulation (passes cpu_instrs, instr_timing, and lcd_sync test ROMs)
 * Easy to use UI for organizing and searching game library
 * SRAM saves
+* Save states
 
 Planned features:
-* Save states
 * Rewind
 * Customizable screen resolution
 * Landscape layout

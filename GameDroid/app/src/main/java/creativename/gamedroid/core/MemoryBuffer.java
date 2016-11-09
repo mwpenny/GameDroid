@@ -1,6 +1,8 @@
 package creativename.gamedroid.core;
 
-public class MemoryBuffer implements MemoryMappable {
+import java.io.Serializable;
+
+public class MemoryBuffer implements MemoryMappable, Serializable {
     public byte data[];
     boolean enabled;
     int offset, mask;

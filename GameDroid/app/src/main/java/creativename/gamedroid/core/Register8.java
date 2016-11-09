@@ -1,7 +1,9 @@
 package creativename.gamedroid.core;
 
+import java.io.Serializable;
+
 /* 8-bit CPU register */
-public class Register8 implements Register {
+public class Register8 implements Register, Serializable {
     protected char value;
 
     @Override

@@ -1,7 +1,9 @@
 package creativename.gamedroid.core;
 
+import java.io.Serializable;
+
 /* 16-bit CPU register */
-public class Register16 implements Register {
+public class Register16 implements Register, Serializable {
     private char value;
 
     @Override

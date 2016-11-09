@@ -1,9 +1,12 @@
 package creativename.gamedroid.core;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 
 /* Provides GameBoy graphics data manipulation, processing, and output */
-public class LCD implements MemoryMappable {
+public class LCD implements MemoryMappable, Serializable {
     private enum ScreenState {
         HBLANK(0),
         VBLANK(1),
@@ -29,8 +32,8 @@ public class LCD implements MemoryMappable {
             0xFF000000   // 100% black
     };
 
-    private GameBoy gb;
-    public int[] framebuffer;
+    public transient GameBoy gb;
+    public transient int[] framebuffer;
     private ScreenState screenState;
     private ScanlineRegister scanline;
     private MappableByte cmpScanline;
@@ -39,7 +42,7 @@ public class LCD implements MemoryMappable {
     private MappableByte windowX, windowY;  // Window = BG layer that can overlay normal BG
     private Sprite[] foundSprites;
 
-    private LCDControlRegister lcdControl;
+    private transient LCDControlRegister lcdControl;
     private boolean lcdEnabled;
     private char windowTileMapOfs;       // i.e., second tile map starts $400 bytes into buffer
     private boolean windowEnabled;
@@ -49,7 +52,7 @@ public class LCD implements MemoryMappable {
     private boolean spritesEnabled;
     private boolean bgEnabled;
 
-    private LCDStatusRegister lcdStatus;
+    private transient LCDStatusRegister lcdStatus;
     private boolean scanlineCheckEnabled;  // Raise LCD interrupt if scanline=cmpScanline?
     private boolean oamCheckEnabled;       // Raise LCD interrupt if PPU is searching OAM?
     private boolean vblankCheckEnabled;    // Raise LCD interrupt if PPU is in VBlank?
@@ -105,7 +108,7 @@ public class LCD implements MemoryMappable {
                           |+-------- Y flip enable
                           +--------- Sprite priority (1: in front of bg/window, 0: behind bg/window) */
     private MemoryBuffer oam;
-    private OAMDMARegister oamdma;
+    private transient OAMDMARegister oamdma;
 
     public LCD(GameBoy gb) {
         this.gb = gb;
@@ -163,6 +166,14 @@ public class LCD implements MemoryMappable {
         // Start rendering from the top left of the frame
         screenState = ScreenState.OAM_SEARCH;
         remainingStateCycles = 80;
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        oamdma = new OAMDMARegister();
+        framebuffer = new int[144*160];
+        lcdControl = new LCDControlRegister();
+        lcdStatus = new LCDStatusRegister();
     }
 
     private MemoryMappable dispatchAddress(char address) {
@@ -510,7 +521,7 @@ public class LCD implements MemoryMappable {
         }
     }
 
-    private class Sprite {
+    private class Sprite implements Serializable {
         public int x;
         public boolean hasFrontPriority;
         public char sprTileRow;

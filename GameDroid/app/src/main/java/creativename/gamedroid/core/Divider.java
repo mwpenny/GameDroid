@@ -1,7 +1,9 @@
 package creativename.gamedroid.core;
 
+import java.io.Serializable;
+
 /* CPU frequency divider */
-public class Divider implements MemoryMappable {
+public class Divider implements MemoryMappable, Serializable {
     private char counter;
 
     // Tell the divider that some number of cycles have passed

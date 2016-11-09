@@ -9,10 +9,10 @@ import java.io.IOException;
    Subclasses should implement cartridge ROM/RAM bank switching in writeMBC() */
 public abstract class MBC implements MemoryMappable {
     private byte[] rom;
-    protected int romBankNum;      // Which ROM bank is mapped to $4000-$7FFF?
-    private byte[] extRam;         // Not always allocated (depends on cartridge type)
-    protected int ramBankNum;      // Which RAM bank is mapped to $A000-$BFFF?
-    protected boolean ramEnabled;
+    public int romBankNum;      // Which ROM bank is mapped to $4000-$7FFF?
+    private byte[] extRam;      // Not always allocated (depends on cartridge type)
+    public int ramBankNum;      // Which RAM bank is mapped to $A000-$BFFF?
+    public boolean ramEnabled;
 
     protected MBC(byte[] rom, int extRamSize) {
         this.rom = rom;

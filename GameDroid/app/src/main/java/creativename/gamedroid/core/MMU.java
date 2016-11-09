@@ -1,11 +1,10 @@
 package creativename.gamedroid.core;
 
-/**
- * The memory mapping unit.
- */
+import java.io.Serializable;
 
-public class MMU {
-    final private GameBoy gb;
+/* The memory mapping unit */
+public class MMU implements Serializable {
+    public transient GameBoy gb;
     final private MemoryBuffer workRam;
     final private MemoryBuffer stack;
     final private MappableByte raisedInterrupts;

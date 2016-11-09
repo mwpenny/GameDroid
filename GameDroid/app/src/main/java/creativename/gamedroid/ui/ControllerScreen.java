@@ -28,7 +28,15 @@ import creativename.gamedroid.core.GameBoy;
 
 public class ControllerScreen extends Activity
 {
-    GameBoy gb;
+    private GameBoy gb;
+    private SaveStateRunnable saveState;
+    private LoadStateRunnable loadState;
+
+    public ControllerScreen() {
+        saveState = new SaveStateRunnable();
+        loadState = new LoadStateRunnable();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -39,8 +47,7 @@ public class ControllerScreen extends Activity
         String romPath = getIntent().getStringExtra("rom_path");
         SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
         final GameboyScreen cb = new GameboyScreen();
-        final GameBoy gb = new GameBoy(cb);
-        this.gb = gb;
+        gb = new GameBoy(cb);
         try {
             gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
             if (gb.cartridge.hasBattery())
@@ -75,6 +82,11 @@ public class ControllerScreen extends Activity
         return new File(path, getIntent().getStringExtra("rom_title") + ".sav");
     }
 
+    private File getStateFile() {
+        File path = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_states));
+        return new File(path, getIntent().getStringExtra("rom_title") + ".st");
+    }
+
     private void saveGame() {
         // Save game
         File f = getSaveFile();
@@ -93,6 +105,32 @@ public class ControllerScreen extends Activity
                 gb.cartridge.mbc.loadRamFromFile(f);
             } catch (IOException e) {
                 System.err.format("Could not load game: %s\n", e.getMessage());
+            }
+        }
+    }
+
+    private class SaveStateRunnable implements Runnable {
+        @Override
+        public void run() {
+            File f = getStateFile();
+            try {
+                gb.saveStateToFile(f);
+            } catch (IOException e) {
+                System.err.format("Could not save state: %s\n", e.getMessage());
+            }
+        }
+    }
+
+    private class LoadStateRunnable implements Runnable {
+        @Override
+        public void run() {
+            File f = getStateFile();
+            if (f.exists()) {
+                try {
+                    gb.loadStateFromFile(f);
+                } catch (Exception e) {
+                    System.err.format("Could not load state: %s\n", e.getMessage());
+                }
             }
         }
     }
@@ -142,7 +180,14 @@ public class ControllerScreen extends Activity
     {
         // TODO: use onTouch events so we can detect pressing/releasing
         Controller.Button b = getButtonCode(btn);
-        if (b != null)
+        if (b != null) {
+            if (b == Controller.Button.DOWN)
+                gb.queueRunnable(saveState);
+            else if (b == Controller.Button.UP)
+                gb.queueRunnable(loadState);
+
             gb.gamepad.updateButton(b, true);
+            //gb.gamepad.updateButton(b, false);
+        }
     }
 }
