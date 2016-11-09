@@ -17,6 +17,8 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import creativename.gamedroid.R;
 
@@ -84,31 +86,8 @@ public class LibraryActivity extends AppCompatActivity
         // settings options for the User regarding preferences, ROM settings, etc...
         if (id == R.id.action_settings)
         {
-
-            System.out.println("Clicked action_settings on app_bar");
-
-            AlertDialog.Builder settingsDialog = new AlertDialog.Builder(this);
-            settingsDialog.setTitle("Settings Menu");
-            settingsDialog.setCancelable(true);
-
-            // Inflate settings.XML file
-            LayoutInflater inflater = this.getLayoutInflater();
-            settingsDialog.setView(inflater.inflate(R.layout.settings, null));
-
-            // Handler for Close button
-            settingsDialog.setPositiveButton("Close", new DialogInterface.OnClickListener()
-            {
-                public void onClick(DialogInterface dialog, int id)
-                {
-                    System.out.println("Clicked 'Close' in AlertDialog [Settings]");
-                    dialog.cancel();
-                }
-            });
-
-            // Build the AlertDialog and display it
-            AlertDialog displaySettings = settingsDialog.create();
-            displaySettings.show();
-
+            Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivity(i);
             return true;
 
         } // end : settings

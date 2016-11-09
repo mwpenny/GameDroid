@@ -33,7 +33,7 @@ Repository structure:
 | 0xFF   | HuC1+RAM+BATT               |
 
 Major features:
-* GameBoy emulation
+* Accurate GameBoy emulation (passes cpu_instrs, instr_timing, and lcd_sync test ROMs)
 * Easy to use UI for organizing and searching game library
 
 Planned features:

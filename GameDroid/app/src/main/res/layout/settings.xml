@@ -5,36 +5,144 @@
     android:id="@+id/settings_menu"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingBottom="16dp"
-    android:paddingTop="16dp"
     android:orientation="vertical"
     android:background="@color/background_color">
 
-    <!-- List for menu buttons -->
-    <Button
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/settings_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/manage_profile"
-        android:text="Manage Profile"
-        android:layout_marginBottom="@dimen/button_gap"
-        />
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"/>
 
-    <Button
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/sensitivity"
-        android:text="Sensitivity"
-        android:layout_marginBottom="@dimen/button_gap"
-        />
+        android:id="@+id/screen_size"
+        android:orientation="vertical"
+        android:paddingBottom="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="16dp">
 
-    <Button
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:id="@+id/screen_size_header"
+            android:text="Screen Size"
+            android:textSize="18dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/screen_size_info"
+            android:text="Select a size for the Emulator Screen"/>
+
+        <RadioGroup
+            android:id="@+id/size_selector"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:checkedButton="@+id/size_1">
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/size_1"
+                android:text="1x"/>
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/size_2"
+                android:text="2x"/>
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/size_full"
+                android:text="Full Screen"/>
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/button_help"
-        android:text="Help"
-        android:layout_marginBottom="@dimen/button_gap"
-        />
+        android:orientation="vertical"
+        android:paddingBottom="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp">
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:id="@+id/button_swap_header"
+            android:text="Invert A/B"
+            android:textSize="18dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_swap_info"
+            android:text="Switch the A and B buttons on the Emulator Screen"/>
+
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/invert_switch"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:id="@+id/orientation_header"
+            android:text="Orientation Preference"
+            android:textSize="18dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/orientation_info"
+            android:text="The preferred orientation for the Emulator Screen"/>
+
+        <RadioGroup
+            android:id="@+id/orient_selector"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:checkedButton="@+id/portrait_select">
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/portrait_select"
+                android:text="Portrait"/>
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/landscape_select"
+                android:text="Landscape"/>
+
+        </RadioGroup>
+
+    </LinearLayout>
 
 </LinearLayout>

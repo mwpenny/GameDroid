@@ -10,7 +10,7 @@
     <string name="search_hint">Search ROM titles&#8230;</string>
 
     <string name="dialog_direrror_title">Error accessing file system</string>
-    <string name="dialog_direrror_message">GameDroid was unable to access your device\'s file system and must exit</string>
+    <string name="dialog_direrror_message">GameDroid was unable to access your device\'s file system (required to find ROMs) and must exit</string>
     <string name="dialog_romcache_message">Searching for ROMs&#8230;</string>
     <string name="dialog_noroms_title">No game ROM files found</string>
     <string name="dialog_noroms_message">GameDroid was unable to locate any ROM (.gb/.gbc) files. Move your ROMs to %s</string>
@@ -19,5 +19,13 @@
 
     <!-- Internal strings -->
     <string name="path_roms">GameDroid/ROMs</string>
+
+    <!-- Screen Size Options -->
+    <string-array name="screen_sizes">
+        <item>1x</item>
+        <item>2x</item>
+        <item>4x</item>
+        <item>Full Screen</item>
+    </string-array>
 
 </resources>

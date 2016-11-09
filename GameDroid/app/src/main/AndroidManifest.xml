@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="creativename.gamedroid">
 
-    <!-- Required file permissions needed for GameDroid -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
@@ -24,6 +23,7 @@
 
         <activity android:name=".ui.MainScreen"/>
         <activity android:name=".ui.LibraryActivity"/>
+        <activity android:name=".ui.SettingsActivity"/>
         <activity android:name=".ui.SearchActivity" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH"/>
