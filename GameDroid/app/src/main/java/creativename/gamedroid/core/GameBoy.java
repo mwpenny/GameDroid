@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /* Entry point to the emulator core */
 public class GameBoy {
@@ -103,7 +105,8 @@ public class GameBoy {
 
     public void saveStateToFile(File f) throws IOException {
         FileOutputStream fos = new FileOutputStream(f);
-        ObjectOutputStream out = new ObjectOutputStream(fos);
+        GZIPOutputStream zos = new GZIPOutputStream(fos);
+        ObjectOutputStream out = new ObjectOutputStream(zos);
 
         try {
             out.writeInt(cartridge.mbc.romBankNum);
@@ -116,9 +119,11 @@ public class GameBoy {
             out.writeObject(divider);
             out.writeBoolean(stopped);
             out.close();
+            zos.close();
             fos.close();
         } catch (IOException e) {
             out.close();
+            zos.close();
             fos.close();
             throw e;
         }
@@ -126,7 +131,8 @@ public class GameBoy {
 
     public void loadStateFromFile(File f) throws IOException, ClassNotFoundException {
         FileInputStream fis = new FileInputStream(f);
-        ObjectInputStream in = new ObjectInputStream(fis);
+        GZIPInputStream zis = new GZIPInputStream(fis);
+        ObjectInputStream in = new ObjectInputStream(zis);
 
         try {
             cartridge.mbc.romBankNum = in.readInt();
@@ -142,9 +148,11 @@ public class GameBoy {
             divider = (Divider) in.readObject();
             stopped = in.readBoolean();
             in.close();
+            zis.close();
             fis.close();
         } catch (IOException e) {
             in.close();
+            zis.close();
             fis.close();
             throw e;
         }
