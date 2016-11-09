@@ -12,7 +12,6 @@ Repository structure:
 
 | Number | Description                 |
 |--------|-----------------------------|
-| 0x03   | MBC1+RAM+BATT               |
 | 0x05   | MBC2                        |
 | 0x06   | MBC2+BATT                   |
 | 0x0B   | MMM01                       |
@@ -20,8 +19,6 @@ Repository structure:
 | 0x0D   | MMM01+RAM+BATT              |
 | 0x0F   | MBC3+RTC+BATT               |
 | 0x10   | MBC3+RTC+RAM+BATT           |
-| 0x13   | MBC3+RAM+BATT               |
-| 0x1B   | MBC5+RAM+BATT               |
 | 0x1C   | MBC5+RUMBLE                 |
 | 0x1D   | MBC5+RUMBLE+RAM             |
 | 0x1E   | MBC5+RUMBLE+RAM+BATT        |
