@@ -32,8 +32,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -103,11 +106,9 @@ public class GameBoy {
         }
     }
 
-    public void saveStateToFile(File f) throws IOException {
-        FileOutputStream fos = new FileOutputStream(f);
-        GZIPOutputStream zos = new GZIPOutputStream(fos);
-        ObjectOutputStream out = new ObjectOutputStream(zos);
-
+    private void saveState(OutputStream stream) throws IOException {
+        // Save the emulator's internal state ("save anywhere")
+        ObjectOutputStream out = new ObjectOutputStream(stream);
         try {
             out.writeInt(cartridge.mbc.romBankNum);
             out.writeInt(cartridge.mbc.ramBankNum);
@@ -119,21 +120,15 @@ public class GameBoy {
             out.writeObject(divider);
             out.writeBoolean(stopped);
             out.close();
-            zos.close();
-            fos.close();
         } catch (IOException e) {
             out.close();
-            zos.close();
-            fos.close();
             throw e;
         }
     }
 
-    public void loadStateFromFile(File f) throws IOException, ClassNotFoundException {
-        FileInputStream fis = new FileInputStream(f);
-        GZIPInputStream zis = new GZIPInputStream(fis);
-        ObjectInputStream in = new ObjectInputStream(zis);
-
+    private void loadState(InputStream stream) throws IOException, ClassNotFoundException {
+        // Load the emulator's internal state ("load anywhere")
+        ObjectInputStream in = new ObjectInputStream(stream);
         try {
             cartridge.mbc.romBankNum = in.readInt();
             cartridge.mbc.ramBankNum = in.readInt();
@@ -148,10 +143,30 @@ public class GameBoy {
             divider = (Divider) in.readObject();
             stopped = in.readBoolean();
             in.close();
-            zis.close();
-            fis.close();
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             in.close();
+            throw e;
+        }
+    }
+
+    public void saveStateToFile(File f) throws IOException {
+        FileOutputStream fos = new FileOutputStream(f);
+        GZIPOutputStream zos = new GZIPOutputStream(fos);
+        try {
+            saveState(zos);
+        } catch (IOException e) {
+            zos.close();
+            fos.close();
+            throw e;
+        }
+    }
+
+    public void loadStateFromFile(File f) throws IOException, ClassNotFoundException {
+        FileInputStream fis = new FileInputStream(f);
+        GZIPInputStream zis = new GZIPInputStream(fis);
+        try {
+            loadState(zis);
+        } catch (IOException e) {
             zis.close();
             fis.close();
             throw e;
