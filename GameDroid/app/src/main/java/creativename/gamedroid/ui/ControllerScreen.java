@@ -67,6 +67,7 @@ public class ControllerScreen extends Activity
                         gb.run();
                     }
                 }, "Emulation: " + gb.cartridge.getTitle());
+                emulator.setPriority(Thread.MAX_PRIORITY);
                 emulator.start();
             }
 

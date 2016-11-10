@@ -10,19 +10,23 @@ public class InstructionForm {
         this.operandTemplate = operandTemplate;
     }
 
+    final static ConstantCursor8 cache = new ConstantCursor8((char) 1);
+    final static ConstantCursor16 cache16 = new ConstantCursor16((char) 1);
+
     /* Translates operands and fetches data as necessary */
-    protected Cursor[] readOperands(Cursor[] operandTemplate, CPU cpu) {
-        Cursor[] operands = new Cursor[operandTemplate.length];
+    protected Cursor[] readOperands(Cursor[] operandTemplate, CPU cpu, Cursor[] operands) {
         for (int i = 0; i < operandTemplate.length; i++) {
             if (operandTemplate[i] == CPU.immediate8) {
                 // Next byte is operand
                 char val = cpu.gb.mmu.read8(cpu.pc.read());
-                operands[i] = new ConstantCursor8(val);
+                cache.value = val;
+                operands[i] = cache;
                 cpu.pc.increment();
             } else if (operandTemplate[i] == CPU.immediate16) {
                 // Next two bytes make operand
                 char val = cpu.gb.mmu.read16(cpu.pc.read());
-                operands[i] = new ConstantCursor16(val);
+                cache16.value = val;
+                operands[i] = cache16;
                 cpu.pc.increment();
                 cpu.pc.increment();
             } else if (operandTemplate[i] == CPU.oneByteIndirect8) {
@@ -49,6 +53,8 @@ public class InstructionForm {
         }
         return operands;
     }
+    Cursor[] one = new Cursor[1];
+    Cursor[] two = new Cursor[2];
 
     public int execute(CPU cpu) {
         /* BUG: If interrupt master enable is unset but some interrupts are enabled and raised,
@@ -63,7 +69,14 @@ public class InstructionForm {
             cpu.pc.increment();
         else
             cpu.haltBugTriggered = false;
-        Cursor[] operands = readOperands(operandTemplate, cpu);
+
+
+        Cursor[] operands = one;
+        if (operandTemplate.length == 1) {
+            operands = readOperands(operandTemplate, cpu, one);
+        } else if (operandTemplate.length == 2) {
+            operands = readOperands(operandTemplate, cpu, two);
+        }
         return root.execute(cpu, operands);
     }
 }

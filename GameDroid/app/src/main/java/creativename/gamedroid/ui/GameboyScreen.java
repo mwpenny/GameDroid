@@ -27,14 +27,19 @@ public class GameboyScreen extends Activity implements SurfaceHolder.Callback, R
 
     static Paint p = new Paint();
 
+    static Rect cache = new Rect(0, 0, 160, 144);
+
     @Override
     public void frameReady(int[] newFrame) {
+        //long start = System.nanoTime();
         Canvas c;
         if (holder != null && (c = holder.lockCanvas()) != null) {
             frameBuff.setPixels(newFrame, 0, 160, 0, 0, 160, 144);
-            c.drawBitmap(frameBuff, new Rect(0, 0, 160, 144), holder.getSurfaceFrame(), p);
+            c.drawBitmap(frameBuff, cache, holder.getSurfaceFrame(), p);
             holder.unlockCanvasAndPost(c);
         }
+        //System.out.println("rendered");
+        //System.out.format("%ffps\n", 1_000_000_000f/ (System.nanoTime() - start));
     }
 
     @Override

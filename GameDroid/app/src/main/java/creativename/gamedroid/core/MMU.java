@@ -27,8 +27,8 @@ public class MMU implements Serializable {
             case 0xE000:
                 return workRam;
         }
-        if (addr == 0xFF00)
-            return gb.gamepad;
+        if (addr >= 0xFF80 && addr <= 0xFFFE)
+            return stack;
         else if (addr == 0xFF0F)
             return raisedInterrupts;
         else if (addr == 0xFF04)
@@ -39,8 +39,8 @@ public class MMU implements Serializable {
                  (addr >= 0xFE00 & addr <= 0xFE9F) ||
                  (addr >= 0xFF40 && addr <= 0xFF4B))
             return gb.lcd;
-        else if (addr >= 0xFF80 && addr <= 0xFFFE)
-            return stack;
+        else if (addr == 0xFF00)
+            return gb.gamepad;
         else if (addr == 0xFFFF)
             return enabledInterrupts;
         else if (addr < 0x8000 || (addr >= 0xA000 && addr <= 0xBFFF))
@@ -67,12 +67,16 @@ public class MMU implements Serializable {
         return (char) (read8(address++) | (read8(address) << 8));
     }
 
+    MemoryCursor8 hue = new MemoryCursor8('1');
+    MemoryCursor16 hua = new MemoryCursor16('1');
     public MemoryCursor8 getCursor8(char address) {
-        return new MemoryCursor8(address);
+        hue.address = address;
+        return hue;
     }
 
     public MemoryCursor16 getCursor16(char address) {
-        return new MemoryCursor16(address);
+        hua.address = address;
+        return hua;
     }
 
     // these are effective output of the boot rom
@@ -99,7 +103,7 @@ public class MMU implements Serializable {
     }
 
     private class MemoryCursor16 implements Cursor {
-        protected char address;
+        public char address;
 
         public MemoryCursor16(char address) {
             this.address = address;
@@ -138,7 +142,7 @@ public class MMU implements Serializable {
 
         @Override
         public byte read(char address) {
-            System.err.format("Warning: invalid memory read at $%04X\n", (int) address);
+            //System.err.format("Warning: invalid memory read at $%04X\n", (int) address);
             return (byte) 0xFF;  // mimic actual hardware
         }
 
@@ -152,7 +156,7 @@ public class MMU implements Serializable {
                 System.out.print((char) (lastTransferByte % 255));
                 return;
             }
-            System.err.format("Warning: invalid memory write at $%04X\n", (int) address);
+            //System.err.format("Warning: invalid memory write at $%04X\n", (int) address);
         }
     }
 }
