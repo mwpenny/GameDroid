@@ -23,17 +23,19 @@ public abstract class MBC implements MemoryMappable {
     }
 
     public void saveRamToFile(File f) throws IOException {
+        // Save the cartridge RAM (i.e., the game's save file)
         FileOutputStream fos = new FileOutputStream(f);
         try {
             fos.write(extRam);
             fos.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             fos.close();
             throw e;
         }
     }
 
     public void loadRamFromFile(File f) throws IOException {
+        // Load the cartridge RAM (i.e., the game's save file)
         FileInputStream fis = new FileInputStream(f);
         try {
             byte[] buf = new byte[extRam.length];
