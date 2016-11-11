@@ -1,0 +1,11 @@
+2hrs, 30mins	Find and fix timer bug. This broke many games.
+1hr		Fix errors in implementation of some MBCs
+30mins		Partially implement MBC3 (no RTC)
+2hrs, 30mins	Research and implement window rendering. The window is another background layer
+2hrs		Find and fix various graphical bugs (background scroll wraparound, SGB detection false positives, and sprite flipping)
+2hrs		Refactoring UI and fixing UI bugs (search, ROM list not updating)
+30mins		Implementing SRAM saves
+1hr		Implementing save states
+
+---
+12hrs		Total
