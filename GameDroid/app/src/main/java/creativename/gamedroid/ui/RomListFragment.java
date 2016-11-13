@@ -1,5 +1,6 @@
 package creativename.gamedroid.ui;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -8,7 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -133,7 +136,36 @@ public class RomListFragment extends Fragment {
                 }
             }
         });
+
+        listView.setLongClickable(true);
+        listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                RomEntry rom = (RomEntry) listView.getItemAtPosition(position);
+                openInfoDialog(rom);
+                return true;
+            }
+        });
+
         return rootView;
+    }
+
+    private void openInfoDialog(RomEntry focusedRom) {
+        final Dialog infoDialog = new Dialog(getContext());
+        infoDialog.setTitle("ROM Details");
+        infoDialog.setCancelable(true);
+        infoDialog.setCanceledOnTouchOutside(true);
+        infoDialog.setContentView(R.layout.information_dialog);
+        setDialogText(infoDialog, R.id.dialog_title, "Title: " + focusedRom.getTitle());
+        setDialogText(infoDialog, R.id.dialog_licensee, "Licensee: " + focusedRom.getLicensee());
+        setDialogText(infoDialog, R.id.dialog_version, "Version: " + focusedRom.getVersion() + "");
+        setDialogText(infoDialog, R.id.dialog_path, "Location: " + focusedRom.getPath());
+        infoDialog.show();
+    }
+
+    private void setDialogText(Dialog dialog, int id, String text) {
+        TextView infoText = (TextView) dialog.findViewById(id);
+        infoText.setText(text);
     }
 
     @Override
