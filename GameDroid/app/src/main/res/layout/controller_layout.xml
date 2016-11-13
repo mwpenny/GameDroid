@@ -86,8 +86,8 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/a_button"
-                android:id="@+id/controller_a_button"
+                android:src="@mipmap/b_button"
+                android:id="@+id/controller_b_button"
                 android:layout_gravity="bottom"
                 android:onClick="buttonPress"
                 android:background="@android:color/transparent"/>
@@ -95,8 +95,8 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/b_button"
-                android:id="@+id/controller_b_button"
+                android:src="@mipmap/a_button"
+                android:id="@+id/controller_a_button"
                 android:layout_gravity="center"
                 android:onClick="buttonPress"
                 android:background="@android:color/transparent"/>
