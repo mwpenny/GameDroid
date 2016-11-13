@@ -171,6 +171,12 @@ public class ControllerScreen extends Activity
                 return Controller.Button.A;
             case R.id.controller_b_button:
                 return Controller.Button.B;
+            /*
+            case R.id.save_button:
+                return Controller.Button.SAVE;
+            case R.id.load_button:
+                return Controller.Button.LOAD;
+            */
             default:
                 return null;
         }
