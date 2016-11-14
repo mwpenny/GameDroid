@@ -3,7 +3,7 @@
 <!-- Splash screen to display logo while the app is loading -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:drawable="@color/background_color"/>
+        android:drawable="@color/colorBackground"/>
 
     <item>
         <bitmap

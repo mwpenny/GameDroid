@@ -129,7 +129,7 @@ public class RomListFragment extends Fragment {
                     RomCache.getInstance(getContext()).updateRomMetadata(rom);
                     refresh();
                 } else {
-                    Intent i = new Intent(inflater.getContext(), ControllerScreen.class);
+                    Intent i = new Intent(inflater.getContext(), EmulatorActivity.class);
                     i.putExtra("rom_path", rom.getPath());
                     i.putExtra("rom_title", rom.getTitle());
                     startActivityForResult(i, 0);

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Frame around the gameplay screen -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="@color/gb_frame"/>
+            <stroke android:width="2dp" android:color="@color/gb_frame_border" />
+            <corners android:radius="10dp" />
+            <corners android:bottomRightRadius="50dp" />
+        </shape>
+    </item>
+</layer-list>

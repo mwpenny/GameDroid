@@ -2,37 +2,30 @@ package creativename.gamedroid.ui;
 
 import android.app.Activity;
 
-import android.app.AlertDialog;
-import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.opengl.GLSurfaceView;
-import android.opengl.GLSurfaceView.Renderer;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
 import creativename.gamedroid.R;
 import creativename.gamedroid.core.Cartridge;
 import creativename.gamedroid.core.Controller;
 import creativename.gamedroid.core.GameBoy;
 
-public class ControllerScreen extends Activity
+public class EmulatorActivity extends Activity implements View.OnTouchListener
 {
     private GameBoy gb;
     private SaveStateRunnable saveState;
     private LoadStateRunnable loadState;
+    private Toast toast;
 
-    public ControllerScreen() {
+    public EmulatorActivity() {
         saveState = new SaveStateRunnable();
         loadState = new LoadStateRunnable();
     }
@@ -41,8 +34,18 @@ public class ControllerScreen extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.controller_screen);
+        setContentView(R.layout.activity_emulator);
         setResult(RESULT_OK, getIntent());
+
+        // Set up listeners
+        findViewById(R.id.controller_dpad).setOnTouchListener(this);
+
+        findViewById(R.id.controller_a).setOnTouchListener(this);
+        findViewById(R.id.controller_b).setOnTouchListener(this);
+        findViewById(R.id.controller_select).setOnTouchListener(this);
+        findViewById(R.id.controller_start).setOnTouchListener(this);
+        findViewById(R.id.controller_save).setOnTouchListener(this);
+        findViewById(R.id.controller_load).setOnTouchListener(this);
 
         String romPath = getIntent().getStringExtra("rom_path");
         SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
@@ -153,47 +156,76 @@ public class ControllerScreen extends Activity
         }
     }
 
-    private Controller.Button getButtonCode(View btn) {
-        switch (btn.getId()) {
-            case R.id.controller_up_arrow:
-                return Controller.Button.UP;
-            case R.id.controller_down_arrow:
-                return Controller.Button.DOWN;
-            case R.id.controller_left_arrow:
-                return Controller.Button.LEFT;
-            case R.id.controller_right_arrow:
-                return Controller.Button.RIGHT;
-            case R.id.controller_select:
-                return Controller.Button.SELECT;
-            case R.id.controller_start:
-                return Controller.Button.START;
-            case R.id.controller_a_button:
-                return Controller.Button.A;
-            case R.id.controller_b_button:
-                return Controller.Button.B;
-            /*
-            case R.id.save_button:
-                return Controller.Button.SAVE;
-            case R.id.load_button:
-                return Controller.Button.LOAD;
-            */
-            default:
-                return null;
-        }
-    }
+    @Override
+    public boolean onTouch(View btn, MotionEvent e) {
+        // Handle gamepad button presses
+        int action = e.getAction();
+        if (btn.getId() == R.id.controller_dpad) {
+            // Determine which d-pad keys are pressed
+            boolean up, down, left, right;
+            if (action != MotionEvent.ACTION_UP) {
+                int x = (int) e.getX();
+                int y = (int) e.getY();
+                up = y < btn.getHeight() / 3;
+                down = y > 2 * btn.getHeight() / 3;
+                left = x < btn.getWidth() / 3;
+                right = x > 2 * btn.getWidth() / 3;
+            } else {
+                up = down = left = right = false;
+            }
 
-    public void buttonPress(View btn)
-    {
-        // TODO: use onTouch events so we can detect pressing/releasing
-        Controller.Button b = getButtonCode(btn);
-        if (b != null) {
-            if (b == Controller.Button.DOWN)
-                gb.queueRunnable(saveState);
-            else if (b == Controller.Button.UP)
-                gb.queueRunnable(loadState);
+            // Update emulator gamepad
+            gb.gamepad.updateButton(Controller.Button.UP, up);
+            gb.gamepad.updateButton(Controller.Button.DOWN, down);
+            gb.gamepad.updateButton(Controller.Button.LEFT, left);
+            gb.gamepad.updateButton(Controller.Button.RIGHT, right);
 
-            gb.gamepad.updateButton(b, true);
-            //gb.gamepad.updateButton(b, false);
+            // Update UI gamepad
+            findViewById(R.id.controller_dpad_up).setPressed(up);
+            findViewById(R.id.controller_dpad_down).setPressed(down);
+            findViewById(R.id.controller_dpad_left).setPressed(left);
+            findViewById(R.id.controller_dpad_right).setPressed(right);
+
+
+        } else if (btn.getId() == R.id.controller_load || btn.getId() == R.id.controller_save) {
+            // Save/load states
+            if (action == MotionEvent.ACTION_UP) {
+                boolean saving = (btn.getId() == R.id.controller_save);
+                String text = saving ? getString(R.string.state_saved) : getString(R.string.state_loaded);
+                gb.queueRunnable(saving ? saveState : loadState);
+                if (toast != null)
+                    toast.cancel();
+                toast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        } else {
+            // Determine which controller buttons are pressed
+            Controller.Button b = null;
+            switch (btn.getId()) {
+                case R.id.controller_select:
+                    b = Controller.Button.SELECT;
+                    break;
+                case R.id.controller_start:
+                    b = Controller.Button.START;
+                    break;
+                case R.id.controller_a:
+                    b = Controller.Button.A;
+                    break;
+                case R.id.controller_b:
+                    b = Controller.Button.B;
+                    break;
+            }
+            if (b != null) {
+                if (action == MotionEvent.ACTION_DOWN) {
+                    btn.setPressed(true);
+                    gb.gamepad.updateButton(b, true);
+                }
+                else if (action == MotionEvent.ACTION_UP) {
+                    btn.setPressed(false);
+                    gb.gamepad.updateButton(b, false);
+                }
+            }
         }
+        return (action == MotionEvent.ACTION_DOWN);
     }
 }

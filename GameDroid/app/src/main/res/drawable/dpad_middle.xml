@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Center of the d-pad -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gb_dpad_background"/>
+        </shape>
+    </item>
+    <item>
+        <bitmap
+            android:src="@mipmap/dpad_middle"
+            android:tint="@color/gb_dpad_trim">
+        </bitmap>
+    </item>
+</layer-list>

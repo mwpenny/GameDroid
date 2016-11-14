@@ -3,7 +3,15 @@
     <color name="colorPrimary">#78909C</color>
     <color name="colorPrimaryDark">#607D8B</color>
     <color name="colorAccent">#E57373</color>
-    <color name="background_color">#bdbdbd</color>
+    <color name="colorBackground">#BDBDBD</color>
+
+    <color name="gb_frame">#9E9E9E</color>
+    <color name="gb_frame_border">#757575</color>
+    <color name="gb_frame_led">#E57373</color>
+    <color name="gb_dpad_background">#212121</color>
+    <color name="gb_dpad_trim">#616161</color>
+    <color name="gb_button_pressed">#B71C1C</color>
+    <color name="gb_button_unpressed">#E53935</color>
 
     <color name="favorite_selected">#EF5350</color>
     <color name="favorite_unselected">#9E9E9E</color>

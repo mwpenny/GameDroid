@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- D-pad arrow -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:top="4dp">
+        <selector>
+            <item android:state_pressed="true">
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="90"
+                        android:startColor="@color/gb_dpad_background"
+                        android:centerColor="#424242"
+                        android:endColor="@android:color/white"/>
+                </shape>
+            </item>
+            <item android:state_pressed="false">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/gb_dpad_background"/>
+                </shape>
+            </item>
+        </selector>
+    </item>
+    <item>
+        <bitmap
+            android:src="@mipmap/dpad_arrow"
+            android:tint="@color/gb_dpad_trim">
+        </bitmap>
+    </item>
+</layer-list>

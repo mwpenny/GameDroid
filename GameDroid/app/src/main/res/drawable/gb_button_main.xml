@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- A and B buttons -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="@color/gb_button_pressed"
+                android:endColor="@color/gb_button_pressed"
+                android:angle="135"/>
+        </shape>
+    </item>
+    <item android:state_pressed="false">
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="@color/gb_button_pressed"
+                android:endColor="@color/gb_button_unpressed"
+                android:angle="135"/>
+        </shape>
+    </item>
+</selector>
