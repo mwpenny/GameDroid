@@ -6,6 +6,7 @@
 2hrs		Refactoring UI and fixing UI bugs (search, ROM list not updating)
 30mins		Implementing SRAM saves
 1hr		Implementing save states
+1hr		Deliverable 2
 
 ---
-12hrs		Total
+13hrs		Total
