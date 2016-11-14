@@ -52,9 +52,9 @@ public class Timer implements MemoryMappable, Serializable {
             tma = val;
         } else if (address == 0xFF07) {
             // TODO: is this how the actual hardware behave?
-            if ((tac & 0b11) != (val & 0b11)) {
+            if ((tac & 0b11) != (val & 0b11))
                 cycleReservoir = 0;
-            }
+
             tac = val;
         }
     }

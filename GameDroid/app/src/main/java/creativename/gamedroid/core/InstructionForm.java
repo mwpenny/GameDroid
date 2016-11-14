@@ -10,7 +10,7 @@ public class InstructionForm {
         this.operandTemplate = operandTemplate;
     }
 
-    final static ConstantCursor8 cache = new ConstantCursor8((char) 1);
+    final static ConstantCursor8 cache8 = new ConstantCursor8((char) 1);
     final static ConstantCursor16 cache16 = new ConstantCursor16((char) 1);
 
     /* Translates operands and fetches data as necessary */
@@ -19,8 +19,8 @@ public class InstructionForm {
             if (operandTemplate[i] == CPU.immediate8) {
                 // Next byte is operand
                 char val = cpu.gb.mmu.read8(cpu.pc.read());
-                cache.value = val;
-                operands[i] = cache;
+                cache8.value = val;
+                operands[i] = cache8;
                 cpu.pc.increment();
             } else if (operandTemplate[i] == CPU.immediate16) {
                 // Next two bytes make operand
@@ -35,7 +35,7 @@ public class InstructionForm {
                 operands[i] = cpu.gb.mmu.getCursor8(address);
                 cpu.pc.increment();
             } else if (operandTemplate[i] == CPU.twoByteIndirect8) {
-                // Next two bytes make pointer to 8-bit operand
+                // Next twoOperandCache bytes make pointer to 8-bit operand
                 char address = cpu.gb.mmu.read16(cpu.pc.read());
                 operands[i] = cpu.gb.mmu.getCursor8(address);
                 cpu.pc.increment();
@@ -53,9 +53,9 @@ public class InstructionForm {
         }
         return operands;
     }
-    Cursor[] one = new Cursor[1];
-    Cursor[] two = new Cursor[2];
 
+    Cursor[] oneOperandCache = new Cursor[1];
+    Cursor[] twoOperandCache = new Cursor[2];
     public int execute(CPU cpu) {
         /* BUG: If interrupt master enable is unset but some interrupts are enabled and raised,
            halt mode is not entered and PC will not be incremented after fetching the next
@@ -71,11 +71,11 @@ public class InstructionForm {
             cpu.haltBugTriggered = false;
 
 
-        Cursor[] operands = one;
+        Cursor[] operands = oneOperandCache;
         if (operandTemplate.length == 1) {
-            operands = readOperands(operandTemplate, cpu, one);
+            operands = readOperands(operandTemplate, cpu, oneOperandCache);
         } else if (operandTemplate.length == 2) {
-            operands = readOperands(operandTemplate, cpu, two);
+            operands = readOperands(operandTemplate, cpu, twoOperandCache);
         }
         return root.execute(cpu, operands);
     }

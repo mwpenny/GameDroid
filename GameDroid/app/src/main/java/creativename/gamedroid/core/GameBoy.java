@@ -86,11 +86,8 @@ public class GameBoy {
     }
 
     public void run() {
-//        int report = 4000;
-//        double acc = 0;
         while (!terminated.get()) {
             if (!stopped) {
-                //long start = System.nanoTime();
                 int cyclesUsed = cpu.execInstruction();
                 if (timer.notifyCyclesPassed(cyclesUsed)) {
                     // Timer overflowed: raise interrupt
@@ -98,14 +95,6 @@ public class GameBoy {
                 }
                 divider.notifyCyclesPassed(cyclesUsed);
 
-//                int c = cyclesUsed;
-//                double slack = (1e+9f / 4194304) - ((double) (System.nanoTime() - start))/c;
-//                acc += slack;
-//                report--;
-//                if (report == 0) {
-//                    System.out.format("slack time %f\n", acc);
-//                    report = 4000;
-//                }
                 if (lcd.lcdEnabled) {
                     while (cyclesUsed-- > 0) {
                         lcd.tick();

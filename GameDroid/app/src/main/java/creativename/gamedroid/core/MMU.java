@@ -67,16 +67,17 @@ public class MMU implements Serializable {
         return (char) (read8(address++) | (read8(address) << 8));
     }
 
-    MemoryCursor8 hue = new MemoryCursor8('1');
-    MemoryCursor16 hua = new MemoryCursor16('1');
+    // avoid allocation
+    MemoryCursor8 mem8Cache = new MemoryCursor8('\0');
+    MemoryCursor16 mem16Cache = new MemoryCursor16('\0');
     public MemoryCursor8 getCursor8(char address) {
-        hue.address = address;
-        return hue;
+        mem8Cache.address = address;
+        return mem8Cache;
     }
 
     public MemoryCursor16 getCursor16(char address) {
-        hua.address = address;
-        return hua;
+        mem16Cache.address = address;
+        return mem16Cache;
     }
 
     // these are effective output of the boot rom

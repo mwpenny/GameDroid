@@ -111,7 +111,7 @@ public class CPU implements Serializable {
         InstructionRoot sra = new SRA();
         InstructionRoot srl = new SRL();
 
-        // Build the one-byte instruction lookup table
+        // Build the oneOperandCache-byte instruction lookup table
         // Misc
         oneByteInstructions[0x00] = new InstructionForm(new NOP(), new Cursor[]{});
         oneByteInstructions[0x37] = new InstructionForm(new SCF(), new Cursor[]{});
@@ -403,7 +403,7 @@ public class CPU implements Serializable {
         oneByteInstructions[0xE1] = new InstructionForm(pop, new Cursor[]{hl});
         oneByteInstructions[0xE5] = new InstructionForm(push, new Cursor[]{hl});
 
-        /* Build the two-byte instruction lookup table */
+        /* Build the twoOperandCache-byte instruction lookup table */
         // RLC
         twoByteInstructions[0x00] = new InstructionForm(rlc, new Cursor[]{b});
         twoByteInstructions[0x01] = new InstructionForm(rlc, new Cursor[]{c});
