@@ -112,14 +112,30 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         }
     }
 
+    private void showToast(final String s) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                toast = Toast.makeText(EmulatorActivity.this, s, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
+    }
+
     private class SaveStateRunnable implements Runnable {
         @Override
         public void run() {
             File f = getStateFile();
+            String s = "";
+            if (toast != null)
+                toast.cancel();
             try {
                 gb.saveStateToFile(f);
+                s = getString(R.string.state_saved);
             } catch (IOException e) {
-                System.err.format("Could not save state: %s\n", e.getMessage());
+                s = String.format(getString(R.string.state_save_error), e.getMessage());
+            } finally {
+                showToast(s);
             }
         }
     }
@@ -128,11 +144,17 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         @Override
         public void run() {
             File f = getStateFile();
+            String s = "";
+            if (toast != null)
+                toast.cancel();
             if (f.exists()) {
                 try {
                     gb.loadStateFromFile(f);
+                    s = getString(R.string.state_loaded);
                 } catch (Exception e) {
-                    System.err.format("Could not load state: %s\n", e.getMessage());
+                    s = String.format(getString(R.string.state_load_error), e.getMessage());
+                } finally {
+                    showToast(s);
                 }
             }
         }
@@ -190,13 +212,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         } else if (btn.getId() == R.id.controller_load || btn.getId() == R.id.controller_save) {
             // Save/load states
             if (action == MotionEvent.ACTION_UP) {
-                boolean saving = (btn.getId() == R.id.controller_save);
-                String text = saving ? getString(R.string.state_saved) : getString(R.string.state_loaded);
-                gb.queueRunnable(saving ? saveState : loadState);
-                if (toast != null)
-                    toast.cancel();
-                toast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
-                toast.show();
+                gb.queueRunnable((btn.getId() == R.id.controller_save) ? saveState : loadState);
             }
         } else {
             // Determine which controller buttons are pressed

@@ -16,6 +16,8 @@
     <string name="b">B</string>
     <string name="select">Select</string>
     <string name="start">Start</string>
+    <string name="state_save_error">Could not save state: %s</string>
+    <string name="state_load_error">Could not load state: %s</string>
     <string name="state_saved">State saved</string>
     <string name="state_loaded">State loaded</string>
 
