@@ -116,7 +116,7 @@ public class Cartridge {
         m.put((byte)0xE5, "Epoch"); m.put((byte)0xE7, "Athena"); m.put((byte)0xE8, "Asmik");
         m.put((byte)0xE9, "Natsume"); m.put((byte)0xEA, "King Records"); m.put((byte)0xEB, "Atlus");
         m.put((byte)0xEC, "Epic"); m.put((byte)0xEE, "IGS"); m.put((byte)0xF0, "A Wave");
-        m.put((byte)0xF3, "Extreme Entertainment"); m.put((byte)0xFF, "LNJ");
+        m.put((byte)0xF3, "Extreme Entertainment"); m.put((byte)0xFF, "LJN");
         LICENSEES_OLD = Collections.unmodifiableMap(m);
     }
 
