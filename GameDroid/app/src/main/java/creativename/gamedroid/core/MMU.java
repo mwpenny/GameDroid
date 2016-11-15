@@ -9,6 +9,8 @@ public class MMU implements Serializable {
     final private MemoryBuffer stack;
     final private MappableByte raisedInterrupts;
     final private MappableByte enabledInterrupts;
+    private MemoryCursor8 mem8Cache;
+    private MemoryCursor16 mem16Cache;
     final static private InvalidRegion invalidMemory = new InvalidRegion();
 
     public MMU(GameBoy gb) {
@@ -27,8 +29,8 @@ public class MMU implements Serializable {
             case 0xE000:
                 return workRam;
         }
-        if (addr >= 0xFF80 && addr <= 0xFFFE)
-            return stack;
+        if (addr == 0xFF00)
+            return gb.gamepad;
         else if (addr == 0xFF0F)
             return raisedInterrupts;
         else if (addr == 0xFF04)
@@ -39,8 +41,8 @@ public class MMU implements Serializable {
                  (addr >= 0xFE00 & addr <= 0xFE9F) ||
                  (addr >= 0xFF40 && addr <= 0xFF4B))
             return gb.lcd;
-        else if (addr == 0xFF00)
-            return gb.gamepad;
+        else if (addr >= 0xFF80 && addr <= 0xFFFE)
+            return stack;
         else if (addr == 0xFFFF)
             return enabledInterrupts;
         else if (addr < 0x8000 || (addr >= 0xA000 && addr <= 0xBFFF))
@@ -67,9 +69,6 @@ public class MMU implements Serializable {
         return (char) (read8(address++) | (read8(address) << 8));
     }
 
-    // avoid allocation
-    MemoryCursor8 mem8Cache = new MemoryCursor8('\0');
-    MemoryCursor16 mem16Cache = new MemoryCursor16('\0');
     public MemoryCursor8 getCursor8(char address) {
         mem8Cache.address = address;
         return mem8Cache;
@@ -82,6 +81,10 @@ public class MMU implements Serializable {
 
     // these are effective output of the boot rom
     public void reset() {
+        // Avoid allocation
+        mem8Cache = new MemoryCursor8((char)0xFF);
+        mem16Cache = new MemoryCursor16((char)0xFFFF);
+
         write8((char) 0xFF10, (char) 0x80);
         write8((char) 0xFF11, (char) 0xBF);
         write8((char) 0xFF12, (char) 0xF3);

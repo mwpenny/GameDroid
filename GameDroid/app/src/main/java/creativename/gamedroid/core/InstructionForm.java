@@ -2,16 +2,20 @@ package creativename.gamedroid.core;
 
 /* CPU instruction wrapper. Performs operand translation */
 public class InstructionForm {
+    private static final ConstantCursor8 cache8 = new ConstantCursor8((char) 0xFF);
+    private static final ConstantCursor16 cache16 = new ConstantCursor16((char) 0xFFFF);
+
+    private Cursor[] oneOperandCache;
+    private Cursor[] twoOperandCache;
     protected InstructionRoot root;
     protected Cursor[] operandTemplate;
 
     public InstructionForm(InstructionRoot root, Cursor[] operandTemplate) {
         this.root = root;
         this.operandTemplate = operandTemplate;
+        oneOperandCache = new Cursor[1];
+        twoOperandCache = new Cursor[2];
     }
-
-    final static ConstantCursor8 cache8 = new ConstantCursor8((char) 1);
-    final static ConstantCursor16 cache16 = new ConstantCursor16((char) 1);
 
     /* Translates operands and fetches data as necessary */
     protected Cursor[] readOperands(Cursor[] operandTemplate, CPU cpu, Cursor[] operands) {
@@ -35,7 +39,7 @@ public class InstructionForm {
                 operands[i] = cpu.gb.mmu.getCursor8(address);
                 cpu.pc.increment();
             } else if (operandTemplate[i] == CPU.twoByteIndirect8) {
-                // Next twoOperandCache bytes make pointer to 8-bit operand
+                // Next two bytes make pointer to 8-bit operand
                 char address = cpu.gb.mmu.read16(cpu.pc.read());
                 operands[i] = cpu.gb.mmu.getCursor8(address);
                 cpu.pc.increment();
@@ -54,8 +58,6 @@ public class InstructionForm {
         return operands;
     }
 
-    Cursor[] oneOperandCache = new Cursor[1];
-    Cursor[] twoOperandCache = new Cursor[2];
     public int execute(CPU cpu) {
         /* BUG: If interrupt master enable is unset but some interrupts are enabled and raised,
            halt mode is not entered and PC will not be incremented after fetching the next
