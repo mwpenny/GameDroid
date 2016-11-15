@@ -1,0 +1,15 @@
+=======================================
+Time    : Task
+---------------------------------------
+3 hours : Created new buttons
+		: Controller Arrows
+		: Select, Start, A, B
+		: Save, Load
+2 hours : Created new Icon for app 
+			: fixed bad pixels 
+=======================================
+Total time
+---------------------------------------
+5  hours
+=======================================
+
