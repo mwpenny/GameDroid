@@ -7,9 +7,10 @@ Time    : Task
 		: Save, Load
 2 hours : Created new Icon for app 
 			: fixed bad pixels 
+1 hour  : Added Setting values to onDestroy
+			: exports selection from SettingsActivity
 =======================================
 Total time
 ---------------------------------------
-5  hours
+6  hours
 =======================================
-
