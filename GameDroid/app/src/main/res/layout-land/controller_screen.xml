@@ -20,6 +20,6 @@
         android:id="@+id/gbscreen"
         android:layout_weight="0.90" />
 
-    <include android:id="@+id/controller_layout" layout="@layout/controller_horizontal_layout"/>
+    <include android:id="@+id/controller_layout" layout="@layout/controller_layout"/>
 
 </LinearLayout>
