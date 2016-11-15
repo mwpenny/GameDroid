@@ -14,6 +14,7 @@
     <string name="dialog_romcache_message">Searching for ROMs&#8230;</string>
     <string name="dialog_noroms_title">No game ROM files found</string>
     <string name="dialog_noroms_message">GameDroid was unable to locate any ROM (.gb/.gbc) files. Move your ROMs to %s</string>
+    <string name="dialog_load_error_title">Error loading ROM file</string>
 
     <string name="rom_date_format">"Last played: %s"</string>
 

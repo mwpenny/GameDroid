@@ -214,7 +214,7 @@ public class Cartridge {
         gameVersion = bank0[0x14C];
     }
 
-    public Cartridge(String path, LoadMode mode) throws IOException {
+    public Cartridge(String path, LoadMode mode) throws IOException, IllegalArgumentException {
         byte[] buf = new byte[0x4000];
         File f = new File(path);
         FileInputStream in = new FileInputStream(f);
@@ -276,7 +276,7 @@ public class Cartridge {
                         break;
 
                     default:
-                        throw new IllegalArgumentException(String.format("Unsupported cartridge type ($%02X)", cartType));
+                        throw new IllegalArgumentException(String.format("Unsupported cartridge type (0x%02X)", cartType));
                 }
             }
             in.close();

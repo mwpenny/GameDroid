@@ -3,6 +3,7 @@ package creativename.gamedroid.ui;
 import android.app.Activity;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
@@ -28,6 +29,7 @@ import creativename.gamedroid.core.GameBoy;
 
 public class ControllerScreen extends Activity
 {
+    private AlertDialog loadError;
     private GameBoy gb;
     private SaveStateRunnable saveState;
     private LoadStateRunnable loadState;
@@ -52,30 +54,47 @@ public class ControllerScreen extends Activity
             gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
             if (gb.cartridge.hasBattery())
                 loadGame();
-        } catch (IOException e) {
-            // TODO: handle exception
-            e.printStackTrace();
-        }
-        screen.getHolder().addCallback(cb);
-        // Start simulating once surface is created
-        screen.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                Thread emulator = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        gb.run();
-                    }
-                }, "Emulation: " + gb.cartridge.getTitle());
-                emulator.setPriority(Thread.MAX_PRIORITY);
-                emulator.start();
-            }
+            screen.getHolder().addCallback(cb);
+            // Start simulating once surface is created
+            screen.getHolder().addCallback(new SurfaceHolder.Callback() {
+                @Override
+                public void surfaceCreated(SurfaceHolder holder) {
+                    Thread emulator = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            gb.run();
+                        }
+                    }, "Emulation: " + gb.cartridge.getTitle());
+                    emulator.setPriority(Thread.MAX_PRIORITY);
+                    emulator.start();
+                }
 
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {}
-        });
+                @Override
+                public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+                @Override
+                public void surfaceDestroyed(SurfaceHolder holder) {}
+            });
+        } catch (Exception e) {
+            loadError = new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.dialog_load_error_title))
+                    .setMessage(e.getMessage())
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(final DialogInterface dialog, final int which) {
+                            finish();
+                            dialog.dismiss();
+                        }
+                    })
+                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            finish();
+                            dialog.dismiss();
+                        }
+                    })
+                    .setIconAttribute(android.R.attr.alertDialogIcon)
+                    .show();
+        }
     }
 
     private File getSaveFile() {
@@ -152,6 +171,9 @@ public class ControllerScreen extends Activity
         if (gb != null) {
             gb.terminate();
         }
+
+        if (loadError != null && loadError.isShowing())
+            loadError.dismiss();
     }
 
     private Controller.Button getButtonCode(View btn) {
