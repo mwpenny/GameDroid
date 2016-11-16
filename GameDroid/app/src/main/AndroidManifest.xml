@@ -33,7 +33,7 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/config_search"/>
         </activity>
-        <activity android:name=".ui.EmulatorActivity"/>
+        <activity android:name=".ui.EmulatorActivity" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
 
     </application>
 </manifest>

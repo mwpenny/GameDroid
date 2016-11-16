@@ -1,30 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- Gamepad UI -->
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/controller_layout"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="0.5"
-    android:orientation="vertical">
-
-    <!-- D-pad and main buttons -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingBottom="16dp">
-
-        <include layout="@layout/layout_gb_dpad" />
-        <include layout="@layout/layout_gb_buttons_main" />
-    </LinearLayout>
-
-    <Space
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+<!-- Start, select, and save/load state buttons -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
 
     <!-- Start/select buttons-->
     <LinearLayout
@@ -33,7 +12,7 @@
         android:orientation="horizontal"
         android:gravity="bottom"
         android:layout_gravity="center"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="12dp">
 
         <Button
             android:layout_width="60dp"

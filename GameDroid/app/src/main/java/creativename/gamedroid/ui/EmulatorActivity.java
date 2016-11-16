@@ -42,7 +42,6 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
 
         // Set up listeners
         findViewById(R.id.controller_dpad).setOnTouchListener(this);
-
         findViewById(R.id.controller_a).setOnTouchListener(this);
         findViewById(R.id.controller_b).setOnTouchListener(this);
         findViewById(R.id.controller_select).setOnTouchListener(this);
