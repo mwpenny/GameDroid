@@ -62,8 +62,6 @@ public class CPU implements Serializable {
         sp = new Register16();
         pc = new Register16();
         reset();
-        oneByteInstructions = new InstructionForm[256];
-        twoByteInstructions = new InstructionForm[256];
         genLookupTables();
     }
 
@@ -110,6 +108,8 @@ public class CPU implements Serializable {
         InstructionRoot sla = new SLA();
         InstructionRoot sra = new SRA();
         InstructionRoot srl = new SRL();
+        oneByteInstructions = new InstructionForm[256];
+        twoByteInstructions = new InstructionForm[256];
 
         // Build the one-byte instruction lookup table
         // Misc
@@ -528,7 +528,7 @@ public class CPU implements Serializable {
     }
 
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-        // Reconstruct the instruction lookup tables after deserialization
+        // Reconstruct the instruction lookup tables and concat registers after deserialization
         stream.defaultReadObject();
         af = new ConcatRegister((Register8) a, f);
         bc = new ConcatRegister((Register8) b, (Register8) c);

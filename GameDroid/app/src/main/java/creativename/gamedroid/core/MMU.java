@@ -1,5 +1,7 @@
 package creativename.gamedroid.core;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 
 /* The memory mapping unit */
@@ -9,8 +11,8 @@ public class MMU implements Serializable {
     final private MemoryBuffer stack;
     final private MappableByte raisedInterrupts;
     final private MappableByte enabledInterrupts;
-    private MemoryCursor8 mem8Cache;
-    private MemoryCursor16 mem16Cache;
+    private transient MemoryCursor8 mem8Cache;
+    private transient MemoryCursor16 mem16Cache;
     final static private InvalidRegion invalidMemory = new InvalidRegion();
 
     public MMU(GameBoy gb) {
@@ -104,6 +106,12 @@ public class MMU implements Serializable {
         write8((char) 0xFF25, (char) 0xF3);
         write8((char) 0xFF26, (char) 0xF1);
         write8((char) 0xFFFF, (char) 0x00);
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        mem8Cache = new MemoryCursor8((char)0xFF);
+        mem16Cache = new MemoryCursor16((char)0xFFFF);
     }
 
     private class MemoryCursor16 implements Cursor {
