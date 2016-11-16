@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Gamepad UI (landscape) -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="0.5"
+    android:orientation="horizontal"
+    android:background="@color/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingBottom="16dp">
+
+        <include layout="@layout/layout_gb_dpad" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="bottom">
+
+            <!-- Start/select buttons-->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="bottom"
+                android:layout_gravity="center"
+                android:layout_marginBottom="16dp">
+
+                <Button
+                    android:layout_width="60dp"
+                    android:layout_height="20dp"
+                    android:id="@+id/controller_select"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/gb_button_aux"
+                    android:textColor="@android:color/white"
+                    android:textSize="10dp"
+                    android:text="@string/select"/>
+                <Button
+                    android:layout_width="60dp"
+                    android:layout_height="20dp"
+                    android:id="@+id/controller_start"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:background="@drawable/gb_button_aux"
+                    android:textColor="@android:color/white"
+                    android:textSize="10dp"
+                    android:text="@string/start"/>
+            </LinearLayout>
+
+            <!-- Save/load buttons -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="bottom"
+                android:layout_gravity="center">
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/controller_save"
+                    android:src="@mipmap/save_button"
+                    android:paddingLeft="0dp"
+                    android:paddingStart="0dp"
+                    android:paddingRight="10dp"
+                    android:paddingEnd="10dp"
+                    android:background="@android:color/transparent"/>
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/controller_load"
+                    android:src="@mipmap/load_button"
+                    android:background="@android:color/transparent"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <include layout="@layout/layout_gb_buttons_main" />
+    </LinearLayout>
+</LinearLayout>
