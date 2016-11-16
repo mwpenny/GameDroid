@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -57,8 +58,27 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
             gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
             if (gb.cartridge.hasBattery())
                 loadGame();
-        } catch (IOException e) {
-            loadError = new AlertDialog.Builder(this)
+            screen.getHolder().addCallback(cb);
+            // Start simulating once surface is created
+            screen.getHolder().addCallback(new SurfaceHolder.Callback() {
+                @Override
+                public void surfaceCreated(SurfaceHolder holder) {
+                    Thread emulator = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            gb.run();
+                        }
+                    }, "Emulation: " + gb.cartridge.getTitle());
+                    emulator.start();
+                }
+
+                @Override
+                public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+                @Override
+                public void surfaceDestroyed(SurfaceHolder holder) {}
+            });
+        } catch (Exception e) {
+            loadError = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
                     .setTitle(getString(R.string.dialog_load_error_title))
                     .setMessage(e.getMessage())
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -78,25 +98,6 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                     .setIconAttribute(android.R.attr.alertDialogIcon)
                     .show();
         }
-        screen.getHolder().addCallback(cb);
-        // Start simulating once surface is created
-        screen.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                Thread emulator = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        gb.run();
-                    }
-                }, "Emulation: " + gb.cartridge.getTitle());
-                emulator.start();
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {}
-        });
     }
 
     private File getSaveFile() {
