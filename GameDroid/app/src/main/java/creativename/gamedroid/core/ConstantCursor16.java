@@ -2,7 +2,7 @@ package creativename.gamedroid.core;
 
 /* Cursor into constant 16-bit value */
 public class ConstantCursor16 implements Cursor {
-    protected char value;
+    public char value;
 
     ConstantCursor16(char value) {
         this.value = value;

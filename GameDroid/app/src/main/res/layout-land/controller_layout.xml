@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/controller_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/background_color">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/upper_buttons"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingBottom="16dp">
+
+        <!-- D-Pad -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="left"
+            android:gravity="left"
+            android:paddingRight="40dp"
+            android:paddingTop="16dp">
+
+            <!-- Left Arrow -->
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/left_arrow"
+                android:id="@+id/controller_left_arrow"
+                android:layout_gravity="center"
+                android:onClick="buttonPress"
+                android:background="@android:color/transparent"/>
+
+            <!-- Up and Down Arrows -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/background_color"
+                android:paddingLeft="@dimen/button_gap"
+                android:paddingRight="@dimen/button_gap">
+
+                <ImageButton
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/controller_up_arrow"
+                    android:src="@mipmap/up_arrow"
+                    android:onClick="buttonPress"
+                    android:background="@android:color/transparent"
+                    android:paddingBottom="@dimen/button_gap"/>
+
+                <ImageButton
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/controller_down_arrow"
+                    android:src="@mipmap/down_arrow"
+                    android:onClick="buttonPress"
+                    android:background="@android:color/transparent"/>
+
+            </LinearLayout>
+
+            <!-- Right Arrow -->
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/right_arrow"
+                android:id="@+id/controller_right_arrow"
+                android:layout_gravity="center"
+                android:gravity="left"
+                android:onClick="buttonPress"
+                android:background="@android:color/transparent"/>
+
+        </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+    <!-- Start, Select -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="bottom"
+        android:layout_gravity="center"
+        android:layout_weight="1">
+
+        <!-- Select Button -->
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/select_button"
+            android:id="@+id/controller_select"
+            android:onClick="buttonPress"
+            android:paddingRight="10dp"
+            android:background="@android:color/transparent"/>
+
+        <!-- Start Button -->
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/start_button"
+            android:id="@+id/controller_start"
+            android:onClick="buttonPress"
+            android:background="@android:color/transparent"/>
+
+    </LinearLayout>
+
+    <!-- Save Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/extra_buttons"
+        android:gravity="center">
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/save_button"
+            android:src="@mipmap/save_button"
+            android:paddingRight="10dp"
+            android:background="@android:color/transparent"/>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/load_button"
+            android:src="@mipmap/load_button"
+            android:background="@android:color/transparent"/>
+
+    </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- A and B Buttons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="right"
+            android:paddingLeft="20dp">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/b_button"
+                android:id="@+id/controller_b_button"
+                android:layout_gravity="bottom"
+                android:onClick="buttonPress"
+                android:background="@android:color/transparent"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/a_button"
+                android:id="@+id/controller_a_button"
+                android:layout_gravity="center"
+                android:onClick="buttonPress"
+                android:background="@android:color/transparent"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

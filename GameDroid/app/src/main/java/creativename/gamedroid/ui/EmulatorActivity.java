@@ -2,6 +2,8 @@ package creativename.gamedroid.ui;
 
 import android.app.Activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.MotionEvent;
@@ -20,6 +22,7 @@ import creativename.gamedroid.core.GameBoy;
 
 public class EmulatorActivity extends Activity implements View.OnTouchListener
 {
+    private AlertDialog loadError;
     private GameBoy gb;
     private SaveStateRunnable saveState;
     private LoadStateRunnable loadState;
@@ -56,8 +59,25 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
             if (gb.cartridge.hasBattery())
                 loadGame();
         } catch (IOException e) {
-            // TODO: handle exception
-            e.printStackTrace();
+            loadError = new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.dialog_load_error_title))
+                    .setMessage(e.getMessage())
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(final DialogInterface dialog, final int which) {
+                            finish();
+                            dialog.dismiss();
+                        }
+                    })
+                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            finish();
+                            dialog.dismiss();
+                        }
+                    })
+                    .setIconAttribute(android.R.attr.alertDialogIcon)
+                    .show();
         }
         screen.getHolder().addCallback(cb);
         // Start simulating once surface is created
@@ -176,6 +196,9 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         if (gb != null) {
             gb.terminate();
         }
+
+        if (loadError != null && loadError.isShowing())
+            loadError.dismiss();
     }
 
     @Override

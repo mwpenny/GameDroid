@@ -95,8 +95,11 @@ public class GameBoy {
                 }
                 divider.notifyCyclesPassed(cyclesUsed);
 
-                while (cyclesUsed-- > 0)
-                    lcd.tick();
+                if (lcd.lcdEnabled) {
+                    while (cyclesUsed-- > 0) {
+                        lcd.tick();
+                    }
+                }
             }
 
             if (runAtLoopEnd != null) {

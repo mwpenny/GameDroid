@@ -2,7 +2,7 @@ package creativename.gamedroid.core;
 
 /* Cursor into constant 8-bit value */
 public class ConstantCursor8 implements Cursor {
-    protected char value;
+    public char value;
 
     ConstantCursor8(char value) {
         this.value = (char)(value & 255);

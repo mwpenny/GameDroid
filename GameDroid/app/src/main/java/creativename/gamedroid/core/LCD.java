@@ -43,7 +43,7 @@ public class LCD implements MemoryMappable, Serializable {
     private Sprite[] foundSprites;
 
     private transient LCDControlRegister lcdControl;
-    private boolean lcdEnabled;
+    public boolean lcdEnabled;
     private char windowTileMapOfs;       // i.e., second tile map starts $400 bytes into buffer
     private boolean windowEnabled;
     private char bgTilesetOfs;           // i.e., second tileset starts $800 bytes into buffer

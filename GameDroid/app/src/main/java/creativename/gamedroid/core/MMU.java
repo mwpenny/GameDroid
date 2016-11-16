@@ -9,6 +9,8 @@ public class MMU implements Serializable {
     final private MemoryBuffer stack;
     final private MappableByte raisedInterrupts;
     final private MappableByte enabledInterrupts;
+    private MemoryCursor8 mem8Cache;
+    private MemoryCursor16 mem16Cache;
     final static private InvalidRegion invalidMemory = new InvalidRegion();
 
     public MMU(GameBoy gb) {
@@ -68,15 +70,21 @@ public class MMU implements Serializable {
     }
 
     public MemoryCursor8 getCursor8(char address) {
-        return new MemoryCursor8(address);
+        mem8Cache.address = address;
+        return mem8Cache;
     }
 
     public MemoryCursor16 getCursor16(char address) {
-        return new MemoryCursor16(address);
+        mem16Cache.address = address;
+        return mem16Cache;
     }
 
     // these are effective output of the boot rom
     public void reset() {
+        // Avoid allocation
+        mem8Cache = new MemoryCursor8((char)0xFF);
+        mem16Cache = new MemoryCursor16((char)0xFFFF);
+
         write8((char) 0xFF10, (char) 0x80);
         write8((char) 0xFF11, (char) 0xBF);
         write8((char) 0xFF12, (char) 0xF3);
@@ -99,7 +107,7 @@ public class MMU implements Serializable {
     }
 
     private class MemoryCursor16 implements Cursor {
-        protected char address;
+        public char address;
 
         public MemoryCursor16(char address) {
             this.address = address;
@@ -138,7 +146,7 @@ public class MMU implements Serializable {
 
         @Override
         public byte read(char address) {
-            System.err.format("Warning: invalid memory read at $%04X\n", (int) address);
+            //System.err.format("Warning: invalid memory read at $%04X\n", (int) address);
             return (byte) 0xFF;  // mimic actual hardware
         }
 
@@ -152,7 +160,7 @@ public class MMU implements Serializable {
                 System.out.print((char) (lastTransferByte % 255));
                 return;
             }
-            System.err.format("Warning: invalid memory write at $%04X\n", (int) address);
+            //System.err.format("Warning: invalid memory write at $%04X\n", (int) address);
         }
     }
 }

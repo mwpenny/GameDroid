@@ -2,27 +2,35 @@ package creativename.gamedroid.core;
 
 /* CPU instruction wrapper. Performs operand translation */
 public class InstructionForm {
+    private static final ConstantCursor8 cache8 = new ConstantCursor8((char) 0xFF);
+    private static final ConstantCursor16 cache16 = new ConstantCursor16((char) 0xFFFF);
+
+    private Cursor[] oneOperandCache;
+    private Cursor[] twoOperandCache;
     protected InstructionRoot root;
     protected Cursor[] operandTemplate;
 
     public InstructionForm(InstructionRoot root, Cursor[] operandTemplate) {
         this.root = root;
         this.operandTemplate = operandTemplate;
+        oneOperandCache = new Cursor[1];
+        twoOperandCache = new Cursor[2];
     }
 
     /* Translates operands and fetches data as necessary */
-    protected Cursor[] readOperands(Cursor[] operandTemplate, CPU cpu) {
-        Cursor[] operands = new Cursor[operandTemplate.length];
+    protected Cursor[] readOperands(Cursor[] operandTemplate, CPU cpu, Cursor[] operands) {
         for (int i = 0; i < operandTemplate.length; i++) {
             if (operandTemplate[i] == CPU.immediate8) {
                 // Next byte is operand
                 char val = cpu.gb.mmu.read8(cpu.pc.read());
-                operands[i] = new ConstantCursor8(val);
+                cache8.value = val;
+                operands[i] = cache8;
                 cpu.pc.increment();
             } else if (operandTemplate[i] == CPU.immediate16) {
                 // Next two bytes make operand
                 char val = cpu.gb.mmu.read16(cpu.pc.read());
-                operands[i] = new ConstantCursor16(val);
+                cache16.value = val;
+                operands[i] = cache16;
                 cpu.pc.increment();
                 cpu.pc.increment();
             } else if (operandTemplate[i] == CPU.oneByteIndirect8) {
@@ -63,7 +71,14 @@ public class InstructionForm {
             cpu.pc.increment();
         else
             cpu.haltBugTriggered = false;
-        Cursor[] operands = readOperands(operandTemplate, cpu);
+
+
+        Cursor[] operands = oneOperandCache;
+        if (operandTemplate.length == 1) {
+            operands = readOperands(operandTemplate, cpu, oneOperandCache);
+        } else if (operandTemplate.length == 2) {
+            operands = readOperands(operandTemplate, cpu, twoOperandCache);
+        }
         return root.execute(cpu, operands);
     }
 }

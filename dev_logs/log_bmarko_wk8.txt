@@ -1,0 +1,16 @@
+=======================================
+Time    : Task
+---------------------------------------
+3 hours : Created new buttons
+		: Controller Arrows
+		: Select, Start, A, B
+		: Save, Load
+2 hours : Created new Icon for app 
+			: fixed bad pixels 
+1 hour  : Added Setting values to onDestroy
+			: exports selection from SettingsActivity
+=======================================
+Total time
+---------------------------------------
+6  hours
+=======================================

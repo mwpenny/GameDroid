@@ -1,1 +1,5 @@
 8hr fix instruction timing bug
+3hr emulation performance optimizations
+
+---
+11 hours Total
