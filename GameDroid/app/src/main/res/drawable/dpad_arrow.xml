@@ -23,7 +23,7 @@
     <item>
         <bitmap
             android:src="@mipmap/dpad_arrow"
-            android:tint="@color/gb_dpad_trim">
+            android:tint="@color/gb_frame_border">
         </bitmap>
     </item>
 </layer-list>

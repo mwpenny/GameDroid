@@ -5,14 +5,18 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingLeft="15dp"
+    android:paddingStart="15dp"
+    android:paddingRight="0dp"
+    android:paddingEnd="0dp"
     android:orientation="horizontal">
 
-    <ImageView
+    <!--<ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/screenshot"
         android:src="@mipmap/ic_launcher"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"/>-->
 
     <!-- Contains ROM title and last played time -->
     <LinearLayout

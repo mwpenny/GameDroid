@@ -20,7 +20,7 @@ public class RomCache {
     private static final String DB_NAME = "romcache.db";
     private static final String TABLE_NAME = "roms";
 
-    private static SimpleDateFormat iso8601DateFormat;
+    private static final SimpleDateFormat iso8601DateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");;
     private static RomCache instance;
 
     private SQLiteOpenHelper opener;
@@ -83,7 +83,6 @@ public class RomCache {
                 onUpgrade(db, oldVersion, newVersion);
             }
         };
-        iso8601DateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
     public static synchronized RomCache getInstance(Context context) {

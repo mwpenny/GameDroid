@@ -2,6 +2,7 @@
 
 <!-- Start and select buttons -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <stroke android:color="@color/gb_button_aux_border" android:width="1dp"/>
     <solid android:color="@color/gb_button_aux"/>
     <corners android:radius="10dp"/>
 </shape>

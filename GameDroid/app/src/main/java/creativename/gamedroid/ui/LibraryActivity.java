@@ -34,7 +34,6 @@ public class LibraryActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_library);
         setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
-        getSupportActionBar().setTitle(getString(R.string.library_title));
 
         SectionsPagerAdapter spa = new LibraryActivity.SectionsPagerAdapter(getSupportFragmentManager());
         vp = (ViewPager)findViewById(R.id.container);

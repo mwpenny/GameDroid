@@ -31,7 +31,6 @@ public class SearchActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         setSupportActionBar((Toolbar)findViewById(R.id.search_bar));
-        getSupportActionBar().setTitle(getString(R.string.action_search));
 
         if (savedInstanceState != null)
             lastQuery = savedInstanceState.getString("query");

@@ -4,5 +4,5 @@
 <bitmap
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:src="@mipmap/dpad_corner"
-    android:tint="@color/gb_dpad_trim">
+    android:tint="@color/gb_frame_border">
 </bitmap>
