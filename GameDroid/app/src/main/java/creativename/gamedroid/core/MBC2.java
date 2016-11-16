@@ -2,11 +2,11 @@ package creativename.gamedroid.core;
 
 /* MBC2:
      * Max 256KB ROM
-     * Max 512x4b RAM
+     * 512x4b RAM
 */
 public class MBC2 extends MBC {
     public MBC2(byte[] rom, int extRamSize) {
-        super(rom, extRamSize);
+        super(rom, 512);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class MBC2 extends MBC {
     protected void writeMBC(char address, byte value) {
         if (address < 0x2000) {
             /* Value enables/disables RAM (least significant bit of
-               upper address byte must be 0 to enable/disable RAM */
+               upper address byte must be 0 to enable/disable RAM) */
             if ((address & 0x100) == 0) {
                 if (((value & 0x0A) == 0x0A))
                     ramEnabled = true;
@@ -31,7 +31,7 @@ public class MBC2 extends MBC {
             }
         } else if (address < 0x4000) {
             /* Value selects ROM bank (least significant bit of
-               upper address byte must be 1 to select bank */
+               upper address byte must be 1 to select bank) */
             if ((address & 0x100) != 0)
                 romBankNum = (value == 0 ? 1 : value & 0xF);
         }
