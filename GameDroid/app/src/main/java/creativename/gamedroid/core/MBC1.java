@@ -21,8 +21,7 @@ public class MBC1 extends MBC {
                 ramEnabled = false;
         } else if (address < 0x4000) {
             // Value sets lower 5 bits of ROM bank number (0 gets written as 1)
-            romBankNum &= 0xE0;
-            romBankNum |= (value == 0) ? 1 : value & 0x1F;
+            romBankNum = (romBankNum & 0xE0) | ((value == 0) ? 1 : value & 0x1F);
         } else if (address < 0x6000) {
             /* Depending on mode, value either selects RAM bank or upper 2 bits
                of ROM bank */
@@ -38,10 +37,10 @@ public class MBC1 extends MBC {
                 // Mode 0 - enable ROM banking and force RAM bank 0
                 settingRamBank = false;
                 ramBankNum = 0;
-            } else if ((value & 1) == 1) {
+            } else if (value == 1) {
                 // Mode 1 - enable RAM banking and restrict ROM bank num to $01-1F
                 settingRamBank = true;
-                romBankNum &= 0x9F;
+                romBankNum &= 0xE0;
             }
         }
     }

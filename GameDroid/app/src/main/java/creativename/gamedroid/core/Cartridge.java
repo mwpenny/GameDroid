@@ -256,6 +256,11 @@ public class Cartridge {
                         mbc = new MBC1(rom, ramSize);
                         break;
 
+                    case 0x05:  // MBC2
+                    case 0x06:  // MBC2+BATT
+                        mbc = new MBC2(rom, ramSize);
+                        break;
+
                     case 0x0F:
                     case 0x10:
                     case 0x11:

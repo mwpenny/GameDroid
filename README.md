@@ -12,8 +12,6 @@ Repository structure:
 
 | Number | Description                 |
 |--------|-----------------------------|
-| 0x05   | MBC2                        |
-| 0x06   | MBC2+BATT                   |
 | 0x0B   | MMM01                       |
 | 0x0C   | MMM01+RAM                   |
 | 0x0D   | MMM01+RAM+BATT              |
@@ -41,7 +39,8 @@ Planned features:
 
 Supported MBCs:
 * MBC1
-* MBC3
-* MBC5
+* MBC2
+* MBC3 (no RTC)
+* MBC5 (no rumble)
 
 Minimum Android version: 4.0.3 (Ice Cream Sandwich)

@@ -66,7 +66,7 @@ public abstract class MBC implements MemoryMappable {
 
     // TODO: RTC registers
     @Override
-    public final byte read(char address) {
+    public byte read(char address) {
         // ROM bank 0 is fixed, 1 is switchable
         if (address < 0x4000)
             return rom[address];
@@ -86,7 +86,7 @@ public abstract class MBC implements MemoryMappable {
     }
 
     @Override
-    public final void write(char address, byte value) {
+    public void write(char address, byte value) {
         if (address < 0x8000)
             writeMBC(address, value);
         else if (address > 0x9FFF && address < 0xC000) {
