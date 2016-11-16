@@ -38,7 +38,6 @@ Major features:
 Planned features:
 * Rewind
 * Customizable screen resolution
-* Landscape layout
 
 Supported MBCs:
 * MBC1
