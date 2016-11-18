@@ -19,13 +19,12 @@ public class MBC3 extends MBC {
                 ramEnabled = false;
         } else if (address < 0x4000) {
             // 7-bit value sets ROM bank number (0 gets written as 1)
-            romBankNum &= 0x80;
-            romBankNum = (value == 0) ? 1 : (value & 0x7F);
+            romBankNum = ((value == 0) ? 1 : (value & 0x7F));
         } else if (address < 0x6000) {
             /* Depending on mode, value either selects RAM bank or maps RTC
                registers into RAM */
             if (value < 4)
-                ramBankNum = value & 3;
+                ramBankNum = (value & 3);
             else if (value > 7 && value < 0x0D) {
                 // TODO: Map corresponding RTC register into memory
             }

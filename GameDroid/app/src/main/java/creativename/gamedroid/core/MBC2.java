@@ -33,7 +33,7 @@ public class MBC2 extends MBC {
             /* Value selects ROM bank (least significant bit of
                upper address byte must be 1 to select bank) */
             if ((address & 0x100) != 0)
-                romBankNum = (value == 0 ? 1 : value & 0xF);
+                romBankNum = ((value == 0) ? 1 : (value & 0xF));
         }
     }
 }

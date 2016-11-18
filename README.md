@@ -5,7 +5,7 @@ A GameBoy emulator for Android. This is the term project for COMP 3004 at Carlet
 
 Repository structure:
 * `dev_logs/` contains weekly development logs for each team member
-* `docs/` contains documents related to the project. This is mostly documentation of GameBoy hardware to refer to while implementing the emulator. Unless otherwise stated, this material is by other authors and is used purely as reference material
+* `docs/` contains documents related to the project. This contains a few documents which were handed in for COMP 3004, but it is mostly documentation of GameBoy hardware to refer to while implementing the emulator. Unless otherwise stated, this material is by other authors and is used purely as reference material
 * `GameDroid/` contains the application's source code
 
 Major features:
