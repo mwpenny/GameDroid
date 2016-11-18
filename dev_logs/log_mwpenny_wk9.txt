@@ -1,0 +1,10 @@
+4hrs		Tweaking gameplay UI, updating graphics, and implementing onTouch events
+1hr, 30mins	Adjusting layouts to support varying sizes/orientations
+1hr, 30mins	UI usability (display game save/load errors, prompt user for save/load/exit, scale icons for different display sizes)
+30mins		Researching API for user-configurable settings
+1hr, 30mins	UI code refactoring/cleanup
+1hr, 30mins	Researching feasibility of implementing unsupported GameBoy MBCs, implementing support for MBC2 (with weird RAM type)
+
+
+---
+10hrs, 30mins	Total
