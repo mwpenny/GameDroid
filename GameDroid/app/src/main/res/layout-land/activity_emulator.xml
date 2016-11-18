@@ -8,7 +8,8 @@
     android:paddingBottom="16dp"
     android:paddingTop="16dp"
     android:orientation="horizontal"
-    android:background="@color/colorBackground">
+    android:background="@color/colorBackground"
+    android:baselineAligned="false">
 
     <!-- D-pad -->
     <LinearLayout

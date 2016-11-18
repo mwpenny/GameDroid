@@ -21,9 +21,10 @@ import creativename.gamedroid.core.Cartridge;
 import creativename.gamedroid.core.Controller;
 import creativename.gamedroid.core.GameBoy;
 
+/* View for emulator rendering + gamepad UI */
 public class EmulatorActivity extends Activity implements View.OnTouchListener
 {
-    private AlertDialog loadError;
+    private AlertDialog loadError, yesNoPrompt;
     private GameBoy gb;
     private SaveStateRunnable saveState;
     private LoadStateRunnable loadState;
@@ -54,11 +55,14 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
         final GameboyScreen cb = new GameboyScreen();
         gb = new GameBoy(cb);
+
+        // Parse and load the ROM
         try {
             gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
             if (gb.cartridge.hasBattery())
                 loadGame();
             screen.getHolder().addCallback(cb);
+
             // Start simulating once surface is created
             screen.getHolder().addCallback(new SurfaceHolder.Callback() {
                 @Override
@@ -70,6 +74,14 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                         }
                     }, "Emulation: " + gb.cartridge.getTitle());
                     emulator.start();
+
+                    if (getStateFile().exists()) {
+                        promptYesNo(getString(R.string.dialog_load_state_title),
+                                    getString(R.string.dialog_resume_message),
+                                    loadState);
+                    } else {
+                        findViewById(R.id.controller_load).setEnabled(false);
+                    }
                 }
 
                 @Override
@@ -78,25 +90,8 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                 public void surfaceDestroyed(SurfaceHolder holder) {}
             });
         } catch (Exception e) {
-            loadError = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
-                    .setTitle(getString(R.string.dialog_load_error_title))
-                    .setMessage(e.getMessage())
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(final DialogInterface dialog, final int which) {
-                            finish();
-                            dialog.dismiss();
-                        }
-                    })
-                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            finish();
-                            dialog.dismiss();
-                        }
-                    })
-                    .setIconAttribute(android.R.attr.alertDialogIcon)
-                    .show();
+            // ROM could not be loaded
+            exitWithError(getString(R.string.dialog_load_error_title), e.getMessage());
         }
     }
 
@@ -110,63 +105,91 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         return new File(path, getIntent().getStringExtra("rom_title") + ".st");
     }
 
-    private void saveGame() {
-        // Save game
-        File f = getSaveFile();
-        try {
-            gb.cartridge.mbc.saveRamToFile(f);
-        } catch (IOException e) {
-            System.err.format("Could not save game: %s\n", e.getMessage());
-        }
-    }
-
-    private void loadGame() {
-        // Load game from disk
-        File f = getSaveFile();
-        if (f.exists()) {
-            try {
-                gb.cartridge.mbc.loadRamFromFile(f);
-            } catch (IOException e) {
-                System.err.format("Could not load game: %s\n", e.getMessage());
-            }
-        }
-    }
-
     private void showToast(final String s) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (toast != null)
+                    toast.cancel();
                 toast = Toast.makeText(EmulatorActivity.this, s, Toast.LENGTH_SHORT);
                 toast.show();
             }
         });
     }
 
-    private class SaveStateRunnable implements Runnable {
-        @Override
-        public void run() {
-            File f = getStateFile();
-            String s = "";
-            if (toast != null)
-                toast.cancel();
+    private void promptYesNo(String title, String message, final Runnable action) {
+        // Prompt the user to perform some action (i.e., saving/loading states)
+        closeYesNoPrompt();
+        yesNoPrompt = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialog, final int which) {
+                        gb.queueRunnable(action);
+                    }
+                })
+                .setNegativeButton(getString(R.string.no), null)
+                .setIconAttribute(android.R.attr.icon)
+                .show();
+    }
+
+    private void closeYesNoPrompt() {
+        if (yesNoPrompt != null && yesNoPrompt.isShowing())
+            yesNoPrompt.dismiss();
+    }
+
+    private void exitWithError(String title, String msg) {
+        // Display error and leave activity when dismissed
+        loadError = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
+                .setTitle(title)
+                .setMessage(msg)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialog, final int which) {
+                        finish();
+                        dialog.dismiss();
+                    }
+                })
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        finish();
+                        dialog.dismiss();
+                    }
+                })
+                .setIconAttribute(android.R.attr.alertDialogIcon)
+                .show();
+    }
+
+    private void loadGame() {
+        // Load game save file from disk
+        File f = getSaveFile();
+        if (f.exists()) {
             try {
-                gb.saveStateToFile(f);
-                s = getString(R.string.state_saved);
+                gb.cartridge.mbc.loadRamFromFile(f);
             } catch (IOException e) {
-                s = String.format(getString(R.string.state_save_error), e.getMessage());
-            } finally {
-                showToast(s);
+                showToast(String.format(getString(R.string.game_load_error), e.getMessage()));
             }
+        }
+    }
+
+    private void saveGame() {
+        // Save game
+        File f = getSaveFile();
+        try {
+            gb.cartridge.mbc.saveRamToFile(f);
+        } catch (IOException e) {
+            showToast(String.format(getString(R.string.game_save_error), e.getMessage()));
         }
     }
 
     private class LoadStateRunnable implements Runnable {
         @Override
         public void run() {
+            // Load a previously-saved snapshot of the emulator's state
             File f = getStateFile();
             String s = "";
-            if (toast != null)
-                toast.cancel();
             if (f.exists()) {
                 try {
                     gb.loadStateFromFile(f);
@@ -176,6 +199,31 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                 } finally {
                     showToast(s);
                 }
+            }
+        }
+    }
+
+    private class SaveStateRunnable implements Runnable {
+        @Override
+        public void run() {
+            // Save a snapshot of the emulator's state
+            File f = getStateFile();
+            String s = "";
+            try {
+                gb.saveStateToFile(f);
+                s = getString(R.string.state_saved);
+
+                // Enable load state button now that a save state exists
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        findViewById(R.id.controller_load).setEnabled(true);
+                    }
+                });
+            } catch (IOException e) {
+                s = String.format(getString(R.string.state_save_error), e.getMessage());
+            } finally {
+                showToast(s);
             }
         }
     }
@@ -193,12 +241,16 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
     protected void onDestroy() {
         super.onDestroy();
 
+        // TODO: don't terminate emulation when rotating screen, going to another activity, etc.
         if (gb != null) {
             gb.terminate();
         }
 
         if (loadError != null && loadError.isShowing())
             loadError.dismiss();
+        closeYesNoPrompt();
+
+        // TODO: confirm exit
     }
 
     @Override
@@ -235,7 +287,21 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         } else if (btn.getId() == R.id.controller_load || btn.getId() == R.id.controller_save) {
             // Save/load states
             if (action == MotionEvent.ACTION_UP) {
-                gb.queueRunnable((btn.getId() == R.id.controller_save) ? saveState : loadState);
+                if (btn.getId() == R.id.controller_save) {
+                    // Prompt to save state if one exists (don't want to accidentally overwrite)
+                    if (getStateFile().exists()) {
+                        promptYesNo(getString(R.string.dialog_save_state_title),
+                                    getString(R.string.dialog_save_state_overwrite_message),
+                                    saveState);
+                    } else {
+                        gb.queueRunnable(saveState);
+                    }
+                } else {
+                    // Prompt to load state (don't want to accidentally load and lose progress)
+                    promptYesNo(getString(R.string.dialog_load_state_title),
+                                getString(R.string.dialog_load_state_message),
+                                loadState);
+                }
             }
         } else {
             // Determine which controller buttons are pressed
