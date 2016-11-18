@@ -66,14 +66,12 @@ public class SplashActivity extends AppCompatActivity {
                         @Override
                         public void onClick(final DialogInterface dialog, final int which) {
                             finish();
-                            dialog.dismiss();
                         }
                     })
                     .setOnCancelListener(new DialogInterface.OnCancelListener() {
                         @Override
                         public void onCancel(DialogInterface dialog) {
                             finish();
-                            dialog.dismiss();
                         }
                     })
                     .setIconAttribute(android.R.attr.alertDialogIcon)
