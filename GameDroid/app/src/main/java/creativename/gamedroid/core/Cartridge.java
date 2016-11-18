@@ -130,7 +130,7 @@ public class Cartridge {
     private int ramSize;
     private boolean batteryPresent;
     private GameLocale locale;
-    private byte gameVersion;
+    private int gameVersion;
     public MBC mbc;
 
     // Getters for public data
@@ -144,7 +144,7 @@ public class Cartridge {
     public int getRamSize() { return ramSize; }
     public boolean hasBattery() { return batteryPresent; }
     public GameLocale getLocale() { return locale; }
-    public byte getGameVersion() { return gameVersion; }
+    public int getGameVersion() { return gameVersion; }
 
     private boolean isRomValid(byte[] bank0) {
         byte checksum = 0;
@@ -211,7 +211,7 @@ public class Cartridge {
         locale = (bank0[0x14A] == 1) ? GameLocale.WORLD : GameLocale.JAPAN;
 
         // $14C - Game software revision
-        gameVersion = bank0[0x14C];
+        gameVersion = (bank0[0x14C] & 0xFF);
     }
 
     public Cartridge(String path, LoadMode mode) throws IOException, IllegalArgumentException {
