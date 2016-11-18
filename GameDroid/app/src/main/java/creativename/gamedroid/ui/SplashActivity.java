@@ -44,8 +44,7 @@ public class SplashActivity extends AppCompatActivity {
         String[] paths = {
                 getString(R.string.path_roms),
                 getString(R.string.path_saves),
-                getString(R.string.path_states),
-                getString(R.string.path_screenshots)
+                getString(R.string.path_states)
         };
         boolean success = true;
 

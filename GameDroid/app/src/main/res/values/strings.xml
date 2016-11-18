@@ -48,7 +48,6 @@
     <string name="path_roms">GameDroid/ROMs</string>
     <string name="path_saves">GameDroid/Saves</string>
     <string name="path_states">GameDroid/States</string>
-    <string name="path_screenshots">GameDroid/Screenshots</string>
 
     <!-- Screen Size Options -->
     <string name="pref_scaling_1x">1x</string>
