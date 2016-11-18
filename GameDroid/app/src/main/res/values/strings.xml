@@ -12,6 +12,13 @@
     <string name="dialog_romcache_message">Searching for ROMs&#8230;</string>
     <string name="dialog_noroms_title">No game ROM files found</string>
     <string name="dialog_noroms_message">GameDroid was unable to locate any ROM (.gb/.gbc) files. Move your ROMs to %s</string>
+    <string name="dialog_load_state_title">Load saved state?</string>
+    <string name="dialog_save_state_title">Save game state?</string>
+    <string name="dialog_resume_message">GameDroid has detected a previously saved state for this game. Do you want to resume from the saved state?</string>
+    <string name="dialog_save_state_overwrite_message">A saved state already exists for this game. Do you want to overwrite it?</string>
+    <string name="dialog_load_state_message">Do you want to load the previously saved state? Any unsaved progress will be lost.</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="search_hint">Search ROM titles&#8230;</string>
     <string name="dialog_load_error_title">Error loading ROM file</string>
     <string name="rom_date_format">"Last played: %s"</string>
@@ -19,6 +26,8 @@
     <string name="b">B</string>
     <string name="select">Select</string>
     <string name="start">Start</string>
+    <string name="game_load_error">Could not load saved game: %s</string>
+    <string name="game_save_error">Could not save game: %s</string>
     <string name="state_save_error">Could not save state: %s</string>
     <string name="state_load_error">Could not load state: %s</string>
     <string name="state_saved">State saved</string>
