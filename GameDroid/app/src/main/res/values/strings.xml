@@ -17,6 +17,8 @@
     <string name="dialog_resume_message">GameDroid has detected a previously saved state for this game. Do you want to resume from the saved state?</string>
     <string name="dialog_save_state_overwrite_message">A saved state already exists for this game. Do you want to overwrite it?</string>
     <string name="dialog_load_state_message">Do you want to load the previously saved state? Any unsaved progress will be lost.</string>
+    <string name="dialog_exit_title">Exit game?</string>
+    <string name="dialog_exit_message">Are you sure you want to stop playing? Any unsaved progress will be lost.</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="search_hint">Search ROM titles&#8230;</string>

@@ -78,7 +78,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                     if (getStateFile().exists()) {
                         promptYesNo(getString(R.string.dialog_load_state_title),
                                     getString(R.string.dialog_resume_message),
-                                    loadState);
+                                    loadState, false);
                     } else {
                         findViewById(R.id.controller_load).setEnabled(false);
                     }
@@ -117,7 +117,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         });
     }
 
-    private void promptYesNo(String title, String message, final Runnable action) {
+    private void promptYesNo(String title, String message, final Runnable action, final boolean finish) {
         // Prompt the user to perform some action (i.e., saving/loading states)
         closeYesNoPrompt();
         yesNoPrompt = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
@@ -126,11 +126,13 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                 .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(final DialogInterface dialog, final int which) {
-                        gb.queueRunnable(action);
+                        if (action != null)
+                            gb.queueRunnable(action);
+                        if (finish)
+                            finish();
                     }
                 })
                 .setNegativeButton(getString(R.string.no), null)
-                .setIconAttribute(android.R.attr.icon)
                 .show();
     }
 
@@ -227,12 +229,19 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
     }
 
     @Override
+    public void onBackPressed() {
+        promptYesNo(getString(R.string.dialog_exit_title),
+                    getString(R.string.dialog_exit_message),
+                    null, true);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
 
-        if (gb != null && gb.cartridge != null && gb.cartridge.hasBattery()) {
+        // Make sure the user's game is saved
+        if (gb != null && gb.cartridge != null && gb.cartridge.hasBattery())
             saveGame();
-        }
     }
 
     @Override
@@ -290,7 +299,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                     if (getStateFile().exists()) {
                         promptYesNo(getString(R.string.dialog_save_state_title),
                                     getString(R.string.dialog_save_state_overwrite_message),
-                                    saveState);
+                                    saveState, false);
                     } else {
                         gb.queueRunnable(saveState);
                     }
@@ -298,7 +307,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                     // Prompt to load state (don't want to accidentally load and lose progress)
                     promptYesNo(getString(R.string.dialog_load_state_title),
                                 getString(R.string.dialog_load_state_message),
-                                loadState);
+                                loadState, false);
                 }
             }
         } else {
