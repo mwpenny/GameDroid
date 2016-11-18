@@ -19,6 +19,19 @@
     <string name="dialog_load_state_message">Do you want to load the previously saved state? Any unsaved progress will be lost.</string>
     <string name="dialog_exit_title">Exit game?</string>
     <string name="dialog_exit_message">Are you sure you want to stop playing? Any unsaved progress will be lost.</string>
+    <string name="dialog_delete_save_title">Delete saved game?</string>
+    <string name="dialog_delete_save_message">Are you sure you want to delete the saved game? Any in-game progress will be lost.</string>
+    <string name="dialog_delete_state_title">Delete saved game state?</string>
+    <string name="dialog_delete_state_message">Are you sure you want to delete the saved game state? You will not be able to resume the game from the state.</string>
+    <string name="dialog_delete_rom_title">Delete game ROM file?</string>
+    <string name="dialog_delete_rom_message">Are you sure you want to delete the game ROM file? The game and any associated data will be removed from your device.</string>
+    <string name="delete_save">Delete save</string>
+    <string name="delete_state">Delete state</string>
+    <string name="delete_rom">Delete ROM file</string>
+    <string name="rom_title_format">%1$s (v%2$.1f)</string>
+    <string name="rom_licensee_format">Published by %s</string>
+    <string name="rom_region_format">Region: %s</string>
+    <string name="rom_path_format">Path: %s</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="search_hint">Search ROM titles&#8230;</string>
@@ -34,10 +47,12 @@
     <string name="state_load_error">Could not load state: %s</string>
     <string name="state_saved">State saved</string>
     <string name="state_loaded">State loaded</string>
+
     <string name="pref_scaling_title">Display scaling</string>
     <string name="pref_scaling_dialog_title">Set emulated display scale</string>
     <string name="emulator_prefs">Emulation options</string>
     <string name="emulator_prefs_desc">Adjust emulation parameters</string>
+
     <string name="about">About</string>
     <string name="about_desc">View application information</string>
     <string name="app_version_format">v%s</string>

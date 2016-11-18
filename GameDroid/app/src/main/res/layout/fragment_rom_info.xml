@@ -1,78 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:id="@+id/TextDialogLayout">
-
-
-        <TextView
-            android:id="@+id/dialog_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp" />
+        android:layout_marginLeft="25dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="16dp">
 
         <TextView
             android:id="@+id/dialog_licensee"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"/>
+            android:layout_height="wrap_content" />
 
         <TextView
-            android:id="@+id/dialog_version"
+            android:id="@+id/dialog_locale"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/dialog_path"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"/>
-
-        <TextView
-            android:id="@+id/dialog_locale"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"/>
-
-        <TextView
-            android:id="@+id/dialog_lastPlayed"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"/>
-
-        <TextView
-            android:id="@+id/dialog_favorite"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"/>
+            android:paddingTop="16dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_below="@id/TextDialogLayout">
+            android:layout_marginTop="16dp"
+            android:layout_height="50dp">
 
             <Button
-                android:id="@+id/dialog_cancel"
+                android:id="@+id/button_delete_save"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.50"
-                android:background="@color/colorAccent"
-                android:text="Delete Save(s)"/>
+                android:text="@string/delete_save"
+                android:textColor="@color/colorAccent"
+                android:enabled="false"/>
 
             <Button
-                android:id="@+id/dialog_ok"
+                android:id="@+id/button_delete_state"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.50"
-                android:background="@color/colorAccent"
-                android:text="Delete ROM"/>
+                android:text="@string/delete_state"
+                android:textColor="@color/colorAccent"
+                android:enabled="false"/>
         </LinearLayout>
+        <Button
+            android:id="@+id/button_delete_rom"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="@string/delete_rom"
+            android:textColor="@color/colorAccent" />
     </LinearLayout>
 
 </RelativeLayout>

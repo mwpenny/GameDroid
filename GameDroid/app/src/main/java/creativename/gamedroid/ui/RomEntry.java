@@ -1,10 +1,5 @@
 package creativename.gamedroid.ui;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /* Data structure for a game ROM's metadata */
