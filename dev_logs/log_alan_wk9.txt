@@ -1,0 +1,5 @@
+1 hr merge in performance changes
+2 hr don't restart emulation when orientation changes
+
+---
+3 hours Total
