@@ -27,8 +27,7 @@ import creativename.gamedroid.core.GameBoy;
 public class EmulatorActivity extends Activity implements View.OnTouchListener
 {
     private AlertDialog loadError, yesNoPrompt;
-    private GameBoy gb;
-    private EmulatorFrag emulator;
+    private EmulatorFragment emulator;
     private SaveStateRunnable saveState;
     private LoadStateRunnable loadState;
     private Toast toast;
@@ -38,12 +37,76 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         loadState = new LoadStateRunnable();
     }
 
+    private void initEmulator() {
+        String romPath = getIntent().getStringExtra("rom_path");
+        FragmentManager fm = getFragmentManager();
+        SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
+        final GameboyScreen cb = new GameboyScreen();
+        final boolean firstRun;
+
+        emulator = (EmulatorFragment) fm.findFragmentByTag("emulator");
+
+        // Create the fragment and data the first time
+        if (emulator == null) {
+            firstRun = true;
+
+            // Add the fragment
+            emulator = new EmulatorFragment();
+            fm.beginTransaction().add(emulator, "emulator").commit();
+
+            emulator.gb = new GameBoy(cb);
+            // Parse and load the ROM
+            try {
+                emulator.gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
+                if (emulator.gb.cartridge.hasBattery())
+                    loadGame();
+            } catch (Exception e) {
+                // ROM could not be loaded
+                exitWithError(getString(R.string.dialog_load_error_title), e.getMessage());
+            }
+        } else {
+            firstRun = false;
+            emulator.gb.renderTarget = cb;
+        }
+
+        screen.getHolder().addCallback(cb);
+
+        // Start simulating once surface is created
+        screen.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        emulator.gb.run();
+                    }
+                }, "Emulation: " + emulator.gb.cartridge.getTitle()).start();
+
+                // Prompt to resume game
+                boolean stateExists = getStateFile().exists();
+                if (stateExists && firstRun) {
+                    promptYesNo(getString(R.string.dialog_load_state_title),
+                            getString(R.string.dialog_resume_message),
+                            loadState, false);
+                }
+                findViewById(R.id.controller_load).setEnabled(stateExists);
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {}
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_emulator);
         setResult(RESULT_OK, getIntent());
+
+        initEmulator();
 
         // Set up listeners
         findViewById(R.id.controller_dpad).setOnTouchListener(this);
@@ -53,75 +116,17 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         findViewById(R.id.controller_start).setOnTouchListener(this);
         findViewById(R.id.controller_save).setOnTouchListener(this);
         findViewById(R.id.controller_load).setOnTouchListener(this);
-
-        String romPath = getIntent().getStringExtra("rom_path");
-        SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
-        final GameboyScreen cb = new GameboyScreen();
-
-        FragmentManager fm = getFragmentManager();
-        emulator = (EmulatorFrag) fm.findFragmentByTag("emulator");
-
-        // create the fragment and data the first time
-        if (emulator == null) {
-            // add the fragment
-            emulator = new EmulatorFrag();
-            fm.beginTransaction().add(emulator, "emulator").commit();
-
-            gb = new GameBoy(cb);
-            // Parse and load the ROM
-            try {
-                gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
-                if (gb.cartridge.hasBattery())
-                    loadGame();
-            } catch (Exception e) {
-                // ROM could not be loaded
-                exitWithError(getString(R.string.dialog_load_error_title), e.getMessage());
-            }
-
-            emulator.gb = gb;
-        } else {
-            gb = emulator.gb;
-            gb.renderTarget = cb;
-        }
-
-        screen.getHolder().addCallback(cb);
-
-        // Start simulating once surface is created
-        screen.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                Thread emulator = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        gb.run();
-                    }
-                }, "Emulation: " + gb.cartridge.getTitle());
-                emulator.start();
-
-                if (getStateFile().exists()) {
-                    promptYesNo(getString(R.string.dialog_load_state_title),
-                                getString(R.string.dialog_resume_message),
-                                loadState, false);
-                } else {
-                    findViewById(R.id.controller_load).setEnabled(false);
-                }
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {}
-        });
-
     }
 
-    public static class EmulatorFrag extends Fragment {
+    /* Fragment for retaining an instance of the emulator core */
+    public static class EmulatorFragment extends Fragment {
         public GameBoy gb;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            // retain this fragment
+
+            // Retain this fragment
             setRetainInstance(true);
         }
     }
@@ -158,7 +163,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                     @Override
                     public void onClick(final DialogInterface dialog, final int which) {
                         if (action != null)
-                            gb.queueRunnable(action);
+                            emulator.gb.queueRunnable(action);
                         if (finish)
                             finish();
                     }
@@ -198,7 +203,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         File f = getSaveFile();
         if (f.exists()) {
             try {
-                gb.cartridge.mbc.loadRamFromFile(f);
+                emulator.gb.cartridge.mbc.loadRamFromFile(f);
             } catch (IOException e) {
                 showToast(String.format(getString(R.string.game_load_error), e.getMessage()));
             }
@@ -209,7 +214,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         // Save game
         File f = getSaveFile();
         try {
-            gb.cartridge.mbc.saveRamToFile(f);
+            emulator.gb.cartridge.mbc.saveRamToFile(f);
         } catch (IOException e) {
             showToast(String.format(getString(R.string.game_save_error), e.getMessage()));
         }
@@ -223,7 +228,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
             String s = "";
             if (f.exists()) {
                 try {
-                    gb.loadStateFromFile(f);
+                    emulator.gb.loadStateFromFile(f);
                     s = getString(R.string.state_loaded);
                 } catch (Exception e) {
                     s = String.format(getString(R.string.state_load_error), e.getMessage());
@@ -241,7 +246,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
             File f = getStateFile();
             String s = "";
             try {
-                gb.saveStateToFile(f);
+                emulator.gb.saveStateToFile(f);
                 s = getString(R.string.state_saved);
 
                 // Enable load state button now that a save state exists
@@ -271,23 +276,25 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         super.onPause();
 
         // Make sure the user's game is saved
-        if (gb != null && gb.cartridge != null && gb.cartridge.hasBattery())
+        if (emulator != null &&
+            emulator.gb != null &&
+            emulator.gb.cartridge != null &&
+            emulator.gb.cartridge.hasBattery()) {
             saveGame();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        if (gb != null) {
-            gb.terminate();
+        if (emulator != null && emulator.gb != null) {
+            emulator.gb.terminate();
         }
 
         if (loadError != null && loadError.isShowing())
             loadError.dismiss();
         closeYesNoPrompt();
-
-        // TODO: confirm exit
     }
 
     @Override
@@ -309,10 +316,10 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
             }
 
             // Update emulator gamepad
-            gb.gamepad.updateButton(Controller.Button.UP, up);
-            gb.gamepad.updateButton(Controller.Button.DOWN, down);
-            gb.gamepad.updateButton(Controller.Button.LEFT, left);
-            gb.gamepad.updateButton(Controller.Button.RIGHT, right);
+            emulator.gb.gamepad.updateButton(Controller.Button.UP, up);
+            emulator.gb.gamepad.updateButton(Controller.Button.DOWN, down);
+            emulator.gb.gamepad.updateButton(Controller.Button.LEFT, left);
+            emulator.gb.gamepad.updateButton(Controller.Button.RIGHT, right);
 
             // Update UI gamepad
             findViewById(R.id.controller_dpad_up).setPressed(up);
@@ -331,7 +338,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
                                     getString(R.string.dialog_save_state_overwrite_message),
                                     saveState, false);
                     } else {
-                        gb.queueRunnable(saveState);
+                        emulator.gb.queueRunnable(saveState);
                     }
                 } else {
                     // Prompt to load state (don't want to accidentally load and lose progress)
@@ -360,11 +367,11 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
             if (b != null) {
                 if (action == MotionEvent.ACTION_DOWN) {
                     btn.setPressed(true);
-                    gb.gamepad.updateButton(b, true);
+                    emulator.gb.gamepad.updateButton(b, true);
                 }
                 else if (action == MotionEvent.ACTION_UP) {
                     btn.setPressed(false);
-                    gb.gamepad.updateButton(b, false);
+                    emulator.gb.gamepad.updateButton(b, false);
                 }
             }
         }
