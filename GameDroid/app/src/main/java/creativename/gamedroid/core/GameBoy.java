@@ -85,6 +85,7 @@ public class GameBoy {
     }
 
     public void run() {
+        terminated.set(false);
         while (!terminated.get()) {
             if (!stopped) {
                 int cyclesUsed = cpu.execInstruction();
