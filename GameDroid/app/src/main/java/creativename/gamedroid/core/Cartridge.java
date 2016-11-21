@@ -250,6 +250,7 @@ public class Cartridge {
                     case 0x09:  // ROM+RAM+BATTERY
                         mbc = new MBC0(rom, ramSize);
                         break;
+
                     case 0x01:  // MBC1
                     case 0x02:  // MBC1+RAM
                     case 0x03:  // MBC1+RAM+BATTERY
@@ -269,8 +270,6 @@ public class Cartridge {
                         mbc = new MBC3(rom, ramSize);
                         break;
 
-                    // TODO: other MBCs...
-
                     case 0x19:  // MBC5
                     case 0x1A:  // MBC5+RAM
                     case 0x1B:  // MBC5+RAM+BATTERY
@@ -279,6 +278,8 @@ public class Cartridge {
                     case 0x1E:  // MBC5+RUMBLE+RAM+BATTERY
                         mbc = new MBC5(rom, ramSize);
                         break;
+
+                    // TODO: other MBCs...
 
                     default:
                         throw new IllegalArgumentException(String.format("Unsupported cartridge type (0x%02X)", cartType));

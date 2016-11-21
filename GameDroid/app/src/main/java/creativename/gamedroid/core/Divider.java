@@ -13,7 +13,7 @@ public class Divider implements MemoryMappable, Serializable {
 
     @Override
     public byte read(char address) {
-        return (byte) ((counter >> 8) & 0xFF);
+        return (byte) (counter >>> 8);
     }
 
     @Override

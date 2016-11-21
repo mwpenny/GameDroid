@@ -2,6 +2,7 @@ package creativename.gamedroid.core;
 
 import java.io.Serializable;
 
+/* A data buffer that can be mapped to a memory location */
 public class MemoryBuffer implements MemoryMappable, Serializable {
     public byte data[];
     boolean enabled;

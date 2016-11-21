@@ -214,18 +214,16 @@ public class LCD implements MemoryMappable, Serializable {
 
     public byte read(char address) {
         MemoryMappable dest = dispatchAddress(address);
-        // DMA and palette registers are write-only
         if (dest == null)
             throw new IllegalArgumentException(String.format("Invalid LCD I/O read address ($%04X)", (int)address));
-        return dispatchAddress(address).read(address);
+        return dest.read(address);
     }
 
     public void write(char address, byte value) {
         MemoryMappable dest = dispatchAddress(address);
         if (dest == null)
             throw new IllegalArgumentException(String.format("Invalid LCD I/O write address ($%04X)", (int)address));
-        else
-            dispatchAddress(address).write(address, value);
+        dest.write(address, value);
     }
 
     private void setScreenState(ScreenState state) {
@@ -504,7 +502,7 @@ public class LCD implements MemoryMappable, Serializable {
     private static class WriteOnlyRegister extends MappableByte {
         @Override
         public byte read(char address) {
-            System.err.format("Read made to write-only location ($%04X)\n", (int)address);
+            //System.err.format("Read made to write-only location ($%04X)\n", (int)address);
             return (byte)0xFF;
         }
     }
