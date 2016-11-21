@@ -23,7 +23,7 @@
         <!--   1x: 160x144
              1.5x: 240x216
             1.75x: 280x252 -->
-        <SurfaceView
+        <creativename.gamedroid.ui.GameboyScreen
             android:layout_width="240dp"
             android:layout_height="216dp"
             android:id="@+id/gbscreen" />

@@ -2,6 +2,7 @@ package creativename.gamedroid.ui;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.SystemClock;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,12 +20,15 @@ public class RewindManager {
     public RewindPoint rewind(GameboyScreen screen) {
         // Rewinds through the states until aborted
         RewindPoint rewindPoint = null;
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inMutable = true;
         while (rewinding.get()) {
             if (!rewindBuffer.isEmpty()) {
                 rewindPoint = rewindBuffer.pop();
-                Bitmap savedFrame = BitmapFactory.decodeByteArray(rewindPoint.renderedFrame, 0, rewindPoint.renderedFrame.length);
+                Bitmap savedFrame = BitmapFactory.decodeByteArray(rewindPoint.renderedFrame, 0, rewindPoint.renderedFrame.length, opt);
                 screen.renderBitmap(savedFrame);
             }
+            SystemClock.sleep(16);  // ~60fps
         }
         return rewindPoint;
     }

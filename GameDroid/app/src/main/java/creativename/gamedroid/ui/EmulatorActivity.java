@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
@@ -39,8 +38,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
     private void initEmulator() {
         String romPath = getIntent().getStringExtra("rom_path");
         FragmentManager fm = getFragmentManager();
-        SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
-        final GameboyScreen cb = new GameboyScreen();
+        GameboyScreen screen = (GameboyScreen) findViewById(R.id.gbscreen);
         final boolean firstRun;
 
         emulator = (EmulatorFragment) fm.findFragmentByTag("emulator");
@@ -51,7 +49,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
 
             // Add the fragment
             emulator = new EmulatorFragment();
-            emulator.gb = new GameBoy(cb);
+            emulator.gb = new GameBoy(screen);
             emulator.rewindManager = new RewindManager();
             fm.beginTransaction().add(emulator, "emulator").commit();
 
@@ -66,14 +64,12 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             }
         } else {
             firstRun = false;
-            emulator.gb.renderTarget = cb;
+            emulator.gb.renderTarget = screen;
         }
 
-        emulator.screen = cb;
-        cb.setGb(emulator.gb);
-        cb.setRewindManager(emulator.rewindManager);
-
-        screen.getHolder().addCallback(cb);
+        emulator.screen = screen;
+        screen.setGb(emulator.gb);
+        screen.setRewindManager(emulator.rewindManager);
 
         // Start simulating once surface is created
         screen.getHolder().addCallback(new SurfaceHolder.Callback() {
