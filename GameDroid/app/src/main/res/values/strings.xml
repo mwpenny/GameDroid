@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <resources>
     <string name="app_name">GameDroid</string>
     <string name="library_title">Game library</string>
@@ -59,16 +61,21 @@
     <string name="emulator_prefs_desc">Adjust emulation parameters</string>
     <string name="pref_scaling_title">Display scaling</string>
     <string name="pref_scaling_dialog_title">Set emulated display scale</string>
-
     <string name="pref_scaling_key">pref_scaling</string>
-    <string name="pref_scaling_1x">1x</string>
-    <string name="pref_scaling_1.5x">1.5x</string>
-    <string name="pref_scaling_1.75x">1.75x</string>
-    <string name="pref_scaling_fit">Fit to screen</string>
     <string-array name="pref_scaling_entries">
+        <item>1x</item>
+        <item>1.5x</item>
+        <item>1.75x</item>
+        <item>Fit to screen</item>
+    </string-array>
+    <string name="pref_scaling_1x">1</string>
+    <string name="pref_scaling_1_5x">1.5</string>
+    <string name="pref_scaling_1_75x">1.75</string>
+    <string name="pref_scaling_fit">-1</string>
+    <string-array name="pref_scaling_values">
         <item>@string/pref_scaling_1x</item>
-        <item>@string/pref_scaling_1.5x</item>
-        <item>@string/pref_scaling_1.75x</item>
+        <item>@string/pref_scaling_1_5x</item>
+        <item>@string/pref_scaling_1_75x</item>
         <item>@string/pref_scaling_fit</item>
     </string-array>
 
