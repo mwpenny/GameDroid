@@ -1,0 +1,1 @@
+2.5 hr Pause emulation when app is not in the foreground
