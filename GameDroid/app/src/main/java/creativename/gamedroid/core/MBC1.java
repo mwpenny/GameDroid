@@ -40,7 +40,7 @@ public class MBC1 extends MBC {
             } else if (value == 1) {
                 // Mode 1 - enable RAM banking and restrict ROM bank num to $01-1F
                 settingRamBank = true;
-                romBankNum &= 0xE0;
+                romBankNum &= 0x9F;
             }
         }
     }
