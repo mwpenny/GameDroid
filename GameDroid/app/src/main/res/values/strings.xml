@@ -14,9 +14,9 @@
     <string name="dialog_noroms_message">GameDroid was unable to locate any ROM (.gb/.gbc) files. Move your ROMs to %s</string>
     <string name="dialog_load_state_title">Load saved state?</string>
     <string name="dialog_save_state_title">Save game state?</string>
-    <string name="dialog_load_save_state">GameDroid has detected a previously saved state for this game. Do you want to resume from the saved state?</string>
-    <string name="dialog_resume_play">Resume</string>
-    <string name="dialog_paused">Game Paused</string>
+    <string name="dialog_resume_state_message">GameDroid has detected a previously saved state for this game. Do you want to resume from the saved state?</string>
+    <string name="dialog_paused_title">Game Paused</string>
+    <string name="dialog_resume_button">Resume</string>
     <string name="dialog_save_state_overwrite_message">A saved state already exists for this game. Do you want to overwrite it?</string>
     <string name="dialog_load_state_message">Do you want to load the previously saved state? Any unsaved progress will be lost.</string>
     <string name="dialog_exit_title">Exit game?</string>

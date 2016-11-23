@@ -43,11 +43,14 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         FragmentManager fm = getFragmentManager();
         SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
         final GameboyScreen cb = new GameboyScreen();
+        final boolean firstRun;
 
         emulator = (EmulatorFragment) fm.findFragmentByTag("emulator");
 
         // Create the fragment and data the first time
         if (emulator == null) {
+            firstRun = true;
+
             // Add the fragment
             emulator = new EmulatorFragment();
             fm.beginTransaction().add(emulator, "emulator").commit();
@@ -63,6 +66,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                 exitWithError(getString(R.string.dialog_load_error_title), e.getMessage());
             }
         } else {
+            firstRun = false;
             emulator.gb.renderTarget = cb;
         }
 
@@ -76,9 +80,9 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
 
                 // Prompt to resume game
                 boolean stateExists = getStateFile().exists();
-                if (stateExists) {
+                if (stateExists && firstRun) {
                     promptYesNo(getString(R.string.dialog_load_state_title),
-                            getString(R.string.dialog_load_save_state),
+                            getString(R.string.dialog_resume_state_message),
                             loadState, false);
                 }
                 findViewById(R.id.controller_load).setEnabled(stateExists);
@@ -292,29 +296,30 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         }
     }
 
-    private boolean emulationDied() {
-        return emulatorThread != null && !emulatorThread.isAlive();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
 
-        // emulation thread has died after initialization (due to onPause)
-        if (emulationDied()) {
-            if (resumePlay != null && resumePlay.isShowing()) {
-                return;
-            }
+        /* Emulation thread has died after initialization (due to onPause)
+           and the user has not been prompted to restart it */
+        if (emulatorThread != null && !emulatorThread.isAlive() &&
+                (resumePlay == null || !resumePlay.isShowing())) {
+            // Prompt user to resume game (so they have time to react)
             resumePlay = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
-                    .setMessage(getString(R.string.dialog_paused))
-                    .setPositiveButton(getString(R.string.dialog_resume_play), new DialogInterface.OnClickListener() {
+                    .setMessage(getString(R.string.dialog_paused_title))
+                    .setPositiveButton(getString(R.string.dialog_resume_button), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(final DialogInterface dialog, final int which) {
                             launchEmulationThread();
                         }
                     })
+                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            launchEmulationThread();
+                        }
+                    })
                     .show();
-
         }
     }
 
@@ -326,8 +331,11 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             emulator.gb.terminate();
         }
 
+        // Dismiss dialogs
         if (loadError != null && loadError.isShowing())
             loadError.dismiss();
+        if (resumePlay != null && resumePlay.isShowing())
+            resumePlay.dismiss();
         closeYesNoPrompt();
     }
 
