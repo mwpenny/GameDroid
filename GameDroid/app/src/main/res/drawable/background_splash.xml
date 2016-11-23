@@ -9,7 +9,7 @@
         <bitmap
             android:gravity="center"
             android:tileMode="disabled"
-            android:src="@mipmap/splashlogo"/>
+            android:src="@drawable/splashlogo"/>
     </item>
 
 </layer-list>

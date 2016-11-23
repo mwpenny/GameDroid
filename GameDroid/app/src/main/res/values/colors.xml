@@ -14,6 +14,9 @@
     <color name="gb_button_pressed">#C62828</color>
     <color name="gb_button_unpressed">#E53935</color>
     <color name="gb_button_aux_border">#212121</color>
+    <color name="gb_button_save">#424242</color>
+    <color name="gb_button_save_pressed">#212121</color>
+    <color name="gb_button_save_disabled">#9E9E9E</color>
 
     <color name="favorite_selected">#EF5350</color>
     <color name="favorite_unselected">#9E9E9E</color>

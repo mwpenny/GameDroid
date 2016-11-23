@@ -75,10 +75,10 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
             int favImage;
             if (rom.isFavorite) {
                 favColor = R.color.favorite_selected;
-                favImage = R.mipmap.ic_favorite;
+                favImage = R.drawable.ic_favorite;
             } else {
                 favColor = R.color.favorite_unselected;
-                favImage = R.mipmap.ic_favorite_border;
+                favImage = R.drawable.ic_favorite_border;
             }
             favBtn.setImageResource(favImage);
             favBtn.getDrawable().setColorFilter(ContextCompat.getColor(getContext(), favColor), PorterDuff.Mode.SRC_IN);

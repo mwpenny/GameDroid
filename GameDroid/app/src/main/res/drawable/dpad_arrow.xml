@@ -22,7 +22,7 @@
     </item>
     <item>
         <bitmap
-            android:src="@mipmap/dpad_arrow"
+            android:src="@drawable/img_dpad_arrow"
             android:tint="@color/gb_frame_border">
         </bitmap>
     </item>
