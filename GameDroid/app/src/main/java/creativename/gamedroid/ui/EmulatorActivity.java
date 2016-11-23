@@ -24,7 +24,7 @@ import creativename.gamedroid.core.Controller;
 import creativename.gamedroid.core.GameBoy;
 
 /* View for emulator rendering + gamepad UI */
-public class EmulatorActivity extends Activity implements View.OnTouchListener
+public class EmulatorActivity extends Activity implements View.OnTouchListener, View.OnClickListener
 {
     private AlertDialog loadError, yesNoPrompt;
     private EmulatorFragment emulator;
@@ -114,8 +114,8 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
         findViewById(R.id.controller_b).setOnTouchListener(this);
         findViewById(R.id.controller_select).setOnTouchListener(this);
         findViewById(R.id.controller_start).setOnTouchListener(this);
-        findViewById(R.id.controller_save).setOnTouchListener(this);
-        findViewById(R.id.controller_load).setOnTouchListener(this);
+        findViewById(R.id.controller_save).setOnClickListener(this);
+        findViewById(R.id.controller_load).setOnClickListener(this);
     }
 
     /* Fragment for retaining an instance of the emulator core */
@@ -327,26 +327,6 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
             findViewById(R.id.controller_dpad_left).setPressed(left);
             findViewById(R.id.controller_dpad_right).setPressed(right);
 
-
-        } else if (btn.getId() == R.id.controller_load || btn.getId() == R.id.controller_save) {
-            // Save/load states
-            if (action == MotionEvent.ACTION_UP) {
-                if (btn.getId() == R.id.controller_save) {
-                    // Prompt to save state if one exists (don't want to accidentally overwrite)
-                    if (getStateFile().exists()) {
-                        promptYesNo(getString(R.string.dialog_save_state_title),
-                                    getString(R.string.dialog_save_state_overwrite_message),
-                                    saveState, false);
-                    } else {
-                        emulator.gb.queueRunnable(saveState);
-                    }
-                } else {
-                    // Prompt to load state (don't want to accidentally load and lose progress)
-                    promptYesNo(getString(R.string.dialog_load_state_title),
-                                getString(R.string.dialog_load_state_message),
-                                loadState, false);
-                }
-            }
         } else {
             // Determine which controller buttons are pressed
             Controller.Button b = null;
@@ -376,5 +356,25 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener
             }
         }
         return (action == MotionEvent.ACTION_DOWN);
+    }
+
+    @Override
+    public void onClick(View v) {
+        // Handle button presses for miscellaneous (i.e., save/load state)
+        if (v.getId() == R.id.controller_save) {
+            // Prompt to save state if one exists (don't want to accidentally overwrite)
+            if (getStateFile().exists()) {
+                promptYesNo(getString(R.string.dialog_save_state_title),
+                        getString(R.string.dialog_save_state_overwrite_message),
+                        saveState, false);
+            } else {
+                emulator.gb.queueRunnable(saveState);
+            }
+        } else {
+            // Prompt to load state (don't want to accidentally load and lose progress)
+            promptYesNo(getString(R.string.dialog_load_state_title),
+                    getString(R.string.dialog_load_state_message),
+                    loadState, false);
+        }
     }
 }
