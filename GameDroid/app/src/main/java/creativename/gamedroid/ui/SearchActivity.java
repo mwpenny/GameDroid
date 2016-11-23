@@ -26,11 +26,12 @@ public class SearchActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-        setSupportActionBar((Toolbar)findViewById(R.id.search_bar));
+        Toolbar tb = (Toolbar)findViewById(R.id.toolbar);
+        tb.setNavigationIcon(null);
+        setSupportActionBar(tb);
 
         if (savedInstanceState != null)
             lastQuery = savedInstanceState.getString("query");
