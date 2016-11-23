@@ -21,6 +21,7 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
 
         Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
+        tb.setTitle(getString(R.string.about_title));
         tb.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -2,13 +2,16 @@
 
 <!-- Top-level preference headers -->
 <preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
-    <header android:fragment="creativename.gamedroid.ui.SettingsActivity$EmulatorSettingsFragment"
-        android:icon="@mipmap/ic_launcher"
+    <header
         android:title="@string/emulator_prefs"
-        android:summary="@string/emulator_prefs_desc"/>
+        android:summary="@string/emulator_prefs_desc">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="creativename.gamedroid"
+            android:targetClass="creativename.gamedroid.ui.EmulationOptionsActivity" />
+    </header>
 
     <header
-        android:icon="@mipmap/ic_launcher"
         android:title="@string/about"
         android:summary="@string/about_desc">
         <intent

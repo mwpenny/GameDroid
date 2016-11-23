@@ -24,6 +24,7 @@
 
         <activity android:name=".ui.LibraryActivity"/>
         <activity android:name=".ui.SettingsActivity"/>
+        <activity android:name=".ui.EmulationOptionsActivity"/>
         <activity android:name=".ui.AboutActivity"/>
         <activity android:name=".ui.SearchActivity" android:launchMode="singleTop">
             <intent-filter>
