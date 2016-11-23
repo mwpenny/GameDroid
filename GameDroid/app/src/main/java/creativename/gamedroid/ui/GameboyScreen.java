@@ -12,7 +12,7 @@ import creativename.gamedroid.core.RenderTarget;
 
 /* Renders the GameBoy screen from its framebuffer */
 public class GameboyScreen extends Activity implements SurfaceHolder.Callback, RenderTarget {
-    static Paint p = new Paint();
+    final static Paint p = new Paint();
     final static Rect screenDimensions = new Rect(0, 0, 160, 144);
 
     private SurfaceHolder holder;
@@ -22,9 +22,11 @@ public class GameboyScreen extends Activity implements SurfaceHolder.Callback, R
     public void surfaceCreated(SurfaceHolder holder) {
         holder.setKeepScreenOn(true);
         this.holder = holder;
-        frameBuff = Bitmap.createBitmap(160, 144, Bitmap.Config.ARGB_8888);
+        if (frameBuff == null) {
+            frameBuff = Bitmap.createBitmap(160, 144, Bitmap.Config.ARGB_8888);
+        }
         Canvas c = holder.lockCanvas();
-        c.drawColor(Color.BLUE);
+        c.drawBitmap(frameBuff, screenDimensions, holder.getSurfaceFrame(), p);
         holder.unlockCanvasAndPost(c);
     }
 

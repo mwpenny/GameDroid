@@ -26,11 +26,12 @@ import creativename.gamedroid.core.GameBoy;
 /* View for emulator rendering + gamepad UI */
 public class EmulatorActivity extends Activity implements View.OnTouchListener, View.OnClickListener
 {
-    private AlertDialog loadError, yesNoPrompt;
+    private AlertDialog loadError, yesNoPrompt, resumePlay;
     private EmulatorFragment emulator;
     private SaveStateRunnable saveState;
     private LoadStateRunnable loadState;
     private Toast toast;
+    private Thread emulatorThread;
 
     public EmulatorActivity() {
         saveState = new SaveStateRunnable();
@@ -42,14 +43,11 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         FragmentManager fm = getFragmentManager();
         SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
         final GameboyScreen cb = new GameboyScreen();
-        final boolean firstRun;
 
         emulator = (EmulatorFragment) fm.findFragmentByTag("emulator");
 
         // Create the fragment and data the first time
         if (emulator == null) {
-            firstRun = true;
-
             // Add the fragment
             emulator = new EmulatorFragment();
             fm.beginTransaction().add(emulator, "emulator").commit();
@@ -65,7 +63,6 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                 exitWithError(getString(R.string.dialog_load_error_title), e.getMessage());
             }
         } else {
-            firstRun = false;
             emulator.gb.renderTarget = cb;
         }
 
@@ -75,18 +72,13 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         screen.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        emulator.gb.run();
-                    }
-                }, "Emulation: " + emulator.gb.cartridge.getTitle()).start();
+                launchEmulationThread();
 
                 // Prompt to resume game
                 boolean stateExists = getStateFile().exists();
-                if (stateExists && firstRun) {
+                if (stateExists) {
                     promptYesNo(getString(R.string.dialog_load_state_title),
-                            getString(R.string.dialog_resume_message),
+                            getString(R.string.dialog_load_save_state),
                             loadState, false);
                 }
                 findViewById(R.id.controller_load).setEnabled(stateExists);
@@ -95,7 +87,9 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
             @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {}
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                holder.removeCallback(this);
+            }
         });
     }
 
@@ -126,7 +120,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
-            // Retain this fragment
+            // Retain this fragment across activity restarts
             setRetainInstance(true);
         }
     }
@@ -170,6 +164,16 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                 })
                 .setNegativeButton(getString(R.string.no), null)
                 .show();
+    }
+
+    private void launchEmulationThread() {
+        emulatorThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                emulator.gb.run();
+            }
+        }, "Emulation: " + emulator.gb.cartridge.getTitle());
+        emulatorThread.start();
     }
 
     private void closeYesNoPrompt() {
@@ -281,6 +285,36 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             emulator.gb.cartridge != null &&
             emulator.gb.cartridge.hasBattery()) {
             saveGame();
+        }
+
+        if (emulator != null && emulator.gb != null) {
+            emulator.gb.terminate();
+        }
+    }
+
+    private boolean emulationDied() {
+        return emulatorThread != null && !emulatorThread.isAlive();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // emulation thread has died after initialization (due to onPause)
+        if (emulationDied()) {
+            if (resumePlay != null && resumePlay.isShowing()) {
+                return;
+            }
+            resumePlay = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
+                    .setMessage(getString(R.string.dialog_paused))
+                    .setPositiveButton(getString(R.string.dialog_resume_play), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(final DialogInterface dialog, final int which) {
+                            launchEmulationThread();
+                        }
+                    })
+                    .show();
+
         }
     }
 
