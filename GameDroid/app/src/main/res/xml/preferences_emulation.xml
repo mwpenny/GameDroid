@@ -10,4 +10,9 @@
         android:entries="@array/pref_scaling_entries"
         android:entryValues="@array/pref_scaling_values"
         android:defaultValue="@string/pref_scaling_1_5x" />
+    <CheckBoxPreference
+        android:key="@string/pref_button_invert_key"
+        android:title="@string/pref_button_invert_title"
+        android:defaultValue="false" />
+
 </PreferenceScreen>

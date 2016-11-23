@@ -79,6 +79,9 @@
         <item>@string/pref_scaling_fit</item>
     </string-array>
 
+    <string name="pref_button_invert_key">pref_button_invert</string>
+    <string name="pref_button_invert_title">Invert A and B buttons</string>
+
     <string name="about">About</string>
     <string name="about_desc">View application information</string>
     <string name="about_title">About GameDroid</string>
