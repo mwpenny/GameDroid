@@ -1,0 +1,9 @@
+3hrs		Rewriting rendering in OpenGL
+1hr		Refactoring (EmulatorActivity initialization/dialogs/button events, toolbars in LibraryActivity and SearchActivity)
+1hr, 30mins	Updating save/load state icons and troubleshooting resizing and coloring issues (i.e., on press)
+30mins		Finding and fixing MBC1 bug causing glitches in games
+1hr, 30mins	Implementing settings screens with Android preferences API and creating workaround to show toolbars on them
+3hrs		Deliverable 3
+
+---
+10hrs, 30mins	Total
