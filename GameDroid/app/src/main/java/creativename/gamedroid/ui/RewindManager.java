@@ -35,7 +35,13 @@ public class RewindManager {
     }
 
     public synchronized void commitRewind() {
-        rewinding = false;
+        if (rewinding && !rewindAborted) {
+            rewinding = false;
+            rewindBuffer.clear();
+        }
+    }
+
+    public synchronized void reset() {
         rewindBuffer.clear();
     }
 

@@ -334,6 +334,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                 try {
                     emulator.gb.loadStateFromFile(f);
                     s = getString(R.string.state_loaded);
+                    emulator.rewindManager.reset();
                 } catch (Exception e) {
                     s = String.format(getString(R.string.state_load_error), e.getMessage());
                 } finally {
