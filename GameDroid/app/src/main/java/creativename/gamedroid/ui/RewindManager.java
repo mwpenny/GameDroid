@@ -2,6 +2,7 @@ package creativename.gamedroid.ui;
 
 import android.graphics.Bitmap;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -72,9 +73,11 @@ public class RewindManager {
 
 class RewindPoint {
     public byte[] saveState;
-    public Bitmap renderedFrame;
+    public byte[] renderedFrame;
     public RewindPoint(byte[] saveState, Bitmap renderedFrame) {
         this.saveState = saveState;
-        this.renderedFrame = Bitmap.createBitmap(renderedFrame);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        renderedFrame.compress(Bitmap.CompressFormat.JPEG, 50, bos);
+        this.renderedFrame = bos.toByteArray();
     }
 }

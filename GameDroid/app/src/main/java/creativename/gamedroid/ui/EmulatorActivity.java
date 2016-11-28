@@ -6,6 +6,8 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Environment;
@@ -164,7 +166,8 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                                 emulator.rewindManager.abortRewind();
                                 return;
                             }
-                            c.drawBitmap(rewindPoint.renderedFrame, screenDimensions, holder.getSurfaceFrame(), p);
+                            Bitmap savedFrame = BitmapFactory.decodeByteArray(rewindPoint.renderedFrame, 0, rewindPoint.renderedFrame.length);
+                            c.drawBitmap(savedFrame, screenDimensions, holder.getSurfaceFrame(), p);
                             holder.unlockCanvasAndPost(c);
                             resumeTo = rewindPoint.saveState;
                         }
