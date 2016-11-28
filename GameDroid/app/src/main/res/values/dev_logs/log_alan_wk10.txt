@@ -1,1 +1,6 @@
 2.5 hr Pause emulation when app is not in the foreground
+2 hr Deliverable 3
+6 hr Implement rewind
+
+---
+10.5 hours Total
