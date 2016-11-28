@@ -76,6 +76,10 @@ public class GameBoy {
         this.renderTarget = target;
     }
 
+    public boolean isTerminated() {
+        return terminated.get();
+    }
+
     public void terminate() {
         terminated.set(true);
     }
@@ -109,7 +113,7 @@ public class GameBoy {
         }
     }
 
-    private void saveState(OutputStream stream) throws IOException {
+    public void saveState(OutputStream stream) throws IOException {
         // Save the emulator's internal state ("save anywhere")
         ObjectOutputStream out = new ObjectOutputStream(stream);
         try {
@@ -129,7 +133,7 @@ public class GameBoy {
         }
     }
 
-    private void loadState(InputStream stream) throws IOException, ClassNotFoundException {
+    public void loadState(InputStream stream) throws IOException, ClassNotFoundException {
         // Load the emulator's internal state ("load anywhere")
         ObjectInputStream in = new ObjectInputStream(stream);
         try {

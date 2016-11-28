@@ -55,11 +55,18 @@
         android:gravity="center"
         android:orientation="vertical">
 
+        <Button
+            android:layout_width="100px"
+            android:layout_height="100px"
+            android:id="@+id/braid">
+        </Button>
+
         <!-- A and B -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="141dp"
             android:gravity="end|center">
+
             <include layout="@layout/layout_gb_buttons_main" />
         </LinearLayout>
 
@@ -69,6 +76,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:gravity="end|center">
+
             <include layout="@layout/layout_gb_buttons_aux" />
         </LinearLayout>
     </LinearLayout>

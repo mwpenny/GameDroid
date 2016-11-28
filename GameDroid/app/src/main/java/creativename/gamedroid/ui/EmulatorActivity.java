@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.ContextThemeWrapper;
@@ -15,6 +16,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -23,9 +25,11 @@ import creativename.gamedroid.core.Cartridge;
 import creativename.gamedroid.core.Controller;
 import creativename.gamedroid.core.GameBoy;
 
+import static creativename.gamedroid.ui.GameboyScreen.p;
+import static creativename.gamedroid.ui.GameboyScreen.screenDimensions;
+
 /* View for emulator rendering + gamepad UI */
-public class EmulatorActivity extends Activity implements View.OnTouchListener, View.OnClickListener
-{
+public class EmulatorActivity extends Activity implements View.OnTouchListener, View.OnClickListener {
     private AlertDialog loadError, yesNoPrompt, resumePlay;
     private EmulatorFragment emulator;
     private SaveStateRunnable saveState;
@@ -56,6 +60,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             fm.beginTransaction().add(emulator, "emulator").commit();
 
             emulator.gb = new GameBoy(cb);
+            emulator.rewindManager = new RewindManager();
             // Parse and load the ROM
             try {
                 emulator.gb.cartridge = new Cartridge(romPath, Cartridge.LoadMode.LOAD_ROM);
@@ -69,6 +74,9 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             firstRun = false;
             emulator.gb.renderTarget = cb;
         }
+
+        cb.setGb(emulator.gb);
+        cb.setRewindManager(emulator.rewindManager);
 
         screen.getHolder().addCallback(cb);
 
@@ -89,7 +97,9 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             }
 
             @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            }
+
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
                 holder.removeCallback(this);
@@ -98,8 +108,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_emulator);
         setResult(RESULT_OK, getIntent());
@@ -114,11 +123,76 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         findViewById(R.id.controller_start).setOnTouchListener(this);
         findViewById(R.id.controller_save).setOnClickListener(this);
         findViewById(R.id.controller_load).setOnClickListener(this);
+        findViewById(R.id.braid).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final int action = event.getAction();
+                if (action == MotionEvent.ACTION_DOWN) {
+                    emulator.rewindManager.startRewinding();
+                    terminateEmulationThenLaunchRewind();
+                } else if (action == MotionEvent.ACTION_UP) {
+                    emulator.rewindManager.commitRewind();
+                }
+                return action == MotionEvent.ACTION_DOWN;
+            }
+        });
+    }
+
+    boolean rewindThreadRunning = false;
+    public synchronized void launchRewindThread() {
+        if (rewindThreadRunning) {
+            return;
+        }
+        System.out.println("launching rewind");
+        final EmulatorActivity parent = this;
+        rewindThreadRunning = true;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
+                byte[] resumeTo = null;
+                while (true) {
+                    synchronized (emulator.rewindManager) {
+                        if (!emulator.rewindManager.isRewinding()) break;
+
+                        SurfaceHolder holder = screen.getHolder();
+
+                        RewindPoint rewindPoint = emulator.rewindManager.rewindOneStep();
+                        if (rewindPoint != null) {
+                            Canvas c = screen.getHolder().lockCanvas();
+                            if (c == null) {
+                                emulator.rewindManager.abortRewind();
+                                return;
+                            }
+                            c.drawBitmap(rewindPoint.renderedFrame, screenDimensions, holder.getSurfaceFrame(), p);
+                            holder.unlockCanvasAndPost(c);
+                            resumeTo = rewindPoint.saveState;
+                        }
+                    }
+                }
+
+                if (resumeTo != null && !emulator.rewindManager.isRewindAborted()) {
+                    ByteArrayInputStream state = new ByteArrayInputStream(resumeTo);
+                    try {
+                        emulator.gb.loadState(state);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+                launchEmulationThread();
+                synchronized (parent) {
+                    rewindThreadRunning = false;
+                }
+            }
+        }, "Rewind").start();
     }
 
     /* Fragment for retaining an instance of the emulator core */
     public static class EmulatorFragment extends Fragment {
         public GameBoy gb;
+        public RewindManager rewindManager;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -170,11 +244,33 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                 .show();
     }
 
-    private void launchEmulationThread() {
+    private boolean launchRewindAfterEmulation = false;
+    private synchronized void terminateEmulationThenLaunchRewind() {
+        launchRewindAfterEmulation = true;
+        emulator.gb.terminate();
+    }
+
+    private boolean emulationRunning = false;
+    private synchronized void launchEmulationThread() {
+        if (emulationRunning) {
+            return;
+        }
+        System.out.println("launching emulation");
+        emulationRunning = true;
+        final EmulatorActivity parent = this;
         emulatorThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 emulator.gb.run();
+                synchronized (parent) {
+                    emulationRunning = false;
+                }
+                synchronized (parent) {
+                    if (launchRewindAfterEmulation) {
+                        launchRewindThread();
+                        launchRewindAfterEmulation = false;
+                    }
+                }
             }
         }, "Emulation: " + emulator.gb.cartridge.getTitle());
         emulatorThread.start();
@@ -275,8 +371,8 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
     @Override
     public void onBackPressed() {
         promptYesNo(getString(R.string.dialog_exit_title),
-                    getString(R.string.dialog_exit_message),
-                    null, true);
+                getString(R.string.dialog_exit_message),
+                null, true);
     }
 
     @Override
@@ -285,15 +381,20 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
 
         // Make sure the user's game is saved
         if (emulator != null &&
-            emulator.gb != null &&
-            emulator.gb.cartridge != null &&
-            emulator.gb.cartridge.hasBattery()) {
+                emulator.gb != null &&
+                emulator.gb.cartridge != null &&
+                emulator.gb.cartridge.hasBattery()) {
             saveGame();
         }
 
         if (emulator != null && emulator.gb != null) {
             emulator.gb.terminate();
+            emulator.rewindManager.abortRewind();
         }
+    }
+
+    private boolean emulationDied() {
+        return emulatorThread != null && !emulatorThread.isAlive();
     }
 
     @Override
@@ -390,8 +491,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                 if (action == MotionEvent.ACTION_DOWN) {
                     btn.setPressed(true);
                     emulator.gb.gamepad.updateButton(b, true);
-                }
-                else if (action == MotionEvent.ACTION_UP) {
+                } else if (action == MotionEvent.ACTION_UP) {
                     btn.setPressed(false);
                     emulator.gb.gamepad.updateButton(b, false);
                 }

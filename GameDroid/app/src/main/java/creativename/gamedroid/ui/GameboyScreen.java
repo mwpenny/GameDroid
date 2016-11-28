@@ -3,11 +3,14 @@ package creativename.gamedroid.ui;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.SurfaceHolder;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import creativename.gamedroid.core.GameBoy;
 import creativename.gamedroid.core.RenderTarget;
 
 /* Renders the GameBoy screen from its framebuffer */
@@ -17,6 +20,8 @@ public class GameboyScreen extends Activity implements SurfaceHolder.Callback, R
 
     private SurfaceHolder holder;
     private Bitmap frameBuff;
+    private GameBoy gb;
+    private RewindManager rewindManager;
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -37,7 +42,24 @@ public class GameboyScreen extends Activity implements SurfaceHolder.Callback, R
             frameBuff.setPixels(newFrame, 0, 160, 0, 0, 160, 144);
             c.drawBitmap(frameBuff, screenDimensions, holder.getSurfaceFrame(), p);
             holder.unlockCanvasAndPost(c);
+
+            ByteArrayOutputStream saveStateStream = new ByteArrayOutputStream();
+            try {
+                gb.saveState(saveStateStream);
+            } catch (IOException e) {
+                // should never happen since this is a in memory stream
+                return;
+            }
+            rewindManager.addRewindPoint(saveStateStream.toByteArray(), frameBuff);
         }
+    }
+
+    public void setGb(GameBoy gb) {
+        this.gb = gb;
+    }
+
+    public void setRewindManager(RewindManager rewindManager) {
+        this.rewindManager = rewindManager;
     }
 
     @Override
@@ -50,3 +72,4 @@ public class GameboyScreen extends Activity implements SurfaceHolder.Callback, R
         System.out.println("surf destroyed?");
     }
 }
+
