@@ -43,7 +43,7 @@ public class Controller implements MemoryMappable {
         this.gb = gb;
     }
 
-    public void updateButton(Button button, boolean pressed) {
+    public synchronized void updateButton(Button button, boolean pressed) {
         // 0 = pressed
         byte code = button.getButtonCode();
         byte combinedState = (byte)((state >>> 4) & (state & 0xF));
@@ -60,7 +60,7 @@ public class Controller implements MemoryMappable {
     }
 
     @Override
-    public byte read(char address) {
+    public synchronized byte read(char address) {
         /* $FF00: xxxxBBBB
                       ||||
                       |||+----- Down/Start
@@ -82,7 +82,7 @@ public class Controller implements MemoryMappable {
     }
 
     @Override
-    public void write(char address, byte value) {
+    public synchronized void write(char address, byte value) {
         /* $FF00: xxDBxxxx
                     ||
                     |+----- Select d-pad (0 = select)
