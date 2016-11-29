@@ -125,7 +125,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         findViewById(R.id.controller_start).setOnTouchListener(this);
         findViewById(R.id.controller_save).setOnClickListener(this);
         findViewById(R.id.controller_load).setOnClickListener(this);
-        findViewById(R.id.braid).setOnTouchListener(new View.OnTouchListener() {
+        findViewById(R.id.controller_rewind).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 final int action = event.getAction();

@@ -5,16 +5,16 @@
     <item android:state_enabled="true" android:state_pressed="true">
         <bitmap
             android:src="@drawable/ic_save"
-            android:tint="@color/gb_button_save_pressed"/>
+            android:tint="@color/emu_button_pressed"/>
     </item>
     <item android:state_enabled="true" android:state_pressed="false">
         <bitmap
             android:src="@drawable/ic_save"
-            android:tint="@color/gb_button_save"/>
+            android:tint="@color/emu_button"/>
     </item>
     <item android:state_enabled="false">
         <bitmap
             android:src="@drawable/ic_save"
-            android:tint="@color/gb_button_save_disabled"/>
+            android:tint="@color/emu_button_disabled"/>
     </item>
 </selector>

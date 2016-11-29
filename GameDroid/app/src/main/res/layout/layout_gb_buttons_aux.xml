@@ -36,7 +36,7 @@
             android:text="@string/start"/>
     </LinearLayout>
 
-    <!-- Save/load buttons -->
+    <!-- Save, load, and rewind buttons -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="35dp"
@@ -44,21 +44,28 @@
         android:gravity="bottom"
         android:layout_gravity="center">
 
-        <ImageButton
+        <Button
             android:layout_width="35dp"
             android:layout_height="match_parent"
             android:scaleType="fitXY"
             android:id="@+id/controller_save"
-            android:layout_marginLeft="0dp"
-            android:layout_marginStart="0dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginEnd="10dp"
             android:background="@drawable/gb_button_save"/>
-        <ImageButton
+        <Button
             android:layout_width="35dp"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter"
+            android:scaleType="fitXY"
             android:id="@+id/controller_load"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/gb_button_load"/>
+        <Button
+            android:layout_width="35dp"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:id="@+id/controller_rewind"
+            android:background="@drawable/gb_button_rewind">
+        </Button>
     </LinearLayout>
 </LinearLayout>
