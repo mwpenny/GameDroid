@@ -151,6 +151,13 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         new Thread(new Runnable() {
             @Override
             public void run() {
+                rewind();
+                synchronized (parent) {
+                    rewindThreadRunning = false;
+                }
+            }
+
+            private void rewind() {
                 SurfaceView screen = (SurfaceView) findViewById(R.id.gbscreen);
                 byte[] resumeTo = null;
                 while (true) {
@@ -174,7 +181,11 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                     }
                 }
 
-                if (resumeTo != null && !emulator.rewindManager.isRewindAborted()) {
+                if (emulator.rewindManager.isRewindAborted()) {
+                    return;
+                }
+
+                if (resumeTo != null) {
                     ByteArrayInputStream state = new ByteArrayInputStream(resumeTo);
                     try {
                         emulator.gb.loadState(state);
@@ -185,9 +196,6 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
                     }
                 }
                 launchEmulationThread();
-                synchronized (parent) {
-                    rewindThreadRunning = false;
-                }
             }
         }, "Rewind").start();
     }
@@ -392,13 +400,12 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         }
 
         if (emulator != null && emulator.gb != null) {
-            emulator.gb.terminate();
-            emulator.rewindManager.abortRewind();
+            synchronized (this) {
+                launchRewindAfterEmulation = false;
+                emulator.gb.terminate();
+                emulator.rewindManager.abortRewind();
+            }
         }
-    }
-
-    private boolean emulationDied() {
-        return emulatorThread != null && !emulatorThread.isAlive();
     }
 
     @Override
