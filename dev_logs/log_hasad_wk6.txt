@@ -1,0 +1,4 @@
+Week 6 Dev Log:
+
+2 hour : Researching how Dialog's, Fragments and Adapters work in Android
+30 minutes : Implementing a Dialog and outputting Rom Title onto Dialog
