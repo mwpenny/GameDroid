@@ -82,9 +82,8 @@
     <string name="pref_button_invert_key">pref_button_invert</string>
     <string name="pref_button_invert_title">Invert A and B buttons</string>
 
-    <string name="about">About</string>
-    <string name="about_desc">View application information</string>
     <string name="about_title">About GameDroid</string>
+    <string name="about_desc">View application information</string>
     <string name="app_version_format">v%s</string>
     <string name="about_team_header">Team CreativeName 2016:</string>
     <string name="about_team">Matt Penny\nAlan Wu\nHammad Asad\nBrendan Marko\n\nMade for COMP 3004 at Carleton University</string>

@@ -12,7 +12,7 @@
     </header>
 
     <header
-        android:title="@string/about"
+        android:title="@string/about_title"
         android:summary="@string/about_desc">
         <intent
             android:action="android.intent.action.VIEW"
