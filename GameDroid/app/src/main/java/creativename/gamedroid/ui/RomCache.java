@@ -200,6 +200,16 @@ public class RomCache {
         return success;
     }
 
+    /* Removes a ROM from the cache list */
+    public void removeRom(String path) {
+        for (RomEntry r : romList) {
+            if (r.getPath().equals(path)) {
+                romList.remove(r);
+                break;
+            }
+        }
+    }
+
     /* Retrieves ROM metadata for every ROM file present in a directory */
     public void populateCache(File romDir) {
         ArrayList<RomEntry> romList = new ArrayList<>();

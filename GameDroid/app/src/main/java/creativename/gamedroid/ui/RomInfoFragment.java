@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
@@ -19,12 +18,7 @@ import creativename.gamedroid.R;
 /* An information dialog for a given ROM */
 public class RomInfoFragment extends DialogFragment {
     private AlertDialog yesNoPrompt;
-    private String romTitle;
-    private String romPath;
-    private Button deleteSave;
-    private Button deleteState;
-    private Button deleteRom;
-    private ListView listView;
+
     public RomInfoFragment() {}
 
     public static RomInfoFragment newInstance(RomEntry rom) {
@@ -46,27 +40,18 @@ public class RomInfoFragment extends DialogFragment {
                              Bundle savedInstanceState) {
         Bundle args = getArguments();
         View v = inflater.inflate(R.layout.fragment_rom_info, container, false);
-        View rootView = inflater.inflate(R.layout.fragment_romlist, container, false);
-        listView = (ListView) rootView.findViewById(R.id.library_list);
+
+        // Format ROM metadata
         float version = 1 + args.getInt("version")/10f;
         String title = String.format(getString(R.string.rom_title_format), args.getString("title"), version);
         String licensee = String.format(getString(R.string.rom_licensee_format), args.getString("licensee"));
         String region = String.format(getString(R.string.rom_region_format), args.getString("locale"));
-        String path = String.format(getString(R.string.rom_path_format), args.getString("path"));
+        final String path = String.format(getString(R.string.rom_path_format), args.getString("path"));
 
-        romTitle = args.getString("title");
-
-        deleteSave = (Button)v.findViewById(R.id.button_delete_save);
-        deleteState = (Button)v.findViewById(R.id.button_delete_state);
-        deleteRom = (Button)v.findViewById(R.id.button_delete_rom);
-
-        boolean stateExists = fileExist(getString(R.string.path_states) + "/" + romTitle + ".st");
-        boolean saveExists = fileExist(getString(R.string.path_saves) + "/" + romTitle + ".sav");
-        boolean romExist = fileExist(path);
-
-        deleteSave.setEnabled(saveExists);
-        deleteState.setEnabled(stateExists);
-        deleteRom.setEnabled(romExist);
+        final Button deleteSaveBtn = (Button)v.findViewById(R.id.button_delete_save);
+        final Button deleteStateBtn = (Button)v.findViewById(R.id.button_delete_state);
+        deleteSaveBtn.setEnabled(getSaveFile().exists());
+        deleteStateBtn.setEnabled(getStateFile().exists());
 
         getDialog().setTitle(title);
         getDialog().setCancelable(true);
@@ -77,7 +62,7 @@ public class RomInfoFragment extends DialogFragment {
         ((TextView)v.findViewById(R.id.dialog_path)).setText(path);
 
         /* Add handlers */
-        deleteSave.setOnClickListener(new View.OnClickListener() {
+        deleteSaveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Confirm and delete save
@@ -86,13 +71,13 @@ public class RomInfoFragment extends DialogFragment {
                         new Runnable() {
                             @Override
                             public void run() {
-                                deleteSave();
+                                deleteSaveBtn.setEnabled(!deleteSave());
                             }
                         }, false);
             }
         });
 
-        deleteState.setOnClickListener(new View.OnClickListener() {
+        deleteStateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Confirm and delete state
@@ -101,13 +86,13 @@ public class RomInfoFragment extends DialogFragment {
                         new Runnable() {
                             @Override
                             public void run() {
-                                deleteState();
+                                deleteStateBtn.setEnabled(!deleteState());
                             }
                         }, false);
             }
         });
 
-        deleteRom.setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.button_delete_rom).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Confirm and delete ROM and associated data
@@ -116,43 +101,18 @@ public class RomInfoFragment extends DialogFragment {
                         new Runnable() {
                             @Override
                             public void run() {
-                                //deleteSave();
-                                //deleteState();
-                                deleteRom();
+                                if (deleteRom()) {
+                                    // Remove from list to update view
+                                    RomCache.getInstance(getContext()).removeRom(path);
+                                    deleteSave();
+                                    deleteState();
+                                }
                             }
                         }, true);
             }
         });
 
         return v;
-    }
-
-    private boolean fileExist(String path) {
-        return new File(Environment.getExternalStorageDirectory(), path).exists();
-    }
-
-    private void deleteFile(String path) {
-        if(fileExist(path)) {
-            try {
-                File f = new File(path);
-                f.setWritable(true);
-                System.gc();
-                boolean result = f.delete();
-                //System.out.println("Value of result is: " + result);
-            } catch(SecurityException e) {
-                //Failed to delete file
-                System.out.println("Security Exception caught - Do not have permission");
-                throw e;
-            } catch(NullPointerException e) {
-                //Couldn't reference the file
-                System.out.println("Lost reference to file");
-                throw e;
-            } catch(Exception e) {
-                //Something happened
-                System.out.println("File deleting: Something else happened");
-                throw e;
-            }
-        }
     }
 
     @Override
@@ -185,18 +145,27 @@ public class RomInfoFragment extends DialogFragment {
             yesNoPrompt.dismiss();
     }
 
-    private void deleteSave() {
-        deleteFile(getString(R.string.path_saves) + "/" + romTitle + ".sav");
-        deleteSave.setEnabled(false);
+    private File getSaveFile() {
+        File path = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_saves));
+        return new File(path, getArguments().getString("title") + ".sav");
     }
 
-    private void deleteState() {
-        deleteFile(getString(R.string.path_states) + "/" + romTitle + ".st");
-        deleteState.setEnabled(false);
+    private File getStateFile() {
+        File path = new File(Environment.getExternalStorageDirectory(), getString(R.string.path_states));
+        return new File(path, getArguments().getString("title") + ".st");
     }
 
-    private void deleteRom() {
-        deleteFile(romPath);
-        deleteRom.setEnabled(false);
+    private boolean deleteSave() {
+        return getSaveFile().delete();
+    }
+
+    private boolean deleteState() {
+        return getStateFile().delete();
+    }
+
+    private boolean deleteRom() {
+        // Metadata will be removed from the cache on app restart
+        String path = getArguments().getString("path");
+        return (path != null && (new File(path)).delete());
     }
 }
