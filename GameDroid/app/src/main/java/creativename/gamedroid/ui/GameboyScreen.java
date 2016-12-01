@@ -35,23 +35,28 @@ public class GameboyScreen extends Activity implements SurfaceHolder.Callback, R
         holder.unlockCanvasAndPost(c);
     }
 
-    @Override
-    public void frameReady(int[] newFrame) {
+    public void renderBitmap(Bitmap bmp) {
         Canvas c;
         if (holder != null && (c = holder.lockCanvas()) != null) {
-            frameBuff.setPixels(newFrame, 0, 160, 0, 0, 160, 144);
-            c.drawBitmap(frameBuff, screenDimensions, holder.getSurfaceFrame(), p);
+            c.drawBitmap(bmp, screenDimensions, holder.getSurfaceFrame(), p);
             holder.unlockCanvasAndPost(c);
-
-            ByteArrayOutputStream saveStateStream = new ByteArrayOutputStream();
-            try {
-                gb.saveState(saveStateStream);
-            } catch (IOException e) {
-                // should never happen since this is a in memory stream
-                return;
-            }
-            rewindManager.addRewindPoint(saveStateStream.toByteArray(), frameBuff);
         }
+    }
+
+    @Override
+    public void frameReady(int[] newFrame) {
+        frameBuff.setPixels(newFrame, 0, 160, 0, 0, 160, 144);
+        renderBitmap(frameBuff);
+
+        // Add rewind point for this frame
+        ByteArrayOutputStream saveStateStream = new ByteArrayOutputStream();
+        try {
+            gb.saveState(saveStateStream);
+        } catch (IOException e) {
+            // Should never happen since this is an in-memory stream
+            return;
+        }
+        rewindManager.addRewindPoint(saveStateStream.toByteArray(), frameBuff);
     }
 
     public void setGb(GameBoy gb) {

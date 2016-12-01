@@ -1,44 +1,43 @@
 package creativename.gamedroid.ui;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-// rewind state tracker
+/* Rewind state tracker */
 public class RewindManager {
-    private boolean rewinding;
-    private boolean rewindAborted;
-    private Deque<RewindPoint> rewindBuffer;
-    private Iterator<RewindPoint> rewindIterator;
+    private AtomicBoolean rewinding;
+    private RingBuffer<RewindPoint> rewindBuffer;
 
     public RewindManager() {
-        rewindBuffer = new LinkedList<>();
+        // 30 seconds x 60fps = 1800 frames
+        rewindBuffer = new RingBuffer<>(1800);
+        rewinding = new AtomicBoolean(false);
+    }
+
+    public RewindPoint rewind(GameboyScreen screen) {
+        // Rewinds through the states until aborted
+        RewindPoint rewindPoint = null;
+        while (rewinding.get()) {
+            if (!rewindBuffer.isEmpty()) {
+                rewindPoint = rewindBuffer.pop();
+                Bitmap savedFrame = BitmapFactory.decodeByteArray(rewindPoint.renderedFrame, 0, rewindPoint.renderedFrame.length);
+                screen.renderBitmap(savedFrame);
+            }
+        }
+        return rewindPoint;
     }
 
     public synchronized void startRewinding() {
-        if (rewindBuffer.isEmpty()) {
-            return;
+        if (!rewindBuffer.isEmpty()) {
+            rewinding.set(true);
         }
-
-        rewindIterator = rewindBuffer.descendingIterator();
-        rewinding = true;
-        rewindAborted = false;
-    }
-
-    public synchronized RewindPoint rewindOneStep() {
-        if (rewindIterator.hasNext() && rewinding) {
-            return rewindIterator.next();
-        }
-        return null;
     }
 
     public synchronized void commitRewind() {
-        if (rewinding && !rewindAborted) {
-            rewinding = false;
-            rewindBuffer.clear();
+        if (rewinding.get()) {
+            rewinding.set(false);
         }
     }
 
@@ -46,38 +45,9 @@ public class RewindManager {
         rewindBuffer.clear();
     }
 
-    public synchronized void abortRewind() {
-        rewindAborted = true;
-        rewinding = false;
-    }
-
-    public synchronized boolean isRewinding() {
-        return rewinding;
-    }
-
-    public synchronized boolean isRewindAborted() {
-        return rewindAborted;
-    }
-
     public synchronized void addRewindPoint(byte[] saveState, Bitmap renderedFrame) {
-        if (rewinding) {
-            return;
+        if (!rewinding.get()) {
+            rewindBuffer.push(new RewindPoint(saveState, renderedFrame));
         }
-        rewindBuffer.addLast(new RewindPoint(saveState, renderedFrame));
-        if (rewindBuffer.size() > 1500) {
-            rewindBuffer.removeFirst();
-        }
-    }
-}
-
-
-class RewindPoint {
-    public byte[] saveState;
-    public byte[] renderedFrame;
-    public RewindPoint(byte[] saveState, Bitmap renderedFrame) {
-        this.saveState = saveState;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        renderedFrame.compress(Bitmap.CompressFormat.JPEG, 50, bos);
-        this.renderedFrame = bos.toByteArray();
     }
 }
