@@ -13,9 +13,9 @@ Major features:
 * Easy to use UI for organizing and searching game library
 * SRAM saves
 * Save states
+* Rewind
 
 Planned features:
-* Rewind
 * Customizable screen resolution
 
 Supported MBCs:
