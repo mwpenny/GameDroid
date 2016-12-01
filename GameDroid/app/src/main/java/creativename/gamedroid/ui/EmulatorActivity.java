@@ -29,6 +29,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
     private SaveStateRunnable saveState;
     private LoadStateRunnable loadState;
     private Toast toast;
+    private boolean firstShowing;
 
     public EmulatorActivity() {
         saveState = new SaveStateRunnable();
@@ -118,6 +119,8 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         findViewById(R.id.controller_save).setOnClickListener(this);
         findViewById(R.id.controller_load).setOnClickListener(this);
         findViewById(R.id.controller_rewind).setOnTouchListener(this);
+
+        firstShowing = true;
     }
 
     private File getSaveFile() {
@@ -277,6 +280,8 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             emulator.stopRewind(true);
             emulator.stopEmulation(true);
         }
+
+        firstShowing = false;
     }
 
     @Override
@@ -285,7 +290,7 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
 
         /* Emulation thread has died after initialization (due to onPause)
            and the user has not been prompted to restart it */
-        if (emulator.isEmulationPaused() && (resumePlay == null || !resumePlay.isShowing())) {
+        if (!firstShowing && emulator.isEmulationPaused() && (resumePlay == null || !resumePlay.isShowing())) {
             // Prompt user to resume game (so they have time to react)
             resumePlay = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
                     .setMessage(getString(R.string.dialog_paused_title))
