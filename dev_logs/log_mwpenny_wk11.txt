@@ -1,0 +1,4 @@
+2hrs, 30mins	Refactoring, and using OpenGL for rendering with rewind
+
+---
+2hrs, 30mins	Total
