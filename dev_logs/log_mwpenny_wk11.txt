@@ -1,4 +1,5 @@
 2hrs, 30mins	Refactoring, and using OpenGL for rendering with rewind
+5hrs		Recording and editing video for deliverable 4
 
 ---
-2hrs, 30mins	Total
+7hrs, 30mins	Total
