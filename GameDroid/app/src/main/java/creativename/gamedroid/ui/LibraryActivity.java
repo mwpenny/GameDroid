@@ -3,6 +3,7 @@ package creativename.gamedroid.ui;
 import java.io.File;
 
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
@@ -17,8 +18,11 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import creativename.gamedroid.R;
 
@@ -82,7 +86,6 @@ public class LibraryActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item)
     {
         int id = item.getItemId();
-
         // app_bar settings
         // When the app_bar settings button is clicked it will display a dialog box with the
         // settings options for the User regarding preferences, ROM settings, etc...
@@ -100,6 +103,15 @@ public class LibraryActivity extends AppCompatActivity
             Intent i = new Intent(getApplicationContext(), SearchActivity.class);
             startActivity(i);
             return true;
+        }
+
+        // Help
+        else if (id == R.id.action_help)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            System.out.println("HELP ACTIVATED, show AlertDialog");
+            builder.setView(getLayoutInflater().inflate(R.layout.layout_helpmenu, null));
+            builder.show();
         }
 
         return super.onOptionsItemSelected(item);

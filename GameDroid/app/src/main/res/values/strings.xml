@@ -79,6 +79,14 @@
         <item>@string/pref_scaling_fit</item>
     </string-array>
 
+    <!-- Help Menu Strings -->
+    <string name="help_button_info">Displays the Help information screen</string>
+    <string name="search_button_info">Displays the ROM Search menu</string>
+    <string name="settings_button_info">Displays the Settings menu</string>
+    <string name="recent_tab_info">Displays ROMs in last used order</string>
+    <string name="fav_tab_info">Displays only ROMs that have been favourited</string>
+    <string name="all_tab_info">Displays all loaded ROMs in alphabetical order</string>
+
     <string name="pref_button_invert_key">pref_button_invert</string>
     <string name="pref_button_invert_title">Invert A and B buttons</string>
 
