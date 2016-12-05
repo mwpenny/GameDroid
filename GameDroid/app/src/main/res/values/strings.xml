@@ -86,6 +86,9 @@
     <string name="recent_tab_info">Displays ROMs in last used order</string>
     <string name="fav_tab_info">Displays only ROMs that have been favourited</string>
     <string name="all_tab_info">Displays all loaded ROMs in alphabetical order</string>
+    <string name="save_info">Saves the current state of the Emulator</string>
+    <string name="load_info">Loads the last Save state of the Emulator</string>
+    <string name="rewind_info">Rewinds game actions back in time!</string>
 
     <string name="pref_button_invert_key">pref_button_invert</string>
     <string name="pref_button_invert_title">Invert A and B buttons</string>
