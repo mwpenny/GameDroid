@@ -21,6 +21,7 @@ import static android.app.Activity.RESULT_OK;
 
 /* A list of ROMs with a given sorting */
 public class RomListFragment extends Fragment {
+
     public enum SortingMode {
         RECENT,
         ALPHABETICAL,
@@ -92,16 +93,35 @@ public class RomListFragment extends Fragment {
         }
     }
 
-    private void refresh() {
+    public void refresh(int removedIdx) {
         // Refresh ListView (and other pages if fragment is inside a ViewPager)
         ViewPager vp = (ViewPager) getActivity().findViewById(R.id.container);
         View v = getView();
         if (vp != null)
             vp.getAdapter().notifyDataSetChanged();
         else if (v != null) {
+            /* The ROM list that is displayed is a copy of the ROM cache. This
+               is done so that when different ROM lists are sorted, they won't
+               affect each other.
+
+               Because of this, if a ROM has been deleted and this fragment is
+               not in a viewpager (i.e., it is the search view), refresh() will
+               not recreate the fragment, and the deleted ROM will not be removed.
+
+               The ROM is removed manually in these cases */
             ListView listView = (ListView) v.findViewById(R.id.library_list);
-            ((RomListAdapter)listView.getAdapter()).notifyDataSetChanged();
+            RomListAdapter adapter = ((RomListAdapter)listView.getAdapter());
+            if (removedIdx > -1) {
+                RomEntry r = adapter.getItem(removedIdx);
+                adapter.remove(r);
+            }
+            adapter.notifyDataSetChanged();
         }
+    }
+
+    public void refresh() {
+        // Refresh without removing a ROMEntry
+        refresh(-1);
     }
 
     @Override
@@ -140,6 +160,8 @@ public class RomListFragment extends Fragment {
                 // Show ROM info
                 RomEntry rom = (RomEntry) listView.getItemAtPosition(position);
                 RomInfoFragment infoDialog = RomInfoFragment.newInstance(rom);
+                infoDialog.getArguments().putInt("rom_index", position);
+                infoDialog.setTargetFragment(RomListFragment.this, 0);
                 infoDialog.show(getFragmentManager(), "fragment_rom_info");
                 return true;
             }
@@ -157,20 +179,18 @@ public class RomListFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            View v = getView();
-            if (v != null) {
-                /* Update "last played" date for the game that was just played.
-                   Applies to all RomEntries with the same title (i.e., in the case that
-                   the user has two software revisions of the same game in their library) */
-                String title = data.getStringExtra("rom_title");
-                ListView listView = (ListView) v.findViewById(R.id.library_list);
-                for (int i = 0; i < listView.getCount(); ++i) {
-                    RomEntry rom = (RomEntry)listView.getItemAtPosition(i);
-                    if (rom.getTitle().equals(title)) {
-                        rom.lastPlayed = new Date();
-                        RomCache.getInstance(getContext()).updateRomMetadata(rom);
-                    }
+        View v = getView();
+        if (resultCode == RESULT_OK && v != null) {
+            /* Update "last played" date for the game that was just played.
+               Applies to all RomEntries with the same title (i.e., in the case that
+               the user has two software revisions of the same game in their library) */
+            String title = data.getStringExtra("rom_title");
+            ListView listView = (ListView) v.findViewById(R.id.library_list);
+            for (int i = 0; i < listView.getCount(); ++i) {
+                RomEntry rom = (RomEntry)listView.getItemAtPosition(i);
+                if (rom.getTitle().equals(title)) {
+                    rom.lastPlayed = new Date();
+                    RomCache.getInstance(getContext()).updateRomMetadata(rom);
                 }
             }
         }

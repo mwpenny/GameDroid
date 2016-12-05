@@ -32,6 +32,12 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
         romList = new ArrayList<>(roms);
     }
 
+    @Override
+    public void remove(RomEntry object) {
+        super.remove(object);
+        romList.remove(object);
+    }
+
     @NonNull
     @Override
     public View getView(final int pos, View v, @NonNull final ViewGroup parent) {
@@ -47,7 +53,7 @@ public class RomListAdapter extends ArrayAdapter<RomEntry> {
             @Override
             public void onClick(View v) {
                 if (rom != null) {
-                    // Propogate favorite button click up to list entry
+                    // Propagate favorite button click up to list entry
                     ((ListView)parent).performItemClick(v, pos, getItemId(pos));
                 }
             }

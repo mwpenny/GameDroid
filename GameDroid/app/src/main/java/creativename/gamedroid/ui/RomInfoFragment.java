@@ -1,10 +1,13 @@
 package creativename.gamedroid.ui;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +49,8 @@ public class RomInfoFragment extends DialogFragment {
         String title = String.format(getString(R.string.rom_title_format), args.getString("title"), version);
         String licensee = String.format(getString(R.string.rom_licensee_format), args.getString("licensee"));
         String region = String.format(getString(R.string.rom_region_format), args.getString("locale"));
-        final String path = String.format(getString(R.string.rom_path_format), args.getString("path"));
+        final String path = args.getString("path");
+        String formattedPath = String.format(getString(R.string.rom_path_format), path);
 
         final Button deleteSaveBtn = (Button)v.findViewById(R.id.button_delete_save);
         final Button deleteStateBtn = (Button)v.findViewById(R.id.button_delete_state);
@@ -59,7 +63,7 @@ public class RomInfoFragment extends DialogFragment {
 
         ((TextView)v.findViewById(R.id.dialog_licensee)).setText(licensee);
         ((TextView)v.findViewById(R.id.dialog_locale)).setText(region);
-        ((TextView)v.findViewById(R.id.dialog_path)).setText(path);
+        ((TextView)v.findViewById(R.id.dialog_path)).setText(formattedPath);
 
         /* Add handlers */
         deleteSaveBtn.setOnClickListener(new View.OnClickListener() {
@@ -102,8 +106,10 @@ public class RomInfoFragment extends DialogFragment {
                             @Override
                             public void run() {
                                 if (deleteRom()) {
-                                    // Remove from list to update view
+                                    // Remove from lists to update view
                                     RomCache.getInstance(getContext()).removeRom(path);
+                                    ((RomListFragment)getTargetFragment()).refresh(getArguments().getInt("rom_index", -1));
+
                                     deleteSave();
                                     deleteState();
                                 }
