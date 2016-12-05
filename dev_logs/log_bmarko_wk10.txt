@@ -1,0 +1,12 @@
+=======================================
+Time    : Task
+---------------------------------------
+4 hours : Added help button to menu 
+		: Created Help Menu
+			: replaced Tutorial idea
+1 hour  : Made Layout for AlertDialog
+=======================================
+Total time
+---------------------------------------
+5  hours
+=======================================

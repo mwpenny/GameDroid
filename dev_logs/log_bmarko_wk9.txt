@@ -1,0 +1,11 @@
+=======================================
+Time    : Task
+---------------------------------------
+3 hours : Created UML diagram for D3
+		: created public API from all classes
+2 hours : Worked on Tutorial Section for App
+=======================================
+Total time
+---------------------------------------
+5  hours
+=======================================
