@@ -30,7 +30,7 @@ public class SettingsActivity extends PreferenceActivity {
         // Insert actionbar at top of view for back navigation
         LinearLayout root = (LinearLayout)findViewById(android.R.id.list).getParent().getParent().getParent();
         Toolbar tb = (Toolbar) LayoutInflater.from(this).inflate(R.layout.toolbar, root, false);
-        tb.setTitle(getString(R.string.action_settings));
+        tb.setTitle(getString(R.string.settings));
         root.addView(tb, 0);
         tb.setNavigationOnClickListener(new View.OnClickListener() {
             @Override

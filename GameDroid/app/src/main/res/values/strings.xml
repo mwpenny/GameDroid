@@ -3,8 +3,9 @@
 <resources>
     <string name="app_name">GameDroid</string>
     <string name="library_title">Game library</string>
-    <string name="action_settings">Settings</string>
-    <string name="action_search">Search</string>
+    <string name="settings">Settings</string>
+    <string name="search">Search</string>
+    <string name="help">Help</string>
     <string name="section_format">Hello World from section: %1$d</string>
 
     <!-- UI strings -->
@@ -80,15 +81,24 @@
     </string-array>
 
     <!-- Help Menu Strings -->
-    <string name="help_button_info">Displays the Help information screen</string>
-    <string name="search_button_info">Displays the ROM Search menu</string>
-    <string name="settings_button_info">Displays the Settings menu</string>
-    <string name="recent_tab_info">Displays ROMs in last used order</string>
-    <string name="fav_tab_info">Displays only ROMs that have been favourited</string>
-    <string name="all_tab_info">Displays all loaded ROMs in alphabetical order</string>
-    <string name="save_info">Saves the current state of the Emulator</string>
-    <string name="load_info">Loads the last Save state of the Emulator</string>
-    <string name="rewind_info">Rewinds game actions back in time!</string>
+    <string name="application_help">Application help</string>
+    <string name="library_tab_help">Library tab organization</string>
+    <string name="emulator_help">Emulator actions</string>
+    <string name="help_button_info">Displays this help information screen</string>
+    <string name="search_button_info">Displays the ROM search screen</string>
+    <string name="settings_button_info">Displays the settings menu</string>
+    <string name="recent_tab">\"Recent\" tab</string>
+    <string name="fav_tab">\"Favorite\" tab</string>
+    <string name="all_tab">\"All\" tab</string>
+    <string name="recent_tab_info">Displays ROMs order of most recently played</string>
+    <string name="fav_tab_info">Displays ROMs that have been marked as favorites</string>
+    <string name="all_tab_info">Displays all ROMs in alphabetical order</string>
+    <string name="save_btn">Save state</string>
+    <string name="load_btn">Load state</string>
+    <string name="rewind_btn">Rewind</string>
+    <string name="save_info">Saves the current state of the emulator</string>
+    <string name="load_info">Loads the last saved state of the emulator</string>
+    <string name="rewind_info">Rewinds game actions while pressed</string>
 
     <string name="pref_button_invert_key">pref_button_invert</string>
     <string name="pref_button_invert_title">Invert A and B buttons</string>

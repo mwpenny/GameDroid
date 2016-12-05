@@ -6,19 +6,19 @@
     <item
         android:id="@+id/action_help"
         android:icon="@android:drawable/ic_menu_help"
-        android:title="Help"
+        android:title="@string/help"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_search"
         android:icon="@android:drawable/ic_menu_search"
-        android:title="@string/action_search"
+        android:title="@string/search"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_settings"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="@string/action_settings"
+        android:title="@string/settings"
         app:showAsAction="ifRoom"/>
 
 </menu>
