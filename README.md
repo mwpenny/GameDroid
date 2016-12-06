@@ -14,8 +14,6 @@ Major features:
 * SRAM saves
 * Save states
 * Rewind
-
-Planned features:
 * Customizable screen resolution
 
 Supported MBCs:

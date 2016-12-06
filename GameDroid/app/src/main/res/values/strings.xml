@@ -90,7 +90,7 @@
     <string name="recent_tab">\"Recent\" tab</string>
     <string name="fav_tab">\"Favorite\" tab</string>
     <string name="all_tab">\"All\" tab</string>
-    <string name="recent_tab_info">Displays ROMs order of most recently played</string>
+    <string name="recent_tab_info">Displays ROMs in order of most recently played</string>
     <string name="fav_tab_info">Displays ROMs that have been marked as favorites</string>
     <string name="all_tab_info">Displays all ROMs in alphabetical order</string>
     <string name="save_btn">Save state</string>

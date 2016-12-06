@@ -1,16 +1,19 @@
 package creativename.gamedroid.ui;
 
 import android.app.Activity;
-
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.File;
@@ -98,12 +101,45 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
         });
     }
 
+    private void applyUserSettings() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Display scaling
+        float scale = Float.valueOf(prefs.getString(getString(R.string.pref_scaling_key), getString(R.string.pref_scaling_1_5x)));
+        GameboyScreen screen = (GameboyScreen) findViewById(R.id.gbscreen);
+        if (scale > 0) {
+            // Use specific scale, adjusted for screen density
+            float density = getResources().getDisplayMetrics().density;
+            screen.getLayoutParams().width = (int)(160 * density * scale);
+            screen.getLayoutParams().height = (int)(144 * density * scale);
+        } else {
+            // Fit to screen
+            screen.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT)
+            );
+        }
+
+        // Swap A and B buttons
+        boolean invertAB = prefs.getBoolean(getString(R.string.pref_button_invert_key), false);
+        if (invertAB) {
+            Button a = (Button)findViewById(R.id.controller_a);
+            Button b = (Button)findViewById(R.id.controller_b);
+
+            a.setText(getString(R.string.b));
+            a.setId(R.id.controller_b);
+            b.setText(getString(R.string.a));
+            b.setId(R.id.controller_a);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_emulator);
         setResult(RESULT_OK, getIntent());
 
+        applyUserSettings();
         initEmulator();
 
         // Set up listeners
