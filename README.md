@@ -24,4 +24,7 @@ Supported MBCs:
 * MBC3 (no RTC)
 * MBC5 (no rumble)
 
+Screenshots:
+![Screenshots](screenshots.png)
+
 Minimum Android version: 4.0.3 (Ice Cream Sandwich)
