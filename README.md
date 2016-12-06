@@ -22,6 +22,9 @@ Supported MBCs:
 * MBC3 (no RTC)
 * MBC5 (no rumble)
 
+Promo video:
+https://www.youtube.com/watch?v=SpdBk_0kcU4
+
 Screenshots:
 ![Screenshots](screenshots.png)
 
