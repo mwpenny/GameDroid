@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 
 import java.nio.ByteBuffer;
@@ -44,6 +45,8 @@ public class GameboyScreen extends GLSurfaceView implements GLSurfaceView.Render
     private Bitmap frame;
     private GameBoy gb;
     private RewindManager rewindManager;
+    private long lastRenderTimeMs;
+    private long msPerFrame;
 
     private void initScreen() {
         textures = new int[1];
@@ -68,6 +71,10 @@ public class GameboyScreen extends GLSurfaceView implements GLSurfaceView.Render
         this.gb = gb;
     }
 
+    public void setFPS(int fps) {
+        msPerFrame = 1000 / fps;
+    }
+
     public void setRewindManager(RewindManager rewindManager) {
         this.rewindManager = rewindManager;
     }
@@ -87,7 +94,16 @@ public class GameboyScreen extends GLSurfaceView implements GLSurfaceView.Render
         }
         rewindManager.addRewindPoint(saveStateStream.toByteArray(), frame);
 
+        if (msPerFrame > 0) {
+            // Limit framerate
+            long dt = SystemClock.uptimeMillis() - lastRenderTimeMs;
+            if (dt < msPerFrame) {
+                SystemClock.sleep(msPerFrame - dt);
+            }
+        }
+
         requestRender();
+        lastRenderTimeMs = SystemClock.uptimeMillis();
     }
 
     public void renderBitmap(Bitmap bmp) {

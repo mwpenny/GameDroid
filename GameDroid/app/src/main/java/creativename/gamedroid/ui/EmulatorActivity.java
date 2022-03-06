@@ -120,6 +120,10 @@ public class EmulatorActivity extends Activity implements View.OnTouchListener, 
             );
         }
 
+        // Frame rate
+        int fps = Integer.valueOf(prefs.getString(getString(R.string.pref_fps_key), getString(R.string.pref_fps_60)));
+        screen.setFPS(fps);
+
         // Swap A and B buttons
         boolean invertAB = prefs.getBoolean(getString(R.string.pref_button_invert_key), false);
         if (invertAB) {

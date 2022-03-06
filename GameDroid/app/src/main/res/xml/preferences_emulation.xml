@@ -10,6 +10,14 @@
         android:entries="@array/pref_scaling_entries"
         android:entryValues="@array/pref_scaling_values"
         android:defaultValue="@string/pref_scaling_1_5x" />
+    <ListPreference
+        android:key="@string/pref_fps_key"
+        android:title="@string/pref_fps_title"
+        android:dialogTitle="@string/pref_fps_dialog_title"
+        android:summary="%s"
+        android:entries="@array/pref_fps_entries"
+        android:entryValues="@array/pref_fps_values"
+        android:defaultValue="@string/pref_fps_60" />
     <CheckBoxPreference
         android:key="@string/pref_button_invert_key"
         android:title="@string/pref_button_invert_title"

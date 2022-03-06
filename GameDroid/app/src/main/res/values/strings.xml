@@ -79,8 +79,24 @@
         <item>@string/pref_scaling_1_75x</item>
         <item>@string/pref_scaling_fit</item>
     </string-array>
+    <string name="pref_fps_key">pref_fps</string>
+    <string name="pref_fps_title">Frame rate</string>
+    <string name="pref_fps_dialog_title">Set frame rate limit</string>
+    <string name="pref_fps_60">60</string>
+    <string name="pref_fps_unlimited">-1</string>
+    <string-array name="pref_fps_entries">
+        <!-- Not entirely accurate, but the focus of this project is primarily software design -->
+        <item>60 fps</item>
+        <item>Unlimited</item>
+    </string-array>
+    <string-array name="pref_fps_values">
+        <item>@string/pref_fps_60</item>
+        <item>@string/pref_fps_unlimited</item>
+    </string-array>
+    <string name="pref_button_invert_key">pref_button_invert</string>
+    <string name="pref_button_invert_title">Invert A and B buttons</string>
 
-    <!-- Help Menu Strings -->
+    <!-- Help menu strings -->
     <string name="application_help">Application help</string>
     <string name="library_tab_help">Library tab organization</string>
     <string name="emulator_help">Emulator actions</string>
@@ -100,9 +116,7 @@
     <string name="load_info">Loads the last saved state of the emulator</string>
     <string name="rewind_info">Rewinds game actions while pressed</string>
 
-    <string name="pref_button_invert_key">pref_button_invert</string>
-    <string name="pref_button_invert_title">Invert A and B buttons</string>
-
+    <!-- About screen strings -->
     <string name="about_title">About GameDroid</string>
     <string name="about_desc">View application information</string>
     <string name="app_version_format">v%s</string>
